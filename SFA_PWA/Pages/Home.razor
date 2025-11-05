@@ -2,12 +2,17 @@
 
 <PageTitle>Home</PageTitle>
 
+
 @if (showSplash)
 {
     <div class="splash-overlay" @onclick="HideSplash">
         <img src="sfa.png" alt="App Icon" class="splash-icon" />
     </div>
 }
+
+<div class="date-time-message">
+    <b>Current date and time:</b> @DateTime.Now.ToString("dd-MM-yyyy HH:mm")
+</div>
 
 
 <h1>Welcome to the San Fairy Ann Cycling Club App!</h1>
