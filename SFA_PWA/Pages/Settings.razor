@@ -1,0 +1,131 @@
+@page "/settings"
+@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Collections.Generic
+<PageTitle>Settings</PageTitle>
+
+
+<h1>Ride Group Preferences</h1>
+<p>Select which San Fairy Ann ride groups you want to follow, add new groups, or update calendar links:</p>
+
+<EditForm Model="newGroup" OnValidSubmit="AddOrUpdateGroup">
+    <div class="form-group">
+        <label>Group Name</label>
+        <InputText @bind-Value="newGroup.Name" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <InputText @bind-Value="newGroup.Description" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Info URL</label>
+        <InputText @bind-Value="newGroup.InfoUrl" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Google Calendar URL</label>
+        <InputText @bind-Value="newGroup.CalendarUrl" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-success">Add/Update Group</button>
+</EditForm>
+
+<hr />
+<h2>Existing Groups</h2>
+<ul>
+    @foreach (var group in groups)
+    {
+        <li>
+            <b>@group.Name</b> - @group.Description
+            <br />
+            <a href="@group.InfoUrl" target="_blank">Info</a>
+            @if (!string.IsNullOrWhiteSpace(group.CalendarUrl))
+            {
+                <span> | <a href="@group.CalendarUrl" target="_blank">Calendar</a></span>
+            }
+            <button class="btn btn-sm btn-primary" @onclick="() => EditGroup(group)">Edit</button>
+        </li>
+    }
+</ul>
+
+<button class="btn btn-primary" @onclick="SaveGroups">Save All Groups</button>
+
+@code {
+    private GroupPreferences selectedGroups = new();
+    private List<GroupData> groups = new();
+    private GroupData newGroup = new();
+
+    [Inject]
+    private IJSRuntime JS { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var json = await JS.InvokeAsync<string>("localStorage.getItem", "groupsData");
+        if (!string.IsNullOrWhiteSpace(json))
+        {
+            groups = System.Text.Json.JsonSerializer.Deserialize<List<GroupData>>(json) ?? new List<GroupData>();
+        }
+    }
+
+    private async Task SavePreferences()
+    {
+        await JS.InvokeVoidAsync("localStorage.setItem", "groupPreferences", System.Text.Json.JsonSerializer.Serialize(selectedGroups));
+    }
+
+    private async Task SaveGroups()
+    {
+        await JS.InvokeVoidAsync("localStorage.setItem", "groupsData", System.Text.Json.JsonSerializer.Serialize(groups));
+    }
+
+    private void AddOrUpdateGroup()
+    {
+        var existing = groups.FirstOrDefault(g => g.Name == newGroup.Name);
+        if (existing != null)
+        {
+            existing.Description = newGroup.Description;
+            existing.InfoUrl = newGroup.InfoUrl;
+            existing.CalendarUrl = newGroup.CalendarUrl;
+        }
+        else
+        {
+            groups.Add(new GroupData
+            {
+                Name = newGroup.Name,
+                Description = newGroup.Description,
+                InfoUrl = newGroup.InfoUrl,
+                CalendarUrl = newGroup.CalendarUrl
+            });
+        }
+        newGroup = new GroupData();
+    }
+
+    private void EditGroup(GroupData group)
+    {
+        newGroup = new GroupData
+        {
+            Name = group.Name,
+            Description = group.Description,
+            InfoUrl = group.InfoUrl,
+            CalendarUrl = group.CalendarUrl
+        };
+    }
+
+    public class GroupPreferences
+        {
+            public bool D { get; set; }
+            public bool DPlus { get; set; }
+            public bool B { get; set; }
+            public bool BPlus { get; set; }
+            public bool C { get; set; }
+            public bool EasyRiders { get; set; }
+            public bool MTB { get; set; }
+            public bool Virtual { get; set; }
+        }
+
+        public class GroupData
+        {
+            public string Name { get; set; } = string.Empty;
+            public string Description { get; set; } = string.Empty;
+            public string InfoUrl { get; set; } = string.Empty;
+            public string CalendarUrl { get; set; } = string.Empty;
+        }
+    }

@@ -1,0 +1,92 @@
+[
+  {
+    "name": "A Group",
+    "calendarUrl": null,
+    "infoUrl": "https://www.sanfairyanncc.co.uk/agroup",
+    "description": "Fastest group, advanced riders"
+  },
+  {
+    "name": "Fast Inters",
+    "calendarUrl": null,
+    "infoUrl": "https://www.sanfairyanncc.co.uk/fast-inters",
+    "description": "Fast intermediate pace"
+  },
+  {
+    "name": "Saturday 9am Inters",
+    "calendarUrl": null,
+    "infoUrl": "https://www.sanfairyanncc.co.uk/Saturday9amInters",
+    "description": "Saturday morning intermediate group"
+  },
+  {
+    "name": "Sunday Intermediates",
+    "calendarUrl": null,
+    "infoUrl": "https://www.sanfairyanncc.co.uk/sunday-intermediates",
+    "description": "Sunday intermediate group"
+  },
+  {
+    "name": "Inbetweeners",
+    "calendarUrl": null,
+    "infoUrl": "https://www.sanfairyanncc.co.uk/inbetweeners",
+    "description": "Between intermediate and slower groups"
+  },
+  {
+    "name": "B+ Group",
+    "calendarUrl": null,
+    "infoUrl": "https://www.sanfairyanncc.co.uk/b-group",
+    "description": "Faster B group"
+  },
+  {
+    "name": "B Group",
+    "calendarUrl": null,
+    "infoUrl": "https://www.sanfairyanncc.co.uk/b-group-1",
+    "description": "Intermediate pace"
+  },
+  {
+    "name": "C Group",
+    "calendarUrl": null,
+    "infoUrl": "https://www.sanfairyanncc.co.uk/c-group",
+    "description": "Moderate pace"
+  },
+  {
+    "name": "Midweekers",
+    "calendarUrl": null,
+    "infoUrl": "https://www.sanfairyanncc.co.uk/midweekers",
+    "description": "Midweek rides"
+  },
+  {
+    "name": "D+ Group",
+    "calendarUrl": "https://calendar.google.com/calendar/embed?src=5nodk1v0lsg3onc8tkh58f4rh0%40group.calendar.google.com&ctz=Europe%2FLondon",
+    "infoUrl": "https://www.sanfairyanncc.co.uk/d-group",
+    "description": "30-40 miles, 12-14 mph"
+  },
+  {
+    "name": "D Group",
+    "calendarUrl": "https://calendar.google.com/calendar/embed?src=qtb3pcno4ugvndi8svv6s7s8s4%40group.calendar.google.com&ctz=Europe%2FLondon",
+    "infoUrl": "https://www.sanfairyanncc.co.uk/d-group-1",
+    "description": "Social, steady pace"
+  },
+  {
+    "name": "EasyRiders",
+    "calendarUrl": null,
+    "infoUrl": "https://www.sanfairyanncc.co.uk/easyriders",
+    "description": "Gentle rides"
+  },
+  {
+    "name": "EasyRiders+",
+    "calendarUrl": null,
+    "infoUrl": "https://www.sanfairyanncc.co.uk/easyriders-1",
+    "description": "Gentle rides plus"
+  },
+  {
+    "name": "Mountain Bike Group",
+    "calendarUrl": null,
+    "infoUrl": "https://www.sanfairyanncc.co.uk/mountain-bike-group",
+    "description": "Off-road rides"
+  },
+  {
+    "name": "Virtual Riding",
+    "calendarUrl": null,
+    "infoUrl": "https://www.sanfairyanncc.co.uk/virtual-riding",
+    "description": "Online rides"
+  }
+]
