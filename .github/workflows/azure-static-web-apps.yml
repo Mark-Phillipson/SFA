@@ -33,4 +33,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "SFA_PWA"
-          output_location: "bin/Release/net9.0/publish/wwwroot"
+          output_location: "wwwroot"
