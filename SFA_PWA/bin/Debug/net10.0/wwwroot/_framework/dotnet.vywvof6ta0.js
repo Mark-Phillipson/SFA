@@ -5,7 +5,7 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
   "mainAssemblyName": "SFA_PWA",
   "applicationEnvironment": "Development",
   "resources": {
-    "hash": "sha256-AqBeQ314k1LltmcuijXCWHmiLesMafkqztMeFRMXCoU=",
+    "hash": "sha256-vNno5UW0AWSDWQGqsPIGM+Sw45m+ZMmg+ddqtl3mEm0=",
     "jsModuleNative": [
       {
         "name": "dotnet.native.98v1chuo8c.js"
@@ -1039,15 +1039,15 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
       },
       {
         "virtualPath": "SFA_PWA.wasm",
-        "name": "SFA_PWA.vpm07hb6x4.wasm",
-        "integrity": "sha256-/RH7jWrd34qHDkQaUKz/ZJp2LZYdFEyL54IFOJHyadQ="
+        "name": "SFA_PWA.mlh8q509sh.wasm",
+        "integrity": "sha256-GtlVOW9V2IU6CBZ13U8I0c3SPMNtt40srfBPNQ/W0L4="
       }
     ],
     "pdb": [
       {
         "virtualPath": "SFA_PWA.pdb",
-        "name": "SFA_PWA.sxwrl9oyiv.pdb",
-        "integrity": "sha256-gNh5FmWOtAU3vkpb128OaR041V8FW2kmI272MlThxDI="
+        "name": "SFA_PWA.t1gj24n5ei.pdb",
+        "integrity": "sha256-/6Wcds86Ei2faXmpwiF/1q0SrqIVp9moUgNJ8V+cD30="
       }
     ],
     "libraryInitializers": [

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SFA_PWA")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a0bfd7bf049da4b78b97cbe6f32392a7936af5d6")]
 [assembly: System.Reflection.AssemblyProductAttribute("SFA_PWA")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SFA_PWA")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

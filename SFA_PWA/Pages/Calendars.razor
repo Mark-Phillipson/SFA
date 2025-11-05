@@ -1,0 +1,74 @@
+@page "/calendars"
+@using Microsoft.JSInterop
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<PageTitle>Calendars</PageTitle>
+
+<h1>Ride Group Calendars</h1>
+
+@if (groups.Count == 0)
+{
+    <p>Loading calendars...</p>
+}
+else
+{
+    var selected = groups.Where(g => IsSelected(g.Name) && !string.IsNullOrWhiteSpace(g.CalendarUrl)).ToList();
+    if (selected.Count == 0)
+    {
+        <p>No calendars selected. Go to Settings to choose which groups to follow.</p>
+    }
+    else
+    {
+        foreach (var group in selected)
+        {
+            <h3>@group.Name</h3>
+            <iframe 
+                src="@group.CalendarUrl" 
+                style="border: 0" 
+                width="400" 
+                height="600" 
+                frameborder="0" 
+                scrolling="yes">
+            </iframe>
+        }
+    }
+}
+
+@code {
+    private Dictionary<string, bool> selectedGroups = new();
+    private List<GroupData> groups = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load all groups from groups.json
+        try
+        {
+            groups = await Http.GetFromJsonAsync<List<GroupData>>("sample-data/groups.json") ?? new List<GroupData>();
+        }
+        catch
+        {
+            groups = new List<GroupData>();
+        }
+
+        // Load user preferences from localStorage
+        var prefsJson = await JS.InvokeAsync<string>("localStorage.getItem", "groupPreferences");
+        if (!string.IsNullOrWhiteSpace(prefsJson))
+        {
+            selectedGroups = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(prefsJson) ?? new Dictionary<string, bool>();
+        }
+    }
+
+    private bool IsSelected(string groupName)
+    {
+        return selectedGroups.ContainsKey(groupName) && selectedGroups[groupName];
+    }
+
+    public class GroupData
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string InfoUrl { get; set; } = string.Empty;
+        public string CalendarUrl { get; set; } = string.Empty;
+    }
+}

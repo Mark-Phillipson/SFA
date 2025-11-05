@@ -32,6 +32,10 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/MPhil/source/repos/SFA/SFA_PWA/Pages/Calendars.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2FsZW5kYXJzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/MPhil/source/repos/SFA/SFA_PWA/Pages/Counter.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 

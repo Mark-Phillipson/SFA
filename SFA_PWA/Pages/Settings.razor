@@ -1,40 +1,18 @@
 @page "/settings"
 @using Microsoft.JSInterop
 @using Microsoft.AspNetCore.Components.Web
-@using Microsoft.AspNetCore.Components.Forms
 @using System.Collections.Generic
 <PageTitle>Settings</PageTitle>
 
-
 <h1>Ride Group Preferences</h1>
-<p>Select which San Fairy Ann ride groups you want to follow, add new groups, or update calendar links:</p>
+<p>Select which San Fairy Ann ride groups you want to follow:</p>
 
-<EditForm Model="newGroup" OnValidSubmit="AddOrUpdateGroup">
-    <div class="form-group">
-        <label>Group Name</label>
-        <InputText @bind-Value="newGroup.Name" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label>Description</label>
-        <InputText @bind-Value="newGroup.Description" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label>Info URL</label>
-        <InputText @bind-Value="newGroup.InfoUrl" class="form-control" />
-    </div>
-    <div class="form-group">
-        <label>Google Calendar URL</label>
-        <InputText @bind-Value="newGroup.CalendarUrl" class="form-control" />
-    </div>
-    <button type="submit" class="btn btn-success">Add/Update Group</button>
-</EditForm>
-
-<hr />
-<h2>Existing Groups</h2>
+<h2>Available Groups</h2>
 <ul>
     @foreach (var group in groups)
     {
         <li>
+            <input type="checkbox" checked="@IsSelected(group.Name)" @onchange="(e) => OnPreferenceChanged(group.Name, ((ChangeEventArgs)e).Value)" />
             <b>@group.Name</b> - @group.Description
             <br />
             <a href="@group.InfoUrl" target="_blank">Info</a>
@@ -42,27 +20,44 @@
             {
                 <span> | <a href="@group.CalendarUrl" target="_blank">Calendar</a></span>
             }
-            <button class="btn btn-sm btn-primary" @onclick="() => EditGroup(group)">Edit</button>
         </li>
     }
 </ul>
 
-<button class="btn btn-primary" @onclick="SaveGroups">Save All Groups</button>
+<button class="btn btn-primary" @onclick="SavePreferences">Save Preferences</button>
 
 @code {
-    private GroupPreferences selectedGroups = new();
+    private Dictionary<string, bool> selectedGroups = new();
     private List<GroupData> groups = new();
-    private GroupData newGroup = new();
 
+    [Inject]
+    private HttpClient Http { get; set; } = default!;
     [Inject]
     private IJSRuntime JS { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        var json = await JS.InvokeAsync<string>("localStorage.getItem", "groupsData");
-        if (!string.IsNullOrWhiteSpace(json))
+        // Load all groups from groups.json
+        try
         {
-            groups = System.Text.Json.JsonSerializer.Deserialize<List<GroupData>>(json) ?? new List<GroupData>();
+            groups = await Http.GetFromJsonAsync<List<GroupData>>("sample-data/groups.json") ?? new List<GroupData>();
+        }
+        catch
+        {
+            groups = new List<GroupData>();
+        }
+
+        // Load user preferences from localStorage
+        var prefsJson = await JS.InvokeAsync<string>("localStorage.getItem", "groupPreferences");
+        if (!string.IsNullOrWhiteSpace(prefsJson))
+        {
+            selectedGroups = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(prefsJson) ?? new Dictionary<string, bool>();
+        }
+        // Ensure all groups have a preference entry
+        foreach (var group in groups)
+        {
+            if (!selectedGroups.ContainsKey(group.Name))
+                selectedGroups[group.Name] = false;
         }
     }
 
@@ -71,61 +66,26 @@
         await JS.InvokeVoidAsync("localStorage.setItem", "groupPreferences", System.Text.Json.JsonSerializer.Serialize(selectedGroups));
     }
 
-    private async Task SaveGroups()
+    private bool IsSelected(string groupName)
     {
-        await JS.InvokeVoidAsync("localStorage.setItem", "groupsData", System.Text.Json.JsonSerializer.Serialize(groups));
+        return selectedGroups.ContainsKey(groupName) && selectedGroups[groupName];
     }
 
-    private void AddOrUpdateGroup()
+    private void OnPreferenceChanged(string groupName, object value)
     {
-        var existing = groups.FirstOrDefault(g => g.Name == newGroup.Name);
-        if (existing != null)
-        {
-            existing.Description = newGroup.Description;
-            existing.InfoUrl = newGroup.InfoUrl;
-            existing.CalendarUrl = newGroup.CalendarUrl;
-        }
-        else
-        {
-            groups.Add(new GroupData
-            {
-                Name = newGroup.Name,
-                Description = newGroup.Description,
-                InfoUrl = newGroup.InfoUrl,
-                CalendarUrl = newGroup.CalendarUrl
-            });
-        }
-        newGroup = new GroupData();
+        bool isChecked = false;
+        if (value is bool b)
+            isChecked = b;
+        else if (value is string s && bool.TryParse(s, out var parsed))
+            isChecked = parsed;
+        selectedGroups[groupName] = isChecked;
     }
 
-    private void EditGroup(GroupData group)
+    public class GroupData
     {
-        newGroup = new GroupData
-        {
-            Name = group.Name,
-            Description = group.Description,
-            InfoUrl = group.InfoUrl,
-            CalendarUrl = group.CalendarUrl
-        };
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string InfoUrl { get; set; } = string.Empty;
+        public string CalendarUrl { get; set; } = string.Empty;
     }
-
-    public class GroupPreferences
-        {
-            public bool D { get; set; }
-            public bool DPlus { get; set; }
-            public bool B { get; set; }
-            public bool BPlus { get; set; }
-            public bool C { get; set; }
-            public bool EasyRiders { get; set; }
-            public bool MTB { get; set; }
-            public bool Virtual { get; set; }
-        }
-
-        public class GroupData
-        {
-            public string Name { get; set; } = string.Empty;
-            public string Description { get; set; } = string.Empty;
-            public string InfoUrl { get; set; } = string.Empty;
-            public string CalendarUrl { get; set; } = string.Empty;
-        }
-    }
+}
