@@ -2,6 +2,44 @@
 
 <PageTitle>Home</PageTitle>
 
+@if (showSplash)
+{
+    <div class="splash-overlay" @onclick="HideSplash">
+        <img src="sfa.png" alt="App Icon" class="splash-icon" />
+    </div>
+}
+
 <h1>Hello, world!</h1>
+
+@code {
+    private bool showSplash = true;
+
+    private void HideSplash()
+    {
+        showSplash = false;
+    }
+}
+
+<style>
+.splash-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255,255,255,0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    cursor: pointer;
+}
+.splash-icon {
+    max-width: 40vw;
+    max-height: 40vh;
+    box-shadow: 0 0 32px #03173d55;
+    border-radius: 16px;
+}
+</style>
 
 
