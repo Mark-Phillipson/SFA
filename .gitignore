@@ -1,0 +1,109 @@
+# .NET & Blazor WebAssembly .gitignore
+
+# Build results
+bin/
+obj/
+
+# Static web assets (Blazor)
+wwwroot/_framework/
+wwwroot/service-worker.js
+wwwroot/service-worker.published.js
+wwwroot/service-worker-assets.js
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# Visual Studio
+.vs/
+
+# NuGet
+*.nupkg
+# NuGet packages folder
+packages/
+# Project lock files
+project.lock.json
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# User secrets
+secrets.json
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+
+# Others
+*.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+
+# Test results
+TestResults/
+
+# Publish output
+publish/
+
+# Ignore compressed output
+*.zip
+*.tar.gz
+*.7z
+
+# Ignore coverage reports
+coverage/
+
+# Ignore node_modules if using npm/yarn for JS interop
+node_modules/
+
+# Ignore generated files
+wwwroot/lib/
+
+# Ignore debug/release folders
+Debug/
+Release/
+
+# Ignore webcil and tmp-webcil folders
+webcil/
+tmp-webcil/
+
+# Ignore scopedcss output
+scopedcss/
+
+# Ignore project-specific asset placeholders
+staticwebassets/
+htmlassetplaceholders/
+
+# Ignore cache files
+*.cache
+
+# Ignore ref and refint folders
+ref/
+refint/
+
+# Ignore bundle output
+bundle/
+projectbundle/
+
+# Ignore service worker build output
+service-worker/
+
+# Ignore any other build artifacts
+*.build
+
+# End of file
