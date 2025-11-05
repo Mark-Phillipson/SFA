@@ -25,7 +25,7 @@ jobs:
       - name: Build
         run: dotnet build SFA_PWA/SFA_PWA.csproj --configuration Release
       - name: Publish
-        run: dotnet publish SFA_PWA/SFA_PWA.csproj --configuration Release --output SFA_PWA/wwwroot
+        run: dotnet publish SFA_PWA/SFA_PWA.csproj --configuration Release
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -33,4 +33,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "SFA_PWA"
-          output_location: "wwwroot"
+          output_location: "bin/Release/net9.0/publish/wwwroot"
