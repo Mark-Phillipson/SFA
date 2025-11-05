@@ -12,7 +12,7 @@
     @foreach (var group in groups)
     {
         <li>
-            <input type="checkbox" checked="@IsSelected(group.Name)" @onchange="(e) => OnPreferenceChanged(group.Name, ((ChangeEventArgs)e).Value)" />
+            <input type="checkbox" checked="@IsSelected(group.Name)" @onchange="(e) => OnPreferenceChanged(group.Name, ((ChangeEventArgs)e).Value ?? false)" />
             <b>@group.Name</b> - @group.Description
             <br />
             <a href="@group.InfoUrl" target="_blank">Info</a>
@@ -71,13 +71,15 @@
         return selectedGroups.ContainsKey(groupName) && selectedGroups[groupName];
     }
 
-    private void OnPreferenceChanged(string groupName, object value)
+    private void OnPreferenceChanged(string groupName, object? value)
     {
         bool isChecked = false;
         if (value is bool b)
             isChecked = b;
         else if (value is string s && bool.TryParse(s, out var parsed))
             isChecked = parsed;
+        else if (value == null)
+            isChecked = false;
         selectedGroups[groupName] = isChecked;
     }
 

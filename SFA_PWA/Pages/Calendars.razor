@@ -85,7 +85,7 @@ else
         return selectedGroups.ContainsKey(groupName) && selectedGroups[groupName];
     }
 
-    private string GetCalendarUrl(GroupData group)
+    private string? GetCalendarUrl(GroupData group)
     {
         if (string.IsNullOrWhiteSpace(group.CalendarUrl)) return null;
         var mode = isMobile ? "AGENDA" : "MONTH";
