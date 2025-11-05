@@ -10,24 +10,28 @@
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="nav flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-                <NavLink class="nav-link" href="links">
-                    <span class="bi bi-people-fill" aria-hidden="true"></span> Club Links
+                <NavLink class="nav-link nav-link-center" href="" Match="NavLinkMatch.All">
+                    <span class="bi bi-house-door-fill-nav-menu icon-center" aria-hidden="true"></span>
+                    <span class="nav-text">Home</span>
                 </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="settings">
-                <span class="bi bi-sliders" aria-hidden="true"></span> Settings
-            </NavLink>
+                <NavLink class="nav-link nav-link-center" href="links">
+                    <span class="bi bi-people-fill icon-center" aria-hidden="true"></span>
+                    <span class="nav-text">Club Links</span>
+                </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="calendars">
-                <span class="bi bi-calendar-event" aria-hidden="true"></span> Calendars
-            </NavLink>
+                <NavLink class="nav-link nav-link-center" href="settings">
+                    <span class="bi bi-sliders icon-center" aria-hidden="true"></span>
+                    <span class="nav-text">Settings</span>
+                </NavLink>
+        </div>
+        <div class="nav-item px-3">
+                <NavLink class="nav-link nav-link-center" href="calendars">
+                    <span class="bi bi-calendar-event icon-center" aria-hidden="true"></span>
+                    <span class="nav-text">Calendars</span>
+                </NavLink>
         </div>
     </nav>
 </div>
