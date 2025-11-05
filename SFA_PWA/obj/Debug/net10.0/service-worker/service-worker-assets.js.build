@@ -1,5 +1,5 @@
 self.assetsManifest = {
-  "version": "0zIpqkla",
+  "version": "L33W6ozs",
   "assets": [
     {
       "hash": "sha256-dG24J2+oRGX5D+otizowE51iIj8CD2dBcTZl+h3TP0M=",
@@ -138,12 +138,12 @@ self.assetsManifest = {
       "url": "_framework/Microsoft.Win32.Registry.zfmdhc8y2i.wasm"
     },
     {
-      "hash": "sha256-GtlVOW9V2IU6CBZ13U8I0c3SPMNtt40srfBPNQ/W0L4=",
-      "url": "_framework/SFA_PWA.mlh8q509sh.wasm"
+      "hash": "sha256-AiYiMGeo1me3nvs9oUj+CfVO/Hy/qLbmAOW5qPKX0OA=",
+      "url": "_framework/SFA_PWA.qdhcbzmdux.wasm"
     },
     {
-      "hash": "sha256-/6Wcds86Ei2faXmpwiF/1q0SrqIVp9moUgNJ8V+cD30=",
-      "url": "_framework/SFA_PWA.t1gj24n5ei.pdb"
+      "hash": "sha256-H9yV4DIvKrpLrOMtLuOY4qL7brGApPJTV/lNaugI14E=",
+      "url": "_framework/SFA_PWA.vkzk7127j9.pdb"
     },
     {
       "hash": "sha256-QSo5msDSOeSNfKGOHymqidG/WhFiQfS1+OHRbPAVl48=",
@@ -822,16 +822,16 @@ self.assetsManifest = {
       "url": "_framework/dotnet.native.ggch313emy.wasm"
     },
     {
+      "hash": "sha256-uSCS81GUuw12lTmuQvMtqm2Y7AwVOr6OXOKqzigzy6k=",
+      "url": "_framework/dotnet.pktckbytum.js"
+    },
+    {
       "hash": "sha256-JbGaPjn+PC/jQhB3fqsJ8NF8MR3lOr+q49kJVeHNWhU=",
       "url": "_framework/dotnet.runtime.fn94ls2wwa.js"
     },
     {
       "hash": "sha256-gyea4x1x0vAA1KgmldKsmfMqAFh7KdKaJt8L6GsJaZE=",
       "url": "_framework/dotnet.runtime.js.map"
-    },
-    {
-      "hash": "sha256-WfPAOSn+39WwlNZuoxtazL2q18m1sJiLTTjjrdDq8nA=",
-      "url": "_framework/dotnet.vywvof6ta0.js"
     },
     {
       "hash": "sha256-SZLtQnRc0JkwqHab0VUVP7T3uBPSeYzxzDnpxPpUnHk=",
@@ -870,8 +870,12 @@ self.assetsManifest = {
       "url": "icon-512.png"
     },
     {
-      "hash": "sha256-BE0asdwb744Xy2oRpife1Ne2qPbuMOvvUAP2VnHlHw8=",
+      "hash": "sha256-RKpx76vywYjR7mB2PuAj1plb6Rwp7Y1Wv7NdBViTKBo=",
       "url": "index.html"
+    },
+    {
+      "hash": "sha256-5/yygWAkIgqt/MjVWgMaEE7vfn1mzrz79pIMJ8itt84=",
+      "url": "js/screen.js"
     },
     {
       "hash": "sha256-Yy5/hBqRmmU2MJ1TKwP2aXoTO6+OjzrLmJIsC2Wy4H8=",
@@ -1054,7 +1058,7 @@ self.assetsManifest = {
       "url": "manifest.webmanifest"
     },
     {
-      "hash": "sha256-0MJXmcY6QNi/p1DOyu4u/wB/9OZrhhu6DsOSNEmQcDs=",
+      "hash": "sha256-1kem46N/gkmTH1IfmoT82KvMd3qRr5YzRptDvRN4WgM=",
       "url": "sample-data/groups.json"
     },
     {

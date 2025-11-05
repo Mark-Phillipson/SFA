@@ -23,14 +23,14 @@ else
         foreach (var group in selected)
         {
             <h3>@group.Name</h3>
-            <iframe 
-                src="@group.CalendarUrl" 
-                style="border: 0" 
-                width="400" 
-                height="600" 
-                frameborder="0" 
-                scrolling="yes">
-            </iframe>
+            <div style="width:100%;max-width:800px;margin:auto;">
+                <iframe 
+                    src="@GetCalendarUrl(group)" 
+                    style="border:0;width:100%;height:600px;display:block;" 
+                    frameborder="0" 
+                    scrolling="yes">
+                </iframe>
+            </div>
         }
     }
 }
@@ -38,6 +38,7 @@ else
 @code {
     private Dictionary<string, bool> selectedGroups = new();
     private List<GroupData> groups = new();
+    private bool isMobile = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,11 +58,54 @@ else
         {
             selectedGroups = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(prefsJson) ?? new Dictionary<string, bool>();
         }
+
+        // Detect if mobile screen
+        isMobile = await JS.InvokeAsync<bool>("isMobileScreen");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Register resize handler
+            await JS.InvokeVoidAsync("registerResizeHandler", DotNetObjectReference.Create(this));
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnResize(bool mobile)
+    {
+        Console.WriteLine($"[Calendars.razor] OnResize called, mobile: {mobile}");
+        isMobile = mobile;
+        StateHasChanged();
     }
 
     private bool IsSelected(string groupName)
     {
         return selectedGroups.ContainsKey(groupName) && selectedGroups[groupName];
+    }
+
+    private string GetCalendarUrl(GroupData group)
+    {
+        if (string.IsNullOrWhiteSpace(group.CalendarUrl)) return null;
+        var mode = isMobile ? "AGENDA" : "MONTH";
+        var url = group.CalendarUrl;
+        // Add mode param if not present
+        if (!url.Contains("mode="))
+        {
+            url += (url.Contains("?") ? "&" : "?") + $"mode={mode}";
+        }
+        else
+        {
+            var idx = url.IndexOf("mode=");
+            var endIdx = url.IndexOf('&', idx);
+            if (endIdx > idx)
+                url = url.Substring(0, idx) + $"mode={mode}" + url.Substring(endIdx);
+            else
+                url = url.Substring(0, idx) + $"mode={mode}";
+        }
+        Console.WriteLine($"[Calendars.razor] GetCalendarUrl: {url}");
+        return url;
     }
 
     public class GroupData

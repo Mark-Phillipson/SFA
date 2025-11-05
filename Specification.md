@@ -27,7 +27,7 @@ Example Mobile View:
   height="600" 
   frameborder="0" 
   scrolling="yes">
-</iframe>
+ moving</iframe>
 
 
 - Main WhatsApp channels, including documentation on how to join.
