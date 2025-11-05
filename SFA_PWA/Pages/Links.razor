@@ -5,22 +5,62 @@
 
 <h1>San Fairy Ann Club Links</h1>
 
-<h2>Upcoming Ride Routes</h2>
-<p>View upcoming rides on Google Calendar:</p>
-<ul>
-    <li>
-        <iframe src="https://calendar.google.com/calendar/embed?src=qtb3pcno4ugvndi8svv6s7s8s4%40group.calendar.google.com&ctz=Europe%2FLondon&mode=AGENDA" style="border: 0" width="400" height="600" frameborder="0" scrolling="yes"></iframe>
-    </li>
-    <li>
-        <iframe src="https://calendar.google.com/calendar/embed?src=5nodk1v0lsg3onc8tkh58f4rh0%40group.calendar.google.com&ctz=Europe%2FLondon&mode=AGENDA" style="border: 0" width="400" height="600" frameborder="0" scrolling="yes"></iframe>
-    </li>
-</ul>
 
-<h2>WhatsApp Channels</h2>
-<p>Join the club WhatsApp channels:</p>
-<ul>
-    <li><a href="https://chat.whatsapp.com/AbCdEfGhIjK1LmN2OpQrSt" target="_blank">Main WhatsApp Channel</a></li>
-    <li><a href="https://chat.whatsapp.com/<invite_code>" target="_blank">Other Channel</a></li>
-</ul>
+@inject HttpClient Http
 
-<!-- More resources will be added here in future steps -->
+<h2>Useful Links</h2>
+
+<input type="text" @bind="filterText" placeholder="Filter links..." style="margin-bottom:1rem;width:100%;padding:0.5rem;" />
+
+@if (links == null)
+{
+    <p>Loading links...</p>
+}
+else
+{
+    var filteredLinks = string.IsNullOrWhiteSpace(filterText)
+        ? links
+        : links.Where(l => (l.description?.Contains(filterText, StringComparison.OrdinalIgnoreCase) ?? false)
+                      || (l.url?.Contains(filterText, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        @foreach (var link in filteredLinks)
+        {
+            <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                <a href="@link.url" target="_blank" class="btn btn-outline-primary btn-sm" style="text-decoration: none; display: flex; align-items: center; gap: 0.5em;">
+                    <span style="font-size:1.5em;">@(link.emoji ?? "")</span>
+                    <span>@link.description</span>
+                </a>
+                @if ((link.description?.Contains("BBC Weather", StringComparison.OrdinalIgnoreCase) ?? false) && (link.url?.Contains("2642965") ?? false))
+                {
+                    <span style="font-size:0.9em; color:#555; margin-top:0.2em; margin-left:0.2em;">📱 For best experience, install the BBC Weather app.</span>
+                }
+            </div>
+        }
+    </div>
+}
+
+
+
+@code {
+    private List<LinkItem>? links;
+    private string filterText = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            links = await Http.GetFromJsonAsync<List<LinkItem>>("sample-data/links.json");
+        }
+        catch
+        {
+            links = new List<LinkItem>();
+        }
+    }
+
+    public class LinkItem
+    {
+        public string? description { get; set; }
+        public string? url { get; set; }
+        public string? emoji { get; set; }
+    }
+}

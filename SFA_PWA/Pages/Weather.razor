@@ -1,57 +1,110 @@
-﻿@page "/weather"
+﻿
+@page "/weather"
+@using System.Net.Http.Json
 @inject HttpClient Http
 
-<PageTitle>Weather</PageTitle>
+<PageTitle>Weather Forecast</PageTitle>
 
-<h1>Weather</h1>
+<h1>Maidstone Weather Forecast</h1>
+<p>Shows the next Wednesday, Saturday, or Sunday forecast for Maidstone, Kent.</p>
 
-<p>This component demonstrates fetching data from the server.</p>
-
-@if (forecasts == null)
+@if (loading)
 {
-    <p><em>Loading...</em></p>
+    <p>Loading weather data...</p>
+}
+else if (errorMsg != null)
+{
+    <p style="color:red">@errorMsg</p>
+}
+else if (filteredDays.Count == 0)
+{
+    <p>No forecast found for the next Wednesday, Saturday, or Sunday.</p>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th aria-label="Temperature in Celsius">Temp. (C)</th>
-                <th aria-label="Temperature in Fahrenheit">Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <ul>
+        @foreach (var day in filteredDays)
+        {
+            <li>
+                <b>@day.Date.ToString("dddd, dd MMM yyyy")</b>: @day.Summary, <b>@day.Temp</b>°C
+            </li>
+        }
+    </ul>
 }
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private bool loading = true;
+    private string? errorMsg;
+    private List<WeatherDay> filteredDays = new();
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        try
+        {
+            // Open-Meteo API for Maidstone, Kent
+            var url = "https://api.open-meteo.com/v1/forecast?latitude=51.2704&longitude=0.5227&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Europe/London";
+            var response = await Http.GetFromJsonAsync<OpenMeteoResponse>(url);
+            if (response?.daily?.time != null)
+            {
+                var days = new List<WeatherDay>();
+                for (int i = 0; i < response.daily.time.Length; i++)
+                {
+                    var date = DateTime.Parse(response.daily.time[i]);
+                    var code = response.daily.weathercode != null && response.daily.weathercode.Length > i ? response.daily.weathercode[i] : -1;
+                    var summary = WeatherCodeToSummary(code);
+                    var tempMax = response.daily.temperature_2m_max != null && response.daily.temperature_2m_max.Length > i ? response.daily.temperature_2m_max[i] : 0;
+                    var tempMin = response.daily.temperature_2m_min != null && response.daily.temperature_2m_min.Length > i ? response.daily.temperature_2m_min[i] : 0;
+                    var temp = (tempMax + tempMin) / 2;
+                    days.Add(new WeatherDay { Date = date, Summary = summary, Temp = Math.Round(temp, 1) });
+                }
+                // Find next Wednesday, Saturday, or Sunday
+                var today = DateTime.Today;
+                filteredDays = days.Where(d => d.Date > today && (d.Date.DayOfWeek == DayOfWeek.Wednesday || d.Date.DayOfWeek == DayOfWeek.Saturday || d.Date.DayOfWeek == DayOfWeek.Sunday)).Take(3).ToList();
+            }
+            else
+            {
+                errorMsg = "No weather data returned.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMsg = ex.Message;
+        }
+        loading = false;
     }
 
-    public class WeatherForecast
+    public class OpenMeteoResponse
     {
-        public DateOnly Date { get; set; }
-
-        public int TemperatureC { get; set; }
-
-        public string? Summary { get; set; }
-
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        public DailyData? daily { get; set; }
+    }
+    public class DailyData
+    {
+        public string[]? time { get; set; }
+        public double[]? temperature_2m_max { get; set; }
+        public double[]? temperature_2m_min { get; set; }
+        public int[]? weathercode { get; set; }
+    }
+    public class WeatherDay
+    {
+        public DateTime Date { get; set; }
+        public string Summary { get; set; } = "";
+        public double Temp { get; set; }
+    }
+    private string WeatherCodeToSummary(int code)
+    {
+        // Open-Meteo weather codes: https://open-meteo.com/en/docs#api_form
+        return code switch
+        {
+            0 => "Clear sky",
+            1 or 2 or 3 => "Mainly clear, partly cloudy, or overcast",
+            45 or 48 => "Fog",
+            51 or 53 or 55 => "Drizzle",
+            61 or 63 or 65 => "Rain",
+            71 or 73 or 75 => "Snow",
+            80 or 81 or 82 => "Rain showers",
+            95 => "Thunderstorm",
+            96 or 99 => "Thunderstorm with hail",
+            _ => "Unknown",
+        };
     }
 }
