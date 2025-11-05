@@ -4,11 +4,67 @@
 bin/
 obj/
 
+# Debug and build output
+*.dll
+*.pdb
+*.wasm
+*.js.gz
+*.json.gz
+*.js.map
+*.css.map
+*.tmp
+*.cache
+*.log
+*.db
+*.exe
+*.so
+*.dylib
+*.lib
+*.exp
+*.idb
+*.tlog
+*.lastbuildstate
+
+
 # Static web assets (Blazor)
 wwwroot/_framework/
 wwwroot/service-worker.js
 wwwroot/service-worker.published.js
 wwwroot/service-worker-assets.js
+
+# Ignore framework and static web assets
+wwwroot/*.gz
+wwwroot/*.map
+wwwroot/*.dll
+wwwroot/*.pdb
+wwwroot/*.wasm
+wwwroot/*.tmp
+wwwroot/*.cache
+wwwroot/*.log
+wwwroot/*.db
+wwwroot/*.exe
+wwwroot/*.so
+wwwroot/*.dylib
+wwwroot/*.lib
+wwwroot/*.exp
+wwwroot/*.idb
+wwwroot/*.tlog
+wwwroot/*.lastbuildstate
+wwwroot/*.json.gz
+wwwroot/*.js.map
+wwwroot/*.css.map
+wwwroot/compressed/
+wwwroot/ref/
+wwwroot/refint/
+wwwroot/scopedcss/
+wwwroot/service-worker/
+wwwroot/staticwebassets/
+wwwroot/tmp-webcil/
+wwwroot/webcil/
+wwwroot/htmlassetplaceholders/
+wwwroot/projectbundle/
+wwwroot/bundle/
+
 
 # User-specific files
 *.user
@@ -77,6 +133,30 @@ wwwroot/lib/
 # Ignore debug/release folders
 Debug/
 Release/
+
+# Ignore obj subfolders and files
+obj/**/
+obj/Debug/
+obj/Release/
+obj/*.bin
+obj/*.cache
+obj/*.log
+obj/*.tmp
+obj/*.pdb
+obj/*.dll
+obj/*.wasm
+obj/*.json.gz
+obj/*.js.map
+obj/*.css.map
+obj/*.db
+obj/*.exe
+obj/*.so
+obj/*.dylib
+obj/*.lib
+obj/*.exp
+obj/*.idb
+obj/*.tlog
+obj/*.lastbuildstate
 
 # Ignore webcil and tmp-webcil folders
 webcil/
