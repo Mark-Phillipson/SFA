@@ -1,0 +1,31 @@
+@page "/specification"
+@inject HttpClient Http
+
+<h3>Specification Document</h3>
+
+@if (specText == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <textarea readonly style="width:100%;height:600px;border:1px solid #ccc;padding:1rem;background:#fafafa;white-space:pre;">
+@specText
+    </textarea>
+}
+
+@code {
+    private string specText;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            specText = await Http.GetStringAsync("Specification.md");
+        }
+        catch
+        {
+            specText = "Specification markdown file not found.";
+        }
+    }
+}
