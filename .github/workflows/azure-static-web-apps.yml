@@ -34,3 +34,4 @@ jobs:
           action: "upload"
           app_location: "SFA_PWA"
           output_location: "wwwroot"
+          skip_app_build: true
