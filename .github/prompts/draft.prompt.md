@@ -1,3 +1,3 @@
-The link page has a problem with small mobile screens in that the text in the buttons leaks out.
+Please can we add the sfa.png logo to the Bottom left of the NavMenu.razor file in the SFA_PWA project.
 
- Can we mitigate against this problem by making the buttons stack vertically on small screens instead of being side by side?
+ no more than a hundred and sixty pixels wide

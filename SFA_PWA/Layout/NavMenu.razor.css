@@ -82,6 +82,17 @@
     color: white;
 }
 
+.nav-logo {
+    padding: 1rem;
+    margin-top: auto;
+}
+
+.nav-logo img {
+    max-width: 160px;
+    width: 100%;
+    height: auto;
+}
+
 @media (min-width: 641px) {
     .navbar-toggler {
         display: none;
