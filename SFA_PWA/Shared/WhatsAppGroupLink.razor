@@ -1,0 +1,21 @@
+@using Microsoft.AspNetCore.Components
+
+<div class="col">
+    <a href="@Link" target="_blank" rel="noopener" class="btn btn-success w-100 py-4 mb-3 whatsapp-group-link d-flex align-items-center justify-content-start" aria-label="Join @GroupName WhatsApp group" style="font-size: 1.25rem; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <span class="me-3 fs-2" aria-hidden="true">@Emoji</span>
+        <span class="fw-bold flex-grow-1">@GroupName</span>
+        @if (!string.IsNullOrWhiteSpace(Description))
+        {
+            <span class="ms-2 text-muted d-none d-md-inline">@Description</span>
+        }
+        <span class="ms-3" aria-hidden="true"><i class="bi bi-whatsapp" style="font-size: 2rem;"></i></span>
+    </a>
+</div>
+
+@code {
+    [Parameter] public string GroupName { get; set; }
+    [Parameter] public string Description { get; set; }
+    [Parameter] public string Link { get; set; }
+    [Parameter] public string Emoji { get; set; } = "💬";
+    [Parameter] public bool IsMain { get; set; } = false;
+}
