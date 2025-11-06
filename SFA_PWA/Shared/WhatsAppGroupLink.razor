@@ -13,9 +13,9 @@
 </div>
 
 @code {
-    [Parameter] public string GroupName { get; set; }
-    [Parameter] public string Description { get; set; }
-    [Parameter] public string Link { get; set; }
+    [Parameter] public string? GroupName { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public string? Link { get; set; }
     [Parameter] public string Emoji { get; set; } = "💬";
     [Parameter] public bool IsMain { get; set; } = false;
 }

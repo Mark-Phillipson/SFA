@@ -50,12 +50,12 @@
     private Dictionary<string, bool> selectedGroups = new();
     private List<GroupData> groups = new();
     private bool isMobile = false;
-    private bool isLoading = true;
+    // Removed unused isLoading field (was causing CS0414 warning)
     private bool isCalendarsLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        isLoading = true;
+    // isLoading removed
         // Load all groups from groups.json
         try
         {
@@ -76,13 +76,13 @@
         // Detect if mobile screen
         isMobile = await JS.InvokeAsync<bool>("isMobileScreen");
 
-        isLoading = false;
+    // isLoading removed
 
         // Show loading message for 7 seconds
-        _ = Task.Run(async () => {
+        await Task.Run(async () => {
             await Task.Delay(7000);
             isCalendarsLoading = false;
-            InvokeAsync(StateHasChanged);
+            await InvokeAsync(StateHasChanged);
         });
     }
 
