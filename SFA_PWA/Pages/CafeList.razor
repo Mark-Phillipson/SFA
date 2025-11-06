@@ -1,0 +1,140 @@
+@* CafeList.razor: Displays and filters a list of cafes loaded from CSV *@
+@using System.Globalization
+@using System.Linq
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<input type="text" @bind-value="filter" @bind-value:event="oninput" placeholder="Filter cafes by name or description..." class="form-control mb-3" @ref="filterBoxRef" />
+
+@if (cafes == null)
+{
+    <p>Loading cafes...</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Map</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var cafe in FilteredCafes)
+        {
+            <tr>
+                <td>@cafe.Name</td>
+                <td>
+                    @if (!string.IsNullOrWhiteSpace(cafe.LatLong) && cafe.LatLong.Contains(','))
+                    {
+                        <button class="btn btn-sm btn-outline-primary" @onclick="@(() => OpenMapAsync(cafe.LatLong!))">Map</button>
+                    }
+                </td>
+                <td>@cafe.Description</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Cafe>? cafes;
+    private string filter = string.Empty;
+    private ElementReference filterBoxRef;
+    private bool _focusSet = false;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_focusSet)
+        {
+            _focusSet = true;
+            await JS.InvokeVoidAsync("eval", "setTimeout(()=>document.querySelector('[placeholder=\\'Filter cafes by name or description...\\']')?.focus(),0)");
+        }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch CSV from wwwroot/sample-data/CafeList-CSV.csv
+        var csvUrl = "sample-data/CafeList-CSV.csv";
+        var csvContent = await Http.GetStringAsync(csvUrl);
+        cafes = LoadCafesFromString(csvContent);
+    }
+
+    private IEnumerable<Cafe> FilteredCafes =>
+        cafes == null
+            ? Enumerable.Empty<Cafe>()
+            : (string.IsNullOrWhiteSpace(filter)
+                ? cafes
+                : cafes.Where(c => ((c.Name ?? "") + " " + (c.Description ?? "")).Contains(filter, StringComparison.OrdinalIgnoreCase)))
+                .OrderBy(c => c.Name);
+    private async Task OpenMapAsync(string latLong)
+    {
+        var parts = latLong.Split(',');
+        if (parts.Length == 2 && double.TryParse(parts[0], out var lat) && double.TryParse(parts[1], out var lng))
+        {
+            var url = $"https://www.google.com/maps?q={lat},{lng}";
+            if (JS != null)
+            {
+                await JS.InvokeVoidAsync("open", url, "_blank");
+            }
+        }
+    }
+
+
+    private List<Cafe> LoadCafesFromString(string csv)
+    {
+        var lines = csv.Split('\n').Select(l => l.Trim()).Where(l => !string.IsNullOrWhiteSpace(l)).ToList();
+        var list = new List<Cafe>();
+        foreach (var line in lines.Skip(1)) // skip header
+        {
+            var parts = SplitCsvLine(line);
+            if (parts.Length >= 3)
+            {
+                list.Add(new Cafe
+                {
+                    Name = parts[0],
+                    LatLong = parts[1],
+                    Description = parts[2]
+                });
+            }
+        }
+        return list;
+    }
+
+    private string[] SplitCsvLine(string line)
+    {
+        // Simple CSV split, handles quoted fields
+        var result = new List<string>();
+        bool inQuotes = false;
+        var value = "";
+        foreach (var c in line)
+        {
+            if (c == '"')
+            {
+                inQuotes = !inQuotes;
+            }
+            else if (c == ',' && !inQuotes)
+            {
+                result.Add(value);
+                value = "";
+            }
+            else
+            {
+                value += c;
+            }
+        }
+        result.Add(value);
+        return result.ToArray();
+    }
+
+    public class Cafe
+    {
+        public string? Name { get; set; }
+        public string? LatLong { get; set; }
+        public string? Description { get; set; }
+    }
+}
