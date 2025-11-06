@@ -1,16 +1,17 @@
 
 @page "/links"
+@inject HttpClient Http
 @using Microsoft.AspNetCore.Components.Web
 <PageTitle>Club Links</PageTitle>
 
-<h1>San Fairy Ann Club Links</h1>
+<h1 style="color: #003366;">Cycling & Club Links</h1>
 
-
-@inject HttpClient Http
-
-<h2>Useful Links</h2>
-
-<input type="text" @bind="filterText" @bind:event="oninput" placeholder="Filter links..." style="margin-bottom:1rem;width:100%;padding:0.5rem;" />
+<div style="display: flex; align-items: center; margin-bottom: 1rem; width: 100%;">
+    <input type="text" @bind="filterText" @bind:event="oninput" placeholder="Filter links..." style="flex: 1 1 auto; padding: 0.5rem; font-size: 1em; border-radius: 1em; border: 2px solid #007bff; outline: none; transition: border-color 0.2s;" @ref="filterInputRef" />
+    <button type="button" @onclick="ClearFilter" title="Clear filter" style="margin-left: -2.5em; background: none; border: none; cursor: pointer; outline: none; font-size: 1.5em; color: #888;">
+        <span aria-label="Clear filter">✖️</span>
+    </button>
+</div>
 
 @if (links == null)
 {
@@ -75,6 +76,8 @@ else
 @code {
     private List<LinkItem>? links;
     private string filterText = string.Empty;
+    private ElementReference filterInputRef;
+    private bool _hasSetFocus = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -86,6 +89,22 @@ else
         {
             links = new List<LinkItem>();
         }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_hasSetFocus)
+        {
+            _hasSetFocus = true;
+            await filterInputRef.FocusAsync();
+        }
+    }
+
+    private async Task ClearFilter()
+    {
+        filterText = string.Empty;
+        await Task.Yield(); // Ensure UI updates before focusing
+        await filterInputRef.FocusAsync();
     }
 
     public class LinkItem
