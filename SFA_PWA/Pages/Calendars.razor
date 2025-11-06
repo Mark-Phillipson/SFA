@@ -7,14 +7,24 @@
 
 <h1>Ride Group Calendars</h1>
 
-@if (groups.Count == 0)
+@if (isCalendarsLoading)
 {
-    <p>Loading calendars...</p>
+    <div style="position:fixed;top:80px;left:0;width:100%;z-index:1000;pointer-events:none;">
+        <div class="d-flex justify-content-center align-items-center" style="height:60px;background:rgba(255,255,255,0.95);border-bottom:1px solid #eee;">
+            <p style="margin:0;font-weight:bold;">Calendars are loading...</p>
+        </div>
+    </div>
 }
-else
-{
+
+@{
     var selected = groups.Where(g => IsSelected(g.Name) && !string.IsNullOrWhiteSpace(g.CalendarUrl)).ToList();
-    if (selected.Count == 0)
+    if (groups.Count == 0)
+    {
+        <div class="d-flex justify-content-center align-items-center" style="height:200px;">
+            <p>Loading calendars...</p>
+        </div>
+    }
+    else if (selected.Count == 0)
     {
         <p>No calendars selected. Go to Settings to choose which groups to follow.</p>
     }
@@ -23,11 +33,12 @@ else
         foreach (var group in selected)
         {
             <h3>@group.Name</h3>
-            <div style="width:100%;max-width:800px;margin:auto;">
+            <div style="width:100%;max-width:800px;margin:auto;min-height:600px;">
                 <iframe 
-                    src="@GetCalendarUrl(group)" 
-                    style="border:0;width:100%;height:600px;display:block;" 
-                    frameborder="0" 
+                    id="calendar-@group.Name"
+                    src="@GetCalendarUrl(group)"
+                    style="border:0;width:100%;height:600px;display:block;"
+                    frameborder="0"
                     scrolling="yes">
                 </iframe>
             </div>
@@ -39,9 +50,12 @@ else
     private Dictionary<string, bool> selectedGroups = new();
     private List<GroupData> groups = new();
     private bool isMobile = false;
+    private bool isLoading = true;
+    private bool isCalendarsLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true;
         // Load all groups from groups.json
         try
         {
@@ -61,6 +75,15 @@ else
 
         // Detect if mobile screen
         isMobile = await JS.InvokeAsync<bool>("isMobileScreen");
+
+        isLoading = false;
+
+        // Show loading message for 7 seconds
+        _ = Task.Run(async () => {
+            await Task.Delay(7000);
+            isCalendarsLoading = false;
+            InvokeAsync(StateHasChanged);
+        });
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

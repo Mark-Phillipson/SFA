@@ -17,3 +17,26 @@ window.registerResizeHandler = function(dotnetHelper) {
         dotnetHelper.invokeMethodAsync('OnResize', mobile);
     });
 };
+
+// Attach onload handlers to all calendar iframes and call Blazor when loaded
+window.attachCalendarLoadHandlers = function (dotnetHelper) {
+    var iframes = document.querySelectorAll('iframe[id^="calendar-"]');
+    iframes.forEach(function (iframe) {
+        var groupName = iframe.id.replace('calendar-', '');
+        var called = false;
+        function markLoaded() {
+            if (!called) {
+                called = true;
+                dotnetHelper.invokeMethodAsync('OnCalendarLoaded', groupName);
+            }
+        }
+        // If already loaded, call immediately
+        if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
+            markLoaded();
+        } else {
+            iframe.onload = markLoaded;
+            // Fallback: hide spinner after 5 seconds if onload doesn't fire
+            setTimeout(markLoaded, 5000);
+        }
+    });
+};
