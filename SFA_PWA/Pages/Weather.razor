@@ -7,6 +7,11 @@
 <h1>Maidstone Weather Forecast</h1>
 <p>Shows the next Wednesday, Saturday, or Sunday forecast for Maidstone, Kent.</p>
 
+<p style="font-size:0.95em;color:#555;">
+    <b>Source:</b> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> API for Maidstone, Kent.<br />
+    <b>Disclaimer:</b> This forecast is provided for informational purposes only and may be inaccurate or subject to change. Always check official sources for critical decisions.
+</p>
+
 <h2>Major UK Weather Sites</h2>
 <div class="weather-sites">
     <button class="weather-btn" onclick="window.open('https://www.metoffice.gov.uk/', '_blank')" aria-label="Open Met Office Weather">Met Office</button>
@@ -34,8 +39,9 @@ else
     <ul>
         @foreach (var day in filteredDays)
         {
+            var face = GetWeatherFace(day.Summary);
             <li>
-                <b>@day.Date.ToString("dddd, dd MMM yyyy")</b>: @day.Summary, <b>@day.Temp</b>°C
+                <b>@day.Date.ToString("dddd, dd MMM yyyy")</b>: @day.Summary, <b>@day.Temp</b>°C @face
             </li>
         }
     </ul>
@@ -115,5 +121,14 @@ else
             96 or 99 => "Thunderstorm with hail",
             _ => "Unknown",
         };
+    }
+
+    private string GetWeatherFace(string summary)
+    {
+        // If summary contains rain, drizzle, or ice, return sad face, else smiley
+        var lower = summary.ToLowerInvariant();
+        if (lower.Contains("rain") || lower.Contains("drizzle") || lower.Contains("ice"))
+            return "🙁";
+        return "🙂";
     }
 }
