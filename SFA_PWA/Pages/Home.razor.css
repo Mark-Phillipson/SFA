@@ -1,0 +1,36 @@
+.splash-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255,255,255,0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    cursor: pointer;
+}
+.splash-icon {
+    max-width: 40vw;
+    max-height: 40vh;
+    box-shadow: 0 0 32px #03173d55;
+    border-radius: 16px;
+}
+.desktop-bottom-image {
+    display: none;
+    width: 100%;
+    text-align: center;
+    margin-top: 32px;
+}
+@media (min-width: 900px) {
+    .desktop-bottom-image {
+        display: block;
+    }
+    .desktop-bottom-image img {
+        width: 100%;
+        height: auto;
+        margin-bottom: 16px;
+        max-width: none;
+    }
+}

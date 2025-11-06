@@ -1,7 +1,7 @@
-﻿@page "/"
+﻿
+@page "/"
 
 <PageTitle>Home</PageTitle>
-
 
 @if (showSplash)
 {
@@ -9,8 +9,6 @@
         <img src="sfa.png" alt="App Icon" class="splash-icon" />
     </div>
 }
-
-
 
 <h1>Welcome to the San Fairy Ann Cycling Club App!</h1>
 
@@ -26,6 +24,10 @@
         <li><b>Help:</b> For feedback or issues, use the GitHub link in the app menu.</li>
     </ul>
     <p>Explore the navigation menu to discover all features. This app works on desktop and mobile, and saves your settings locally for convenience.</p>
+</div>
+
+<div class="desktop-bottom-image">
+    <img src="DGroupJune7.png" alt="DGroup June 7" />
 </div>
 
 @code {
@@ -49,26 +51,5 @@
     }
 }
 
-<style>
-.splash-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(255,255,255,0.95);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    cursor: pointer;
-}
-.splash-icon {
-    max-width: 40vw;
-    max-height: 40vh;
-    box-shadow: 0 0 32px #03173d55;
-    border-radius: 16px;
-}
-</style>
 
 
