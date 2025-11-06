@@ -1,3 +1,57 @@
+/* Animation for cycling emojis moving left to right and looping */
+.cycling-emojis {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    width: 8em; /* Default for mobile */
+    height: 2.5rem;
+}
+
+@media (min-width: 641px) {
+    .cycling-emojis {
+        display: block;
+        width: 100%; /* Full width on desktop */
+    }
+    .emoji-all {
+        left: auto;
+        right: 0;
+        animation: cycle-move-rtl-desktop 3s linear infinite;
+    }
+}
+
+@keyframes cycle-move-rtl-desktop {
+    0% {
+        right: 0;
+    }
+    100% {
+        right: calc(100% + 3em);
+    }
+}
+
+/* Mobile animation only */
+.emoji-all {
+    position: absolute;
+    left: 8em;
+    animation: cycle-move-rtl 3s linear infinite;
+    white-space: nowrap;
+}
+
+@media (min-width: 641px) {
+    .emoji-all {
+        left: auto !important;
+        right: 0;
+        animation: cycle-move-rtl-desktop 8s linear infinite;
+    }
+}
+
+@keyframes cycle-move-rtl {
+    0% {
+        left: 8em;
+    }
+    100% {
+        left: -3em;
+    }
+}
 .page {
     position: relative;
     display: flex;
