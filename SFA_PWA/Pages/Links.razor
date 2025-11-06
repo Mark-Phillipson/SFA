@@ -10,7 +10,7 @@
 
 <h2>Useful Links</h2>
 
-<input type="text" @bind="filterText" placeholder="Filter links..." style="margin-bottom:1rem;width:100%;padding:0.5rem;" />
+<input type="text" @bind="filterText" @bind:event="oninput" placeholder="Filter links..." style="margin-bottom:1rem;width:100%;padding:0.5rem;" />
 
 @if (links == null)
 {
