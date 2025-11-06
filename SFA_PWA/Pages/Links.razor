@@ -23,19 +23,35 @@ else
         : links.Where(l => (l.description?.Contains(filterText, StringComparison.OrdinalIgnoreCase) ?? false)
                       || (l.url?.Contains(filterText, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
     <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-        @foreach (var link in filteredLinks)
-        {
-            <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                <a href="@link.url" target="_blank" class="btn btn-outline-primary btn-sm" style="text-decoration: none; display: flex; align-items: center; gap: 0.5em;">
-                    <span style="font-size:1.5em;">@(link.emoji ?? "")</span>
-                    <span>@link.description</span>
-                </a>
-                @if ((link.description?.Contains("BBC Weather", StringComparison.OrdinalIgnoreCase) ?? false) && (link.url?.Contains("2642965") ?? false))
-                {
-                    <span style="font-size:0.9em; color:#555; margin-top:0.2em; margin-left:0.2em;">📱 For best experience, install the BBC Weather app.</span>
+            @foreach (var link in filteredLinks)
+            {
+                <div style="display: flex; flex-direction: column; align-items: flex-start; background: #f8f9fa; border-radius: 1em; box-shadow: 0 1px 4px rgba(0,0,0,0.04); padding: 1em; margin-bottom: 0.5em; min-width: 220px;">
+                    <a href="@link.url" target="_blank" class="btn btn-outline-primary btn-lg" style="text-decoration: none; display: flex; align-items: center; gap: 0.7em; width: 100%; justify-content: flex-start;">
+                        <span style="font-size:2.5em;">@(link.emoji ?? "")</span>
+                        <span style="font-size:1.3em; font-weight:500;">@link.description</span>
+                    </a>
+                    @if ((link.description?.Contains("BBC Weather", StringComparison.OrdinalIgnoreCase) ?? false) && (link.url?.Contains("2642965") ?? false))
+                    {
+                        <span style="font-size:1em; color:#555; margin-top:0.4em; margin-left:0.2em;">📱 For best experience, install the BBC Weather app.</span>
+                    }
+                </div>
+            }
+            <style>
+                /* Touch-friendly button styles */
+                .btn.btn-outline-primary {
+                    min-width: 220px;
+                    min-height: 60px;
+                    font-size: 1.2em;
+                    padding: 1em 1.5em;
+                    border-radius: 1em;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    margin-bottom: 0.5em;
                 }
-            </div>
-        }
+                .btn.btn-lg {
+                    font-size: 1.3em;
+                    padding: 1.2em 2em;
+                }
+            </style>
     </div>
 }
 
