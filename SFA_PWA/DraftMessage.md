@@ -1,6 +1,7 @@
-Hey Russell! 👋
 
-Just wanted to share a quick update about the proposed new app 📱:
+Hi Jonathan 👋
+
+Just wanted to share a quick update about a proposed new app, for SFA club to use 📱:
 
 ✨ What it does:
 - The app brings together useful links and weather info in one place 🌦️🔗
