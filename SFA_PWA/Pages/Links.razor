@@ -6,20 +6,24 @@
 
 <h1 style="color: #003366;">Cycling & Club Links</h1>
 
-
-<div style="display: flex; align-items: center; margin-bottom: 1rem; width: 100%; gap: 1em; flex-wrap: wrap;">
-    <input type="text" @bind="filterText" @bind:event="oninput" placeholder="Filter links..." style="flex: 1 1 200px; padding: 0.5rem; font-size: 1em; border-radius: 1em; border: 2px solid #007bff; outline: none; transition: border-color 0.2s; min-width: 180px;" @ref="filterInputRef" />
-    <button type="button" @onclick="ClearFilter" title="Clear filter" style="margin-left: -2.5em; background: none; border: none; cursor: pointer; outline: none; font-size: 1.5em; color: #888;">
-        <span aria-label="Clear filter">✖️</span>
-    </button>
-    <select @bind="selectedCategory" style="flex: 0 0 180px; padding: 0.5rem; font-size: 1em; border-radius: 1em; border: 2px solid #007bff; outline: none; min-width: 140px;">
-        <option value="">All Categories</option>
-        @foreach (var cat in categories)
-        {
-            <option value="@cat">@cat</option>
-        }
-    </select>
+<div class="filter-row">
+    <div class="filter-half filter-input-group">
+        <input type="text" @bind="filterText" @bind:event="oninput" placeholder="Filter links..." class="filter-input" @ref="filterInputRef" />
+        <button type="button" @onclick="ClearFilter" title="Clear filter" class="clear-filter-btn">
+            <span aria-label="Clear filter">✖️</span>
+        </button>
+    </div>
+    <div class="filter-half">
+        <select @bind="selectedCategory" class="category-select">
+            <option value="">All Categories</option>
+            @foreach (var cat in categories)
+            {
+                <option value="@cat">@cat</option>
+            }
+        </select>
+    </div>
 </div>
+
 
 @if (links == null)
 {
@@ -80,29 +84,7 @@ else
                     }
                 </div>
             }
-            <style>
-                /* Touch-friendly button styles */
-                .btn.btn-outline-primary {
-                    min-width: 220px;
-                    min-height: 60px;
-                    font-size: 1.2em;
-                    padding: 1em 1.5em;
-                    border-radius: 1em;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-                    margin-bottom: 0.5em;
-                }
-                .btn.btn-lg {
-                    font-size: 1.3em;
-                    padding: 1.2em 2em;
-                }
-                    /* Responsive: stack buttons vertically on small screens */
-                    @@media (max-width: 600px) {
-                        .links-flex-container {
-                            flex-direction: column !important;
-                            gap: 0.5em !important;
-                        }
-                    }
-            </style>
+
     </div>
 }
 
@@ -166,3 +148,5 @@ else
     public string? category { get; set; }
     }
 }
+
+
