@@ -1,3 +1,5 @@
-https://ridewithgps.com/routes
+ can we add a category field to the links.json file?
 
- please can we add this to the lynx JSON frail and so it will be included in the lynx page?
+  so that we can filter by this category as well as searching and filtering by the TextBox
+
+  
