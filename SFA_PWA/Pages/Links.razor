@@ -6,11 +6,19 @@
 
 <h1 style="color: #003366;">Cycling & Club Links</h1>
 
-<div style="display: flex; align-items: center; margin-bottom: 1rem; width: 100%;">
-    <input type="text" @bind="filterText" @bind:event="oninput" placeholder="Filter links..." style="flex: 1 1 auto; padding: 0.5rem; font-size: 1em; border-radius: 1em; border: 2px solid #007bff; outline: none; transition: border-color 0.2s;" @ref="filterInputRef" />
+
+<div style="display: flex; align-items: center; margin-bottom: 1rem; width: 100%; gap: 1em; flex-wrap: wrap;">
+    <input type="text" @bind="filterText" @bind:event="oninput" placeholder="Filter links..." style="flex: 1 1 200px; padding: 0.5rem; font-size: 1em; border-radius: 1em; border: 2px solid #007bff; outline: none; transition: border-color 0.2s; min-width: 180px;" @ref="filterInputRef" />
     <button type="button" @onclick="ClearFilter" title="Clear filter" style="margin-left: -2.5em; background: none; border: none; cursor: pointer; outline: none; font-size: 1.5em; color: #888;">
         <span aria-label="Clear filter">✖️</span>
     </button>
+    <select @bind="selectedCategory" style="flex: 0 0 180px; padding: 0.5rem; font-size: 1em; border-radius: 1em; border: 2px solid #007bff; outline: none; min-width: 140px;">
+        <option value="">All Categories</option>
+        @foreach (var cat in categories)
+        {
+            <option value="@cat">@cat</option>
+        }
+    </select>
 </div>
 
 @if (links == null)
@@ -19,10 +27,12 @@
 }
 else
 {
-    var filteredLinks = string.IsNullOrWhiteSpace(filterText)
-        ? links
-        : links.Where(l => (l.description?.Contains(filterText, StringComparison.OrdinalIgnoreCase) ?? false)
-                      || (l.url?.Contains(filterText, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+    var filteredLinks = links
+        .Where(l => (string.IsNullOrWhiteSpace(selectedCategory) || (l.category?.Equals(selectedCategory, StringComparison.OrdinalIgnoreCase) ?? false))
+            && (string.IsNullOrWhiteSpace(filterText)
+                || (l.description?.Contains(filterText, StringComparison.OrdinalIgnoreCase) ?? false)
+                || (l.url?.Contains(filterText, StringComparison.OrdinalIgnoreCase) ?? false)))
+        .ToList();
     <div class="links-flex-container" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
             @foreach (var link in filteredLinks)
             {
@@ -74,16 +84,30 @@ else
 
 
 @code {
+
     private List<LinkItem>? links;
     private string filterText = string.Empty;
+    private string selectedCategory = string.Empty;
+    private List<string> categories = new();
     private ElementReference filterInputRef;
     private bool _hasSetFocus = false;
+
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             links = await Http.GetFromJsonAsync<List<LinkItem>>("sample-data/links.json");
+            if (links != null)
+            {
+                categories = links
+                    .Select(l => l.category)
+                    .Where(c => !string.IsNullOrWhiteSpace(c))
+                    .Select(c => c!)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(c => c)
+                    .ToList();
+            }
         }
         catch
         {
@@ -100,17 +124,20 @@ else
         }
     }
 
+
     private async Task ClearFilter()
     {
         filterText = string.Empty;
+        selectedCategory = string.Empty;
         await Task.Yield(); // Ensure UI updates before focusing
         await filterInputRef.FocusAsync();
     }
 
     public class LinkItem
     {
-        public string? description { get; set; }
-        public string? url { get; set; }
-        public string? emoji { get; set; }
+    public string? description { get; set; }
+    public string? url { get; set; }
+    public string? emoji { get; set; }
+    public string? category { get; set; }
     }
 }

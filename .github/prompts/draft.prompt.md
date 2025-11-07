@@ -1,5 +1,1 @@
- can we add a category field to the links.json file?
-
-  so that we can filter by this category as well as searching and filtering by the TextBox
-
-  
+For the social media  web links  can we add the appropriate icons for these?
