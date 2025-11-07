@@ -1,25 +1,25 @@
 [
   {
     "name": "A Group",
-    "calendarUrl": null,
+    "calendarUrl": "https://calendar.google.com/calendar/embed?src=4dadd39bec40fc394494897efbf0871a88bcabe5af69a714d053166cddf7e94a%40group.calendar.google.com&ctz=Europe%2FLondon",
     "infoUrl": "https://www.sanfairyanncc.co.uk/agroup",
     "description": "Fastest group, advanced riders"
   },
   {
     "name": "Fast Inters",
-    "calendarUrl": null,
+    "calendarUrl": "https://calendar.google.com/calendar/embed?src=he5a6mpn3dv19ggoepejo8v8rs%40group.calendar.google.com&ctz=Europe%2FLondon",
     "infoUrl": "https://www.sanfairyanncc.co.uk/fast-inters",
     "description": "Fast intermediate pace"
   },
   {
     "name": "Saturday 9am Inters",
-    "calendarUrl": null,
-    "infoUrl": "https://www.sanfairyanncc.co.uk/Saturday9amInters",
+    "calendarUrl": "https://calendar.google.com/calendar/embed?src=u2bg10dsho9sq4mmlv9egm2vq4%40group.calendar.google.com&ctz=Europe%2FLondon",
+    "infoUrl": "https://www.sanfairyanncc.co.uk/saturday9aminters",
     "description": "Saturday morning intermediate group"
   },
   {
     "name": "Sunday Intermediates",
-    "calendarUrl": null,
+    "calendarUrl": "https://calendar.google.com/calendar/embed?src=14l5adlsej6cc4adnn4kedd58o%40group.calendar.google.com&ctz=Europe%2FLondon",
     "infoUrl": "https://www.sanfairyanncc.co.uk/sunday-intermediates",
     "description": "Sunday intermediate group"
   },
@@ -43,7 +43,7 @@
   },
   {
     "name": "C Group",
-    "calendarUrl": null,
+    "calendarUrl": "https://calendar.google.com/calendar/embed?src=lgf8bojjgr84450b26ub0m4mas%40group.calendar.google.com&ctz=Europe%2FLondon",
     "infoUrl": "https://www.sanfairyanncc.co.uk/c-group",
     "description": "Moderate pace"
   },
@@ -67,25 +67,25 @@
   },
   {
     "name": "EasyRiders",
-    "calendarUrl": null,
+    "calendarUrl": "https://calendar.google.com/calendar/embed?src=u4rq2o39e5v84ee9ngrdspio40%40group.calendar.google.com&ctz=Europe%2FLondon",
     "infoUrl": "https://www.sanfairyanncc.co.uk/easyriders",
     "description": "Gentle rides"
   },
   {
     "name": "EasyRiders+",
-    "calendarUrl": null,
+    "calendarUrl": "https://calendar.google.com/calendar/embed?src=m0qddgejip3mibdt2uvoadffcg%40group.calendar.google.com&ctz=Europe%2FLondon",
     "infoUrl": "https://www.sanfairyanncc.co.uk/easyriders-1",
     "description": "Gentle rides plus"
   },
   {
     "name": "Mountain Bike Group",
-    "calendarUrl": null,
+    "calendarUrl": "https://calendar.google.com/calendar/embed?src=clod8b8sh1rs96dtg6fpsrfjek%40group.calendar.google.com&ctz=Europe%2FLondon",
     "infoUrl": "https://www.sanfairyanncc.co.uk/mountain-bike-group",
     "description": "Off-road rides"
   },
   {
     "name": "Virtual Riding",
-    "calendarUrl": null,
+    "calendarUrl": "https://calendar.google.com/calendar/embed?src=9ujq6dpd3pcvhpifpp8end53ek%40group.calendar.google.com&ctz=Europe%2FLondon",
     "infoUrl": "https://www.sanfairyanncc.co.uk/virtual-riding",
     "description": "Online rides using Zwift/Discord"
   }
