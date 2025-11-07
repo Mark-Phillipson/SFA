@@ -1,4 +1,3 @@
-@* CafeList.razor: Displays and filters a list of cafes loaded from CSV *@
 @using System.Globalization
 @using System.Linq
 @using System.Net.Http
@@ -7,8 +6,17 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
-<input type="text" @bind-value="filter" @bind-value:event="oninput" placeholder="Filter cafes by name or description..." class="form-control mb-3" @ref="filterBoxRef" />
 
+
+@* Google Map of all cafes link (prominent banner/button) *@
+<div style="margin-bottom: 1.5em; text-align: center;">
+    <a href="https://www.google.com/maps/d/u/0/viewer?hl=en_GB&ll=51.16496111227416%2C0.6610910499999934&mid=1ZbfDVSgeG70tAx6jdZtpBFBIFFU&z=9" target="_blank" rel="noopener noreferrer"
+       style="display: inline-block; background: linear-gradient(90deg, #007bff 60%, #00c6ff 100%); color: #fff; font-size: 1.3em; font-weight: 600; padding: 1em 2em; border-radius: 1.2em; box-shadow: 0 2px 8px rgba(0,0,0,0.10); text-decoration: none; transition: background 0.2s, box-shadow 0.2s; margin-bottom: 0.5em;">
+        🗺️ View All Cafes on Google Map
+    </a>
+</div>
+
+<input type="text" @bind-value="filter" @bind-value:event="oninput" placeholder="Filter cafes by name or description..." class="form-control mb-3" @ref="filterBoxRef" />
 @if (cafes == null)
 {
     <p>Loading cafes...</p>
