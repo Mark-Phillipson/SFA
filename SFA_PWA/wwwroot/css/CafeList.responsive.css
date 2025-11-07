@@ -1,3 +1,28 @@
+/* Add border to each cafe group for better visual separation, using SFA purple #8e24aa */
+.cafe-table-responsive .cafe-row-group > td {
+    border-top: 2px solid #8e24aa;
+    border-bottom: none;
+}
+.cafe-table-responsive .cafe-row-group:last-child > td {
+    border-bottom: 2px solid #8e24aa;
+}
+
+@media (max-width: 600px) {
+    .cafe-table-responsive .cafe-row-group > td {
+        border-left: 2px solid #8e24aa;
+        border-right: 2px solid #8e24aa;
+        border-radius: 8px;
+    }
+    .cafe-table-responsive .cafe-row-group:first-child > td {
+        border-top: 2px solid #8e24aa;
+    }
+    .cafe-table-responsive .cafe-row-group:last-child > td {
+        border-bottom: 2px solid #8e24aa;
+    }
+    .cafe-table-responsive .cafe-row-group > td {
+        background: #fff;
+    }
+}
 /* CafeList responsive table styles */
 @media (max-width: 600px) {
     .cafe-table-responsive .desc-header,

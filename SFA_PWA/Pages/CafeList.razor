@@ -26,7 +26,7 @@ else
         <tbody>
         @foreach (var cafe in FilteredCafes)
         {
-            <tr>
+            <tr class="cafe-row-group">
                 <td>@cafe.Name</td>
                 <td>
                     @if (!string.IsNullOrWhiteSpace(cafe.LatLong) && cafe.LatLong.Contains(','))
@@ -36,7 +36,7 @@ else
                 </td>
                 <td class="desc-cell desktop-only">@cafe.Description</td>
             </tr>
-            <tr class="mobile-desc-row">
+            <tr class="mobile-desc-row cafe-row-group">
                 <td colspan="3" class="desc-cell mobile-only">@cafe.Description</td>
             </tr>
         }
