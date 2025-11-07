@@ -30,14 +30,54 @@
     <img src="DGroupJune7.png" alt="DGroup June 7" />
 </div>
 
+
+<footer style="text-align:center; margin-top:2em; color:gray; font-size:0.9em;">
+    <div>
+        .NET Version: @AppVersion | Last Published: @BuildDate
+    </div>
+</footer>
+
+@inject IJSRuntime JS
+
 @code {
     private bool showSplash = true;
 
-    protected override void OnInitialized()
+    private string? AppVersion;
+    private string? BuildDate;
+
+    protected override async void OnInitialized()
     {
         // Start a timer to hide splash after 5 seconds
         _ = HideSplashAfterDelayAsync();
+
+        await LoadBuildInfoAsync();
     }
+
+    private async Task LoadBuildInfoAsync()
+    {
+        try
+        {
+            var buildInfo = await JS.InvokeAsync<BuildInfo>("fetchBuildInfo");
+            AppVersion = buildInfo?.DotNetVersion ?? "Unknown";
+            BuildDate = buildInfo?.BuildDate != null ? FormatDate(buildInfo.BuildDate) : "Unknown";
+        }
+        catch
+        {
+            AppVersion = "Unknown";
+            BuildDate = "Unknown";
+        }
+        StateHasChanged();
+    }
+
+    private string FormatDate(string isoDate)
+    {
+        if (DateTime.TryParse(isoDate, out var dt))
+        {
+            return dt.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+        }
+        return isoDate;
+    }
+
     private async Task HideSplashAfterDelayAsync()
     {
         await Task.Delay(5000);
@@ -48,6 +88,12 @@
     private void HideSplash()
     {
         showSplash = false;
+    }
+
+    private class BuildInfo
+    {
+        public string? DotNetVersion { get; set; }
+        public string? BuildDate { get; set; }
     }
 }
 

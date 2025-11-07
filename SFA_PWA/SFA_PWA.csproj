@@ -2,6 +2,8 @@
 
   <PropertyGroup>
   <TargetFramework>net9.0</TargetFramework>
+    <!-- Inject build date into AssemblyTitle for runtime retrieval -->
+    <AssemblyTitle>$([System.DateTime]::Now.ToString("yyyy-MM-dd HH:mm"))</AssemblyTitle>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
