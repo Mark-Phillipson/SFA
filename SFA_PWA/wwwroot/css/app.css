@@ -1,3 +1,19 @@
+/* BBC Weather dropdown styling */
+.weather-dropdown {
+    padding: 0.4em 1em;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    font-size: 1em;
+    background: #f8f8fc;
+    color: #222;
+    margin-left: 0.5em;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    transition: border-color 0.2s;
+}
+.weather-dropdown:focus {
+    border-color: #0078d7;
+    outline: none;
+}
 /* Loading spinner with centered emoji */
 .loading-spinner {
     display: flex;

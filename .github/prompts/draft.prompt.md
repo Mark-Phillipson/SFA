@@ -1,7 +1,8 @@
- can we add a new feature to the cafes list  can we add a new column location for example if the cafes is in the radius of Marden  then add the location Marden.
+Would it be possible to add more than just Maidstone as a link in the bbc weather.
 
-  this would allow the user to type in a location and list all cafes near there
+For example it would be great if we could do something in a twenty mile radius of Maidstone any major town or village
 
-   can you research the best way to do this as we do have the geolocation of each cafe stored in the  CSV file.
+Maybe a dropdown to select a particular location and then the button can be clicked to launch the weather?
 
-    the best scenario would be able to type in any location and it returned the closest cafes to that location
+
+Also would it be possible to have the Maidstone weather in an Iframe showing directly on the page?

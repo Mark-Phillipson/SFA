@@ -4,131 +4,83 @@
 
 <PageTitle>Weather Forecast</PageTitle>
 
-<h1>Maidstone Weather Forecast</h1>
-<p>Shows the next Wednesday, Saturday, or Sunday forecast for Maidstone, Kent.</p>
 
-<p style="font-size:0.95em;color:#555;">
-    <b>Source:</b> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> API for Maidstone, Kent.<br />
-    <b>Disclaimer:</b> This forecast is provided for informational purposes only and may be inaccurate or subject to change. Always check official sources for critical decisions.
-</p>
+<h1>Kent Weather Links</h1>
+<p>Select a Kent location to open BBC Weather, or visit the Met Office.</p>
+
+
 
 <h2>Major UK Weather Sites</h2>
 <div class="weather-sites">
-    <button class="weather-btn" onclick="window.open('https://www.metoffice.gov.uk/', '_blank')" aria-label="Open Met Office Weather">Met Office</button>
-        <button class="weather-btn" onclick="window.open('https://www.bbc.co.uk/weather/2643179', '_blank')" aria-label="Open BBC Weather for Maidstone">BBC Weather (Maidstone)</button>
-            <button class="weather-btn" onclick="window.open('https://weather.com/en-GB/weather/today/l/Maidstone+England?canonicalCityId=d6580534fed2de796839b9d60b2a1e3f', '_blank')" aria-label="Open Weather.com for Maidstone">Weather.com (Maidstone)</button>
-    
 
+    <button class="weather-btn" onclick="window.open('https://www.metoffice.gov.uk/', '_blank')"
+        aria-label="Open Met Office Weather">Met Office</button>
+
+    <div style="margin-top:1em;">
+        <label for="bbcLocation" style="font-weight:bold;">BBC Weather for:</label>
+        <select id="bbcLocation" class="weather-dropdown" @bind="selectedLocation">
+            @foreach (var loc in bbcLocations)
+            {
+                <option value="@loc.Url">@loc.Name</option>
+            }
+        </select>
+        <button class="weather-btn" @onclick="OpenSelectedBBCWeather" style="margin-left:0.5em;">Open BBC
+            Weather</button>
+    </div>
 </div>
 
 
-@if (loading)
-{
-    <p>Loading weather data...</p>
-}
-else if (errorMsg != null)
-{
-    <p style="color:red">@errorMsg</p>
-}
-else if (filteredDays.Count == 0)
-{
-    <p>No forecast found for the next Wednesday, Saturday, or Sunday.</p>
-}
-else
-{
-    <ul>
-        @foreach (var day in filteredDays)
-        {
-            var face = GetWeatherFace(day.Summary);
-            <li>
-                <b>@day.Date.ToString("dddd, dd MMM yyyy")</b>: @day.Summary, <b>@day.Temp</b>°C @face
-            </li>
-        }
-    </ul>
-}
+
 
 @code {
-    private bool loading = true;
-    private string? errorMsg;
-    private List<WeatherDay> filteredDays = new();
 
-    protected override async Task OnInitializedAsync()
+
+
+    // BBC Weather locations
+    private List<BbcLocation> bbcLocations = new List<BbcLocation>
+{
+new BbcLocation("Maidstone", "https://www.bbc.co.uk/weather/2643179"),
+new BbcLocation("Aylesford", "https://www.bbc.co.uk/weather/2656716"),
+new BbcLocation("Bearsted", "https://www.bbc.co.uk/weather/2656085"),
+new BbcLocation("Boxley", "https://www.bbc.co.uk/weather/2655040"),
+new BbcLocation("Detling", "https://www.bbc.co.uk/weather/2651303"),
+new BbcLocation("Chatham", "https://www.bbc.co.uk/weather/2653305"),
+new BbcLocation("Rochester", "https://www.bbc.co.uk/weather/2639268"),
+new BbcLocation("Tonbridge", "https://www.bbc.co.uk/weather/2635703"),
+new BbcLocation("Sevenoaks", "https://www.bbc.co.uk/weather/2638187"),
+new BbcLocation("Ashford", "https://www.bbc.co.uk/weather/2656710"),
+new BbcLocation("Tunbridge Wells", "https://www.bbc.co.uk/weather/2639022"),
+new BbcLocation("Tenterden", "https://www.bbc.co.uk/weather/2636101"),
+new BbcLocation("Cranbrook", "https://www.bbc.co.uk/weather/2652088"),
+new BbcLocation("Headcorn", "https://www.bbc.co.uk/weather/2647240"),
+new BbcLocation("Lenham", "https://www.bbc.co.uk/weather/2644624"),
+new BbcLocation("Staplehurst", "https://www.bbc.co.uk/weather/2637016"),
+new BbcLocation("Paddock Wood", "https://www.bbc.co.uk/weather/2637016"),
+new BbcLocation("Sittingbourne", "https://www.bbc.co.uk/weather/2637802")
+};
+    private string selectedLocation = "https://www.bbc.co.uk/weather/2643179";
+
+    private void OpenSelectedBBCWeather()
     {
-        try
+        var url = selectedLocation;
+        JS.InvokeVoidAsync("window.open", url, "_blank");
+    }
+
+    public class BbcLocation
+    {
+        public string Name { get; set; }
+        public string Url { get; set; }
+        public BbcLocation(string name, string url)
         {
-            // Open-Meteo API for Maidstone, Kent
-            var url = "https://api.open-meteo.com/v1/forecast?latitude=51.2704&longitude=0.5227&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Europe/London";
-            var response = await Http.GetFromJsonAsync<OpenMeteoResponse>(url);
-            if (response?.daily?.time != null)
-            {
-                var days = new List<WeatherDay>();
-                for (int i = 0; i < response.daily.time.Length; i++)
-                {
-                    var date = DateTime.Parse(response.daily.time[i]);
-                    var code = response.daily.weathercode != null && response.daily.weathercode.Length > i ? response.daily.weathercode[i] : -1;
-                    var summary = WeatherCodeToSummary(code);
-                    var tempMax = response.daily.temperature_2m_max != null && response.daily.temperature_2m_max.Length > i ? response.daily.temperature_2m_max[i] : 0;
-                    var tempMin = response.daily.temperature_2m_min != null && response.daily.temperature_2m_min.Length > i ? response.daily.temperature_2m_min[i] : 0;
-                    var temp = (tempMax + tempMin) / 2;
-                    days.Add(new WeatherDay { Date = date, Summary = summary, Temp = Math.Round(temp, 1) });
-                }
-                // Find next Wednesday, Saturday, or Sunday
-                var today = DateTime.Today;
-                filteredDays = days.Where(d => d.Date > today && (d.Date.DayOfWeek == DayOfWeek.Wednesday || d.Date.DayOfWeek == DayOfWeek.Saturday || d.Date.DayOfWeek == DayOfWeek.Sunday)).Take(3).ToList();
-            }
-            else
-            {
-                errorMsg = "No weather data returned.";
-            }
+            Name = name;
+            Url = url;
         }
-        catch (Exception ex)
-        {
-            errorMsg = ex.Message;
-        }
-        loading = false;
     }
 
-    public class OpenMeteoResponse
-    {
-        public DailyData? daily { get; set; }
-    }
-    public class DailyData
-    {
-        public string[]? time { get; set; }
-        public double[]? temperature_2m_max { get; set; }
-        public double[]? temperature_2m_min { get; set; }
-        public int[]? weathercode { get; set; }
-    }
-    public class WeatherDay
-    {
-        public DateTime Date { get; set; }
-        public string Summary { get; set; } = "";
-        public double Temp { get; set; }
-    }
-    private string WeatherCodeToSummary(int code)
-    {
-        // Open-Meteo weather codes: https://open-meteo.com/en/docs#api_form
-        return code switch
-        {
-            0 => "Clear sky",
-            1 or 2 or 3 => "Mainly clear, partly cloudy, or overcast",
-            45 or 48 => "Fog",
-            51 or 53 or 55 => "Drizzle",
-            61 or 63 or 65 => "Rain",
-            71 or 73 or 75 => "Snow",
-            80 or 81 or 82 => "Rain showers",
-            95 => "Thunderstorm",
-            96 or 99 => "Thunderstorm with hail",
-            _ => "Unknown",
-        };
-    }
 
-    private string GetWeatherFace(string summary)
-    {
-        // If summary contains rain, drizzle, or ice, return sad face, else smiley
-        var lower = summary.ToLowerInvariant();
-        if (lower.Contains("rain") || lower.Contains("drizzle") || lower.Contains("ice"))
-            return "🙁";
-        return "🙂";
-    }
+
+
+
+    [Inject]
+    private IJSRuntime JS { get; set; } = default!;
 }
