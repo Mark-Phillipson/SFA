@@ -1,4 +1,4 @@
-Pa@using System.Globalization
+@using System.Globalization
 @using System.Linq
 @using System.Net.Http
 @using System.Net.Http.Json
@@ -21,8 +21,37 @@ Pa@using System.Globalization
         <input type="text" @bind-value="filter" @bind-value:event="oninput" placeholder="Filter cafes by name or description..." class="form-control" @ref="filterBoxRef" />
     </div>
     <div class="col-md-6">
-        <input type="text" @bind-value="locationInput" placeholder="Enter a location (e.g. Marden)..." class="form-control" />
-        <button class="btn btn-primary mt-2" @onclick="OnLocationSearch">Search Nearby Cafes</button>
+        <div class="input-group mb-2">
+            <input type="text" @bind-value="locationInput" @bind-value:event="oninput" placeholder="Enter a location (e.g. Marden, TN12 5AU)..." class="form-control" @onkeyup="OnLocationKeyUp" />
+            <select @bind="searchRadius" class="form-select" style="max-width: 120px;">
+                <option value="5">5 km</option>
+                <option value="10">10 km</option>
+                <option value="15">15 km</option>
+                <option value="20">20 km</option>
+                <option value="30">30 km</option>
+            </select>
+        </div>
+        <div class="btn-group" role="group">
+            <button class="btn btn-primary" @onclick="OnLocationSearch" disabled="@isSearching">
+                @if (isSearching)
+                {
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                }
+                Search kind of a not Nearby
+            </button>
+            @if (searchLat.HasValue)
+            {
+                <button class="btn btn-secondary" @onclick="ClearLocationSearch">Clear Search</button>
+            }
+        </div>
+        @if (!string.IsNullOrWhiteSpace(searchMessage))
+        {
+            <div class="alert alert-info mt-2 mb-0 py-2" role="alert">@searchMessage</div>
+        }
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="alert alert-warning mt-2 mb-0 py-2" role="alert">@errorMessage</div>
+        }
     </div>
 </div>
 @if (cafes == null)
@@ -71,24 +100,75 @@ else
 
     private double? searchLat;
     private double? searchLng;
+    private int searchRadius = 10; // Default 10km
+    private bool isSearching = false;
+    private string searchMessage = string.Empty;
+    private string errorMessage = string.Empty;
+
+    private async Task OnLocationKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await OnLocationSearch();
+        }
+    }
 
     private async Task OnLocationSearch()
     {
-        if (string.IsNullOrWhiteSpace(locationInput)) return;
-        // Use OpenStreetMap Nominatim API for geocoding
-        var url = $"https://nominatim.openstreetmap.org/search?format=json&q={Uri.EscapeDataString(locationInput)}";
-        var results = await Http.GetFromJsonAsync<List<NominatimResult>>(url);
-        if (results != null && results.Count > 0)
+        if (string.IsNullOrWhiteSpace(locationInput))
         {
-            searchLat = double.Parse(results[0].lat, CultureInfo.InvariantCulture);
-            searchLng = double.Parse(results[0].lon, CultureInfo.InvariantCulture);
+            errorMessage = "Please enter a location to search.";
+            return;
         }
-        else
+
+        isSearching = true;
+        errorMessage = string.Empty;
+        searchMessage = string.Empty;
+        StateHasChanged();
+
+        try
         {
+            // Use OpenStreetMap Nominatim API for geocoding
+            var url = $"https://nominatim.openstreetmap.org/search?format=json&q={Uri.EscapeDataString(locationInput)}&countrycodes=gb&limit=1";
+            var results = await Http.GetFromJsonAsync<List<NominatimResult>>(url);
+            
+            if (results != null && results.Count > 0)
+            {
+                searchLat = double.Parse(results[0].lat, CultureInfo.InvariantCulture);
+                searchLng = double.Parse(results[0].lon, CultureInfo.InvariantCulture);
+                
+                var nearbyCount = FilteredCafes.Count();
+                searchMessage = $"Found {nearbyCount} cafe(s) within {searchRadius}km of {results[0].display_name}";
+                errorMessage = string.Empty;
+            }
+            else
+            {
+                searchLat = null;
+                searchLng = null;
+                errorMessage = $"Location '{locationInput}' not found. Try a nearby town or postcode.";
+                searchMessage = string.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error searching location: {ex.Message}";
             searchLat = null;
             searchLng = null;
         }
-        // Next step: filter cafes by proximity
+        finally
+        {
+            isSearching = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ClearLocationSearch()
+    {
+        searchLat = null;
+        searchLng = null;
+        locationInput = string.Empty;
+        searchMessage = string.Empty;
+        errorMessage = string.Empty;
     }
 
     public class NominatimResult
@@ -137,30 +217,41 @@ else
                 return Enumerable.Empty<Cafe>();
 
             var filtered = string.IsNullOrWhiteSpace(filter)
-                ? cafes
+                ? cafes.ToList()
                 : cafes.Where(c => ((c.Name ?? "") + " " + (c.Description ?? "")).Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
 
-            // If user searched for a location, filter by proximity (e.g., 5km radius)
+            // If user searched for a location, filter by proximity
             if (searchLat.HasValue && searchLng.HasValue)
             {
                 foreach (var cafe in filtered)
                 {
                     cafe.Location = null;
+                    cafe.Distance = null;
+                    
                     if (!string.IsNullOrWhiteSpace(cafe.LatLong) && cafe.LatLong.Contains(','))
                     {
                         var parts = cafe.LatLong.Split(',');
                         if (parts.Length == 2 && double.TryParse(parts[0], out var lat) && double.TryParse(parts[1], out var lng))
                         {
                             var dist = CalculateDistance(searchLat.Value, searchLng.Value, lat, lng);
-                            if (dist <= 5.0) // 5km radius
+                            cafe.Distance = dist;
+                            
+                            if (dist <= searchRadius) // Use selected radius
                             {
-                                cafe.Location = locationInput; // Show searched location name
+                                cafe.Location = $"{dist:F1} km from {locationInput}";
                             }
                         }
                     }
                 }
-                // Only show cafes within radius
-                filtered = filtered.Where(c => c.Location != null).ToList();
+                // Only show cafes within radius and sort by distance
+                return filtered.Where(c => c.Location != null).OrderBy(c => c.Distance);
+            }
+            
+            // Default: clear location data and sort by name
+            foreach (var cafe in filtered)
+            {
+                cafe.Location = null;
+                cafe.Distance = null;
             }
             return filtered.OrderBy(c => c.Name);
         }
@@ -230,6 +321,7 @@ else
         public string? Name { get; set; }
         public string? LatLong { get; set; }
         public string? Description { get; set; }
-        public string? Location { get; set; } // For nearest area/town
+        public string? Location { get; set; } // For nearest area/town with distance
+        public double? Distance { get; set; } // Distance in km for sorting
     }
 }
