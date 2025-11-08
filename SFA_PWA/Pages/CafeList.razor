@@ -1,4 +1,4 @@
-@using System.Globalization
+Pa@using System.Globalization
 @using System.Linq
 @using System.Net.Http
 @using System.Net.Http.Json
@@ -16,7 +16,15 @@
     </a>
 </div>
 
-<input type="text" @bind-value="filter" @bind-value:event="oninput" placeholder="Filter cafes by name or description..." class="form-control mb-3" @ref="filterBoxRef" />
+<div class="row mb-3">
+    <div class="col-md-6">
+        <input type="text" @bind-value="filter" @bind-value:event="oninput" placeholder="Filter cafes by name or description..." class="form-control" @ref="filterBoxRef" />
+    </div>
+    <div class="col-md-6">
+        <input type="text" @bind-value="locationInput" placeholder="Enter a location (e.g. Marden)..." class="form-control" />
+        <button class="btn btn-primary mt-2" @onclick="OnLocationSearch">Search Nearby Cafes</button>
+    </div>
+</div>
 @if (cafes == null)
 {
     <p>Loading cafes...</p>
@@ -28,6 +36,7 @@ else
             <tr>
                 <th>Name</th>
                 <th>Map</th>
+                <th>Location</th>
                 <th class="desc-header">Description</th>
             </tr>
         </thead>
@@ -42,10 +51,11 @@ else
                         <button class="btn btn-sm btn-outline-primary" @onclick="@(() => OpenMapAsync(cafe.LatLong!))">Map</button>
                     }
                 </td>
+                <td>@(cafe.Location ?? "")</td>
                 <td class="desc-cell desktop-only">@cafe.Description</td>
             </tr>
             <tr class="mobile-desc-row cafe-row-group">
-                <td colspan="3" class="desc-cell mobile-only">@cafe.Description</td>
+                <td colspan="4" class="desc-cell mobile-only">@cafe.Description</td>
             </tr>
         }
         </tbody>
@@ -55,8 +65,38 @@ else
 @code {
     private List<Cafe>? cafes;
     private string filter = string.Empty;
+    private string locationInput = string.Empty;
     private ElementReference filterBoxRef;
     private bool _focusSet = false;
+
+    private double? searchLat;
+    private double? searchLng;
+
+    private async Task OnLocationSearch()
+    {
+        if (string.IsNullOrWhiteSpace(locationInput)) return;
+        // Use OpenStreetMap Nominatim API for geocoding
+        var url = $"https://nominatim.openstreetmap.org/search?format=json&q={Uri.EscapeDataString(locationInput)}";
+        var results = await Http.GetFromJsonAsync<List<NominatimResult>>(url);
+        if (results != null && results.Count > 0)
+        {
+            searchLat = double.Parse(results[0].lat, CultureInfo.InvariantCulture);
+            searchLng = double.Parse(results[0].lon, CultureInfo.InvariantCulture);
+        }
+        else
+        {
+            searchLat = null;
+            searchLng = null;
+        }
+        // Next step: filter cafes by proximity
+    }
+
+    public class NominatimResult
+    {
+        public string lat { get; set; } = "";
+        public string lon { get; set; } = "";
+        public string display_name { get; set; } = "";
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && !_focusSet)
@@ -75,13 +115,56 @@ else
         cafes = LoadCafesFromString(csvContent);
     }
 
-    private IEnumerable<Cafe> FilteredCafes =>
-        cafes == null
-            ? Enumerable.Empty<Cafe>()
-            : (string.IsNullOrWhiteSpace(filter)
+    // Haversine formula to calculate distance (km) between two lat/lng points
+    private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+    {
+        const double R = 6371; // Earth radius in km
+        var dLat = Math.PI * (lat2 - lat1) / 180.0;
+        var dLon = Math.PI * (lon2 - lon1) / 180.0;
+        lat1 = Math.PI * lat1 / 180.0;
+        lat2 = Math.PI * lat2 / 180.0;
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                Math.Sin(dLon / 2) * Math.Sin(dLon / 2) * Math.Cos(lat1) * Math.Cos(lat2);
+        var c = 2 * Math.Asin(Math.Sqrt(a));
+        return R * c;
+    }
+
+    private IEnumerable<Cafe> FilteredCafes
+    {
+        get
+        {
+            if (cafes == null)
+                return Enumerable.Empty<Cafe>();
+
+            var filtered = string.IsNullOrWhiteSpace(filter)
                 ? cafes
-                : cafes.Where(c => ((c.Name ?? "") + " " + (c.Description ?? "")).Contains(filter, StringComparison.OrdinalIgnoreCase)))
-                .OrderBy(c => c.Name);
+                : cafes.Where(c => ((c.Name ?? "") + " " + (c.Description ?? "")).Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            // If user searched for a location, filter by proximity (e.g., 5km radius)
+            if (searchLat.HasValue && searchLng.HasValue)
+            {
+                foreach (var cafe in filtered)
+                {
+                    cafe.Location = null;
+                    if (!string.IsNullOrWhiteSpace(cafe.LatLong) && cafe.LatLong.Contains(','))
+                    {
+                        var parts = cafe.LatLong.Split(',');
+                        if (parts.Length == 2 && double.TryParse(parts[0], out var lat) && double.TryParse(parts[1], out var lng))
+                        {
+                            var dist = CalculateDistance(searchLat.Value, searchLng.Value, lat, lng);
+                            if (dist <= 5.0) // 5km radius
+                            {
+                                cafe.Location = locationInput; // Show searched location name
+                            }
+                        }
+                    }
+                }
+                // Only show cafes within radius
+                filtered = filtered.Where(c => c.Location != null).ToList();
+            }
+            return filtered.OrderBy(c => c.Name);
+        }
+    }
     private async Task OpenMapAsync(string latLong)
     {
         var parts = latLong.Split(',');
@@ -147,5 +230,6 @@ else
         public string? Name { get; set; }
         public string? LatLong { get; set; }
         public string? Description { get; set; }
+        public string? Location { get; set; } // For nearest area/town
     }
 }
