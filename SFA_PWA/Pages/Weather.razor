@@ -14,7 +14,9 @@
 <div class="weather-sites">
 
     <button class="weather-btn" onclick="window.open('https://www.metoffice.gov.uk/', '_blank')"
-        aria-label="Open Met Office Weather">Met Office</button>
+        aria-label="Open Met Office Weather">
+        <span style="font-size:1.2em;vertical-align:middle;margin-right:0.3em;">🌤️</span> Met Office
+    </button>
 
     <div style="margin-top:1em;">
         <label for="bbcLocation" style="font-weight:bold;">BBC Weather for:</label>
@@ -24,8 +26,9 @@
                 <option value="@loc.Url">@loc.Name</option>
             }
         </select>
-        <button class="weather-btn" @onclick="OpenSelectedBBCWeather" style="margin-left:0.5em;">Open BBC
-            Weather</button>
+        <button class="weather-btn" @onclick="OpenSelectedBBCWeather" style="margin-left:0.5em;">
+            <span style="font-size:1.2em;vertical-align:middle;margin-right:0.3em;">☁️</span> Open BBC Weather
+        </button>
     </div>
 </div>
 
