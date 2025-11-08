@@ -1,6 +1,6 @@
 # 🚴‍♂️ San Fairy Ann Cycling Club App
 
-Welcome to the official mobile app for the San Fairy Ann Cycling Club! 🎉
+Welcome to the proposed mobile app for the San Fairy Ann Cycling Club! 🎉
 
 ## 🌟 Overview
 A modern Blazor Progressive Web App (PWA) designed to help club members and guests easily access ride info, club resources, and useful cycling links. Works on desktop and mobile, and saves your settings locally for convenience.
