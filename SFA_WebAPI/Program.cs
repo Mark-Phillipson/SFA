@@ -6,9 +6,12 @@ builder.Services.AddCors(options =>
 {
 	options.AddDefaultPolicy(policy =>
 	{
-		policy.WithOrigins("http://localhost:5158") // Blazor PWA dev URL
-			  .AllowAnyHeader()
-			  .AllowAnyMethod();
+		policy.WithOrigins(
+			"https://localhost:5158",
+			"http://localhost:5158"
+		)
+		.AllowAnyHeader()
+		.AllowAnyMethod();
 	});
 });
 
@@ -26,7 +29,13 @@ var app = builder.Build();
 
 // Enable Swagger in all environments
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(c =>
+{
+	c.SwaggerEndpoint("/swagger/v1/swagger.json", "SFA WebAPI V1");
+	c.RoutePrefix = string.Empty;
+	c.ConfigObject.AdditionalItems["validatorUrl"] = null;
+	c.ConfigObject.AdditionalItems["url"] = "https://localhost:7289/swagger/v1/swagger.json";
+});
 
 // Enable CORS before routing/authorization
 app.UseCors();

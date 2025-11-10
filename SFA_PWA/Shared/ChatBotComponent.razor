@@ -65,7 +65,8 @@
             try
             {
                 var request = new ChatRequest { Message = userMessage };
-                var response = await Http.PostAsJsonAsync("/api/bot/chat", request);
+                var apiUrl = "https://localhost:7289/api/bot/chat";
+                var response = await Http.PostAsJsonAsync(apiUrl, request);
                 if (response.IsSuccessStatusCode)
                 {
                     var chatResponse = await response.Content.ReadFromJsonAsync<ChatResponse>();
@@ -73,12 +74,13 @@
                 }
                 else
                 {
-                    Messages.Add(new ChatMessage { Text = "Sorry, there was a problem contacting the bot.", IsUser = false });
+                    var errorText = $"Error contacting bot: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
+                    Messages.Add(new ChatMessage { Text = errorText, IsUser = false });
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                Messages.Add(new ChatMessage { Text = "Sorry, there was a problem contacting the bot.", IsUser = false });
+                Messages.Add(new ChatMessage { Text = $"Exception: {ex.Message}", IsUser = false });
             }
             IsLoading = false;
             await InvokeAsync(StateHasChanged);
@@ -106,12 +108,26 @@
     {
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("focusElement", chatInputRef);
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("focusElement", chatInputRef);
+            }
+            catch (JSException ex)
+            {
+                Console.WriteLine($"JSInterop error: {ex.Message}");
+            }
         }
         if (lastMessageCount != Messages.Count)
         {
             lastMessageCount = Messages.Count;
-            await JSRuntime.InvokeVoidAsync("scrollToBottom", messagesContainer);
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("scrollToBottom", messagesContainer);
+            }
+            catch (JSException ex)
+            {
+                Console.WriteLine($"JSInterop error: {ex.Message}");
+            }
         }
     }
  
