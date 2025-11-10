@@ -16,7 +16,7 @@
         }
     </div>
     <div class="chat-input-row">
-    <input class="chat-input" @bind="CurrentMessage" placeholder="Type a message..." @onkeydown="HandleInputKeyDown" />
+    <input class="chat-input" @bind="CurrentMessage" placeholder="Type a message..." @onkeyup="@(async e => await HandleInputKeyDown(e))" />
         <button class="send-btn" @onclick="SendMessage">Send</button>
     </div>
 </div>
@@ -35,7 +35,7 @@
     private ElementReference messagesContainer;
     private int lastMessageCount = 0;
 
-    private async void SendMessage()
+    private async Task SendMessage()
     {
         if (!string.IsNullOrWhiteSpace(CurrentMessage))
         {
@@ -47,11 +47,11 @@
         }
     }
 
-    private void HandleInputKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    private async Task HandleInputKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
-            SendMessage();
+            await SendMessage();
         }
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
