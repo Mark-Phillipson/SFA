@@ -18,8 +18,17 @@ namespace SFA_WebAPI.Controllers
         [HttpPost("chat")]
         public async Task<ActionResult<ChatResponse>> Chat([FromBody] ChatRequest request)
         {
-            var reply = await _botService.GetBotReplyAsync(request.Message);
-            return Ok(new ChatResponse { Reply = reply });
+            try
+            {
+                var reply = await _botService.GetBotReplyAsync(request.Message);
+                return Ok(new ChatResponse { Reply = reply });
+            }
+            catch (Exception ex)
+            {
+                // Log the error (can be replaced with a proper logging framework)
+                Console.Error.WriteLine($"Error in BotController.Chat: {ex.Message}\n{ex.StackTrace}");
+                return StatusCode(500, new ChatResponse { Reply = $"Internal server error: {ex.Message}" });
+            }
         }
     }
 
