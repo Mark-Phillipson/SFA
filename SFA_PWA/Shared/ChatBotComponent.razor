@@ -27,7 +27,7 @@
                      }
                      else
                      {
-                         @((MarkupString)ConvertUrlsToLinks(message.Text))
+                         @((MarkupString)ConvertUrlsToLinks(message.Text ?? ""))
                      }
                  </div>
               </div>
