@@ -7,6 +7,15 @@
 <div class="chatbot-container">
     <div class="chat-header">SFA Bot</div>
     <div class="chat-messages" @ref="messagesContainer">
+        @if (Messages.Count == 0)
+        {
+            <div class="chat-message bot">
+                <span class="avatar">🤖</span>
+                <div class="bubble">
+                    👋 Welcome to the San Fairy Ann Cycling Club! I'm your Club Assistant. I can help you with membership info, club runs, safety & insurance, meetings & complaints, or contacting a club officer. Just type your question or topic in plain text to get started.
+                </div>
+            </div>
+        }
         @foreach (var message in Messages)
         {
             <div class="chat-message @(message.IsUser ? "user" : "bot")">
@@ -16,7 +25,7 @@
         }
     </div>
     <div class="chat-input-row">
-        <input class="chat-input" @bind="CurrentMessage" placeholder="Type a message..." @onkeyup="@(async e => await HandleInputKeyDown(e))" disabled="@IsLoading" />
+    <input class="chat-input" @bind="CurrentMessage" placeholder="Type a message..." @onkeyup="@(async e => await HandleInputKeyDown(e))" disabled="@IsLoading" @ref="chatInputRef" />
         <button class="send-btn" @onclick="SendMessage" disabled="@IsLoading">Send</button>
     </div>
     @if (IsLoading)
@@ -39,6 +48,7 @@
     private List<ChatMessage> Messages = new();
     private string CurrentMessage = string.Empty;
     private ElementReference messagesContainer;
+    private ElementReference chatInputRef;
     private int lastMessageCount = 0;
     private bool IsLoading = false;
 
@@ -94,6 +104,10 @@
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("focusElement", chatInputRef);
+        }
         if (lastMessageCount != Messages.Count)
         {
             lastMessageCount = Messages.Count;

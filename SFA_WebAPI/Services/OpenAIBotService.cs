@@ -17,9 +17,6 @@ namespace SFA_WebAPI.Services
 
         public async Task<string> GetBotReplyAsync(string message)
         {
-            // Welcome message from WhatsApp Bot Script
-            var welcomeMessage = "👋 Welcome to the San Fairy Ann Cycling Club! I'm your Club Assistant. I can help you with: 1️⃣ Membership Info 2️⃣ Club Runs 3️⃣ Safety & Insurance 4️⃣ Meetings & Complaints 5️⃣ Contact a Club Officer. Reply with a number or keyword to get started.";
-
             // Knowledge base summary
             var knowledgeBase = @"San Fairy Ann Cycling Club (SFACC) is Kent’s largest and friendliest cycling club. Membership benefits include access to club rides, events, discounts, curated routes, and more. To join, visit: https://www.sanfairyanncc.co.uk/join-the-club
 
@@ -29,8 +26,8 @@ Strava is a social network for athletes, popular for tracking cycling and runnin
 
 For club events, rides, membership, kit, and more, visit the club website: https://www.sanfairyanncc.co.uk/";
 
-            // Compose the full prompt
-            var prompt = $"{welcomeMessage}\n\n{knowledgeBase}\n\nUser: {message}";
+            // Compose the full prompt (no welcome message)
+            var prompt = $"{knowledgeBase}\n\nUser: {message}";
             var completion = await _chatClient.CompleteChatAsync(prompt);
             return completion.Value.Content[0].Text;
         }
