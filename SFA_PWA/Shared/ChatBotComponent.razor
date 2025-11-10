@@ -1,0 +1,40 @@
+@using System.Collections.Generic
+
+<div class="chatbot-container">
+    <div class="chat-header">SFA Bot</div>
+    <div class="chat-messages">
+        @foreach (var message in Messages)
+        {
+            <div class="chat-message @(message.IsUser ? "user" : "bot")">
+                 <span class="avatar">@(message.IsUser ? "😊" : "🤖")</span>
+                <div class="bubble">@message.Text</div>
+            </div>
+        }
+    </div>
+    <div class="chat-input-row">
+        <input class="chat-input" @bind="CurrentMessage" placeholder="Type a message..." />
+        <button class="send-btn" @onclick="SendMessage">Send</button>
+    </div>
+</div>
+
+@code {
+    public class ChatMessage
+    {
+        public string Text { get; set; }
+        public bool IsUser { get; set; }
+    }
+
+    private List<ChatMessage> Messages = new();
+    private string CurrentMessage = string.Empty;
+
+    private void SendMessage()
+    {
+        if (!string.IsNullOrWhiteSpace(CurrentMessage))
+        {
+            Messages.Add(new ChatMessage { Text = CurrentMessage, IsUser = true });
+            // TODO: Call backend API and add bot response
+            Messages.Add(new ChatMessage { Text = "Bot reply goes here.", IsUser = false });
+            CurrentMessage = string.Empty;
+        }
+    }
+}

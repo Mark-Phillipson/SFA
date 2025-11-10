@@ -19,7 +19,7 @@ See the architecture and requirements in SFA_PWA_Bot_Architecture.md.
 **Architecture:**
 - Frontend: New chat UI component/page in Blazor PWA.
 - Backend: API endpoint (Azure App Service, free tier for PoC), bot logic, AI integration, secure API key management.
-- Data sources: SFACC_WhatsApp_Bot_Script.txt, club website, Strava/RideWithGPS APIs.
+- Data sources: SFACC_WhatsApp_Bot_Script.txt, club website, Strava/RideWithGPS nontechnical how to use.
 
 **Security & Limitations:**
 - API keys never exposed in client code.
