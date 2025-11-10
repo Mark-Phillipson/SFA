@@ -70,7 +70,12 @@
         return System.Text.RegularExpressions.Regex.Replace(
             text,
             urlPattern,
-            match => $"<a href=\"{match.Value}\" target=\"_blank\" rel=\"noopener noreferrer\">{match.Value}</a>"
+            match => {
+                // Remove trailing punctuation from the matched URL
+                var url = match.Value.TrimEnd('.', ',', '!', '?', ':', ';', ')');
+                var trailing = match.Value.Substring(url.Length);
+                return $"<a href=\"{url}\" target=\"_blank\" rel=\"noopener noreferrer\">{url}</a>{trailing}";
+            }
         );
     }
 
