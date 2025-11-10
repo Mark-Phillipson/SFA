@@ -17,14 +17,30 @@ namespace SFA_WebAPI.Services
 
         public async Task<string> GetBotReplyAsync(string message)
         {
-            // Knowledge base summary
-            var knowledgeBase = @"San Fairy Ann Cycling Club (SFACC) is Kent’s largest and friendliest cycling club. Membership benefits include access to club rides, events, discounts, curated routes, and more. To join, visit: https://www.sanfairyanncc.co.uk/join-the-club
+            // Knowledge base summary with only actual, working links
+            var knowledgeBase = @"San Fairy Ann Cycling Club (SFACC) is Kent’s largest and friendliest cycling club. Membership benefits include access to club rides, events, discounts, curated routes, and more.
 
-SFACC has a club account with RideWithGPS, providing curated cycling routes for all riders in Kent. Members can access special features and routes via the club’s RideWithGPS organization page: https://ridewithgps.com/organizations/633-san-fairy-ann-cycling-club
-
-Strava is a social network for athletes, popular for tracking cycling and running activities. To use Strava: Download the Strava app or visit https://www.strava.com/ and join the SFACC club on Strava to connect with other members.
-
-For club events, rides, membership, kit, and more, visit the club website: https://www.sanfairyanncc.co.uk/";
+Useful links:
+- Home: https://www.sanfairyanncc.co.uk/
+- Ride With Us: https://www.sanfairyanncc.co.uk/ridewithus
+- Events: https://www.sanfairyanncc.co.uk/events
+- Club Shop: https://www.sanfairyanncc.co.uk/store
+- Membership Benefits: https://www.sanfairyanncc.co.uk/membership-benefits
+- Try It Out Rides: https://www.sanfairyanncc.co.uk/tryitout
+- Club Kit: https://www.sanfairyanncc.co.uk/kit-form
+- Club History: https://www.sanfairyanncc.co.uk/club-history
+- Group Rides: https://www.sanfairyanncc.co.uk/grouprides
+- Magazine/Newsletter: https://www.sanfairyanncc.co.uk/magazine
+- Members Page: https://www.sanfairyanncc.co.uk/memberspage
+- Safeguarding: https://www.sanfairyanncc.co.uk/safeguarding
+- Coaching: https://www.sanfairyanncc.co.uk/coaching
+- Curated Routes: https://www.sanfairyanncc.co.uk/curated-routes
+- Road Safety Training: https://www.sanfairyanncc.co.uk/cycle-training
+- Audax & Sportive: https://www.sanfairyanncc.co.uk/audax-sportive
+- Club Updates: https://www.sanfairyanncc.co.uk/club-updates
+- Who We Are: https://www.sanfairyanncc.co.uk/whoweare
+- Contact Us: https://www.sanfairyanncc.co.uk/whoweare
+";
 
             // Compose the full prompt (no welcome message)
             var prompt = $"{knowledgeBase}\n\nUser: {message}";
