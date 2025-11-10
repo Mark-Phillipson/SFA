@@ -6,7 +6,19 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
-    height: 80vh;
+    height: 100%;
+    }
+
+/* Desktop mode: expand chatbot to fit available space */
+@media (min-width: 900px) {
+    .chatbot-container {
+        max-width: none;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
 }
 
 .chat-header {

@@ -1,8 +1,12 @@
+
+
+
 @using System.Collections.Generic
+@using Microsoft.JSInterop
 
 <div class="chatbot-container">
     <div class="chat-header">SFA Bot</div>
-    <div class="chat-messages">
+    <div class="chat-messages" @ref="messagesContainer">
         @foreach (var message in Messages)
         {
             <div class="chat-message @(message.IsUser ? "user" : "bot")">
@@ -17,17 +21,21 @@
     </div>
 </div>
 
+@inject IJSRuntime JSRuntime
+
 @code {
     public class ChatMessage
     {
-        public string Text { get; set; }
+        public string? Text { get; set; }
         public bool IsUser { get; set; }
     }
 
     private List<ChatMessage> Messages = new();
     private string CurrentMessage = string.Empty;
+    private ElementReference messagesContainer;
+    private int lastMessageCount = 0;
 
-    private void SendMessage()
+    private async void SendMessage()
     {
         if (!string.IsNullOrWhiteSpace(CurrentMessage))
         {
@@ -35,6 +43,7 @@
             // TODO: Call backend API and add bot response
             Messages.Add(new ChatMessage { Text = "Bot reply goes here.", IsUser = false });
             CurrentMessage = string.Empty;
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -45,4 +54,13 @@
             SendMessage();
         }
     }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (lastMessageCount != Messages.Count)
+        {
+            lastMessageCount = Messages.Count;
+            await JSRuntime.InvokeVoidAsync("scrollToBottom", messagesContainer);
+        }
+    }
+ 
 }
