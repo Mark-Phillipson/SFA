@@ -3,6 +3,8 @@
 
 @using System.Collections.Generic
 @using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@inject HttpClient Http
 
 <div class="chatbot-container">
     <div class="chat-header">SFA Bot</div>
@@ -18,23 +20,23 @@
         }
         @foreach (var message in Messages)
         {
-              <div class="chat-message @(message.IsUser ? "user" : "bot")">
-                 <span class="avatar">@(message.IsUser ? "😊" : "🤖")</span>
-                 <div class="bubble">
-                     @if (message.IsUser)
-                     {
-                         @message.Text
-                     }
-                     else
-                     {
-                         @((MarkupString)ConvertUrlsToLinks(message.Text ?? ""))
-                     }
-                 </div>
-              </div>
+            <div class="chat-message @(message.IsUser ? "user" : "bot")">
+                <span class="avatar">@(message.IsUser ? "😊" : "🤖")</span>
+                <div class="bubble">
+                    @if (message.IsUser)
+                    {
+                        @message.Text
+                    }
+                    else
+                    {
+                        @((MarkupString)ConvertUrlsToLinks(message.Text ?? ""))
+                    }
+                </div>
+            </div>
         }
     </div>
     <div class="chat-input-row">
-    <input class="chat-input" @bind="CurrentMessage" placeholder="Type a message..." @onkeyup="@(async e => await HandleInputKeyDown(e))" disabled="@IsLoading" @ref="chatInputRef" />
+        <input class="chat-input" @bind="CurrentMessage" placeholder="Type a message..." @onkeyup="@(async e => await HandleInputKeyDown(e))" disabled="@IsLoading" @ref="chatInputRef" />
         <button class="send-btn" @onclick="SendMessage" disabled="@IsLoading">Send</button>
     </div>
     @if (IsLoading)
@@ -43,16 +45,9 @@
     }
 </div>
 
-
-@inject IJSRuntime JSRuntime
-@inject HttpClient Http
-
 @code {
-    public class ChatMessage
-    {
-        public string? Text { get; set; }
-        public bool IsUser { get; set; }
-    }
+    [Parameter]
+    public string ApiUrl { get; set; } = "https://localhost:7289/api/bot/chat";
 
     private List<ChatMessage> Messages = new();
     private string CurrentMessage = string.Empty;
@@ -61,17 +56,14 @@
     private int lastMessageCount = 0;
     private bool IsLoading = false;
 
-    // Converts URLs in text to clickable anchor tags
     private string ConvertUrlsToLinks(string text)
     {
         if (string.IsNullOrEmpty(text)) return "";
-        // Simple regex for URLs
         var urlPattern = @"(https?://[\w\-\.\?\,\'/\\\+&%\$#_=:\(\)~]+)";
         return System.Text.RegularExpressions.Regex.Replace(
             text,
             urlPattern,
             match => {
-                // Remove trailing punctuation from the matched URL
                 var url = match.Value.TrimEnd('.', ',', '!', '?', ':', ';', ')');
                 var trailing = match.Value.Substring(url.Length);
                 return $"<a href=\"{url}\" target=\"_blank\" rel=\"noopener noreferrer\">{url}</a>{trailing}";
@@ -92,8 +84,7 @@
             try
             {
                 var request = new ChatRequest { Message = userMessage };
-                var apiUrl = "https://localhost:7289/api/bot/chat";
-                var response = await Http.PostAsJsonAsync(apiUrl, request);
+                var response = await Http.PostAsJsonAsync(ApiUrl, request);
                 if (response.IsSuccessStatusCode)
                 {
                     var chatResponse = await response.Content.ReadFromJsonAsync<ChatResponse>();
@@ -114,16 +105,6 @@
         }
     }
 
-    public class ChatRequest
-    {
-        public string Message { get; set; } = string.Empty;
-    }
-
-    public class ChatResponse
-    {
-        public string Reply { get; set; } = string.Empty;
-    }
-
     private async Task HandleInputKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
@@ -131,6 +112,7 @@
             await SendMessage();
         }
     }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -156,7 +138,6 @@
                 Console.WriteLine($"JSInterop error: {ex.Message}");
             }
         }
-        // Restore focus to TextBox after bot finishes thinking
         if (!IsLoading)
         {
             try
@@ -169,5 +150,20 @@
             }
         }
     }
- 
+
+    private class ChatMessage
+    {
+        public string? Text { get; set; }
+        public bool IsUser { get; set; }
+    }
+
+    private class ChatRequest
+    {
+        public string Message { get; set; } = string.Empty;
+    }
+
+    private class ChatResponse
+    {
+        public string Reply { get; set; } = string.Empty;
+    }
 }

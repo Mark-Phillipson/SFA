@@ -9,7 +9,7 @@ Add these secrets to your repository in GitHub:
 ```yaml
 AZURE_WEBAPP_NAME: SFA-WebAPI
 AZURE_WEBAPP_PUBLISH_PROFILE: <Paste the XML content from Azure Portal: Web App > Get publish profile>
-AZURE_RESOURCE_GROUP: SFA-Prod-RG
+AZURE_RESOURCE_GROUP: appsvc_windows_uksouth
 OPENAI_API_KEY: <Your OpenAI API Key>
 ```
 
