@@ -27,9 +27,9 @@ See the architecture and requirements in SFA_PWA_Bot_Architecture.md.
 - Data privacy: only public data accessed.
 
 **Next Steps:**
-1. Finalize requirements and scope.
-2. Design frontend chat component.
-3. Implement backend API.
+1. Finalize requirements and scope. ✅
+2. Design frontend chat component. ✅
+3. Implement backend API. (using open AI API Key)
 4. Integrate AI and data sources.
 5. Test and document.
 

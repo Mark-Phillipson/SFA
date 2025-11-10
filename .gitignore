@@ -1,5 +1,11 @@
 # .NET & Blazor WebAssembly .gitignore
 
+# Ignore appsettings files (secrets/config)
+appsettings.json
+appsettings.Development.json
+SFA_WebAPI/appsettings.json
+SFA_WebAPI/appsettings.Development.json
+
 # Build results
 bin/
 obj/
