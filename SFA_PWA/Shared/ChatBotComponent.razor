@@ -151,6 +151,18 @@
                 Console.WriteLine($"JSInterop error: {ex.Message}");
             }
         }
+        // Restore focus to TextBox after bot finishes thinking
+        if (!IsLoading)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("focusElement", chatInputRef);
+            }
+            catch (JSException ex)
+            {
+                Console.WriteLine($"JSInterop error: {ex.Message}");
+            }
+        }
     }
  
 }
