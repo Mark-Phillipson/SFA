@@ -2,6 +2,7 @@
 
 # Ignore appsettings files (secrets/config)
 appsettings.json
+!SFA_PWA/wwwroot/appsettings.json
 appsettings.Development.json
 SFA_WebAPI/appsettings.json
 SFA_WebAPI/appsettings.Development.json
