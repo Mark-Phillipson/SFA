@@ -18,10 +18,19 @@
         }
         @foreach (var message in Messages)
         {
-            <div class="chat-message @(message.IsUser ? "user" : "bot")">
+              <div class="chat-message @(message.IsUser ? "user" : "bot")">
                  <span class="avatar">@(message.IsUser ? "😊" : "🤖")</span>
-                <div class="bubble">@message.Text</div>
-            </div>
+                 <div class="bubble">
+                     @if (message.IsUser)
+                     {
+                         @message.Text
+                     }
+                     else
+                     {
+                         @((MarkupString)ConvertUrlsToLinks(message.Text))
+                     }
+                 </div>
+              </div>
         }
     </div>
     <div class="chat-input-row">
@@ -51,6 +60,19 @@
     private ElementReference chatInputRef;
     private int lastMessageCount = 0;
     private bool IsLoading = false;
+
+    // Converts URLs in text to clickable anchor tags
+    private string ConvertUrlsToLinks(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return "";
+        // Simple regex for URLs
+        var urlPattern = @"(https?://[\w\-\.\?\,\'/\\\+&%\$#_=:\(\)~]+)";
+        return System.Text.RegularExpressions.Regex.Replace(
+            text,
+            urlPattern,
+            match => $"<a href=\"{match.Value}\" target=\"_blank\" rel=\"noopener noreferrer\">{match.Value}</a>"
+        );
+    }
 
     private async Task SendMessage()
     {
