@@ -1,0 +1,49 @@
+name: Deploy SFA_WebAPI to Azure App Service
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore SFA_WebAPI/SFA_WebAPI.csproj
+
+      - name: Build
+        run: dotnet build SFA_WebAPI/SFA_WebAPI.csproj --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish SFA_WebAPI/SFA_WebAPI.csproj --configuration Release --output ./publish
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish
+
+      - name: Set OpenAI API Key in Azure App Settings
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az webapp config appsettings set --name ${{ secrets.AZURE_WEBAPP_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --settings OpenAI__ApiKey=${{ secrets.OPENAI_API_KEY }}
+            az webapp config appsettings set --name ${{ secrets.AZURE_WEBAPP_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --settings ASPNETCORE_ENVIRONMENT=Production
+
+# Required secrets:
+# - AZURE_WEBAPP_NAME: Name of your Azure Web App (must be in UK South, F1 tier)
+# - AZURE_WEBAPP_PUBLISH_PROFILE: Exported from Azure Portal (Web App > Get publish profile)
+# - AZURE_RESOURCE_GROUP: Name of your resource group (in UK South)
+# - OPENAI_API_KEY: Your OpenAI API key
