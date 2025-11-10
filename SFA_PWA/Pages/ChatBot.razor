@@ -3,4 +3,6 @@
 
 <PageTitle>ChatBot</PageTitle>
 
-<ChatBotComponent />
+@inject BotApiConfig BotApiConfig
+
+<ChatBotComponent ApiUrl="@BotApiConfig.BotApiUrl" />
