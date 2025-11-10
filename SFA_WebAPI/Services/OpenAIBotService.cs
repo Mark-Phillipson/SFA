@@ -20,6 +20,8 @@ namespace SFA_WebAPI.Services
             // Knowledge base summary with only actual, working links
             var knowledgeBase = @"San Fairy Ann Cycling Club (SFACC) is Kent’s largest and friendliest cycling club. Membership benefits include access to club rides, events, discounts, curated routes, and more.
 
+When asked about membership rates, the AI will read the club’s Join page (https://www.sanfairyanncc.co.uk/join-the-club) and provide the latest information directly from the website, ensuring answers are always up to date.
+
 Useful links:
 - Home: https://www.sanfairyanncc.co.uk/
 - Ride With Us: https://www.sanfairyanncc.co.uk/ridewithus
