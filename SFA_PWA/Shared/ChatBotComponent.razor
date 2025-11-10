@@ -12,7 +12,7 @@
         }
     </div>
     <div class="chat-input-row">
-        <input class="chat-input" @bind="CurrentMessage" placeholder="Type a message..." />
+    <input class="chat-input" @bind="CurrentMessage" placeholder="Type a message..." @onkeydown="HandleInputKeyDown" />
         <button class="send-btn" @onclick="SendMessage">Send</button>
     </div>
 </div>
@@ -35,6 +35,14 @@
             // TODO: Call backend API and add bot response
             Messages.Add(new ChatMessage { Text = "Bot reply goes here.", IsUser = false });
             CurrentMessage = string.Empty;
+        }
+    }
+
+    private void HandleInputKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            SendMessage();
         }
     }
 }
