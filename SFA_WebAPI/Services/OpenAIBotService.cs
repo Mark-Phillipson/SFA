@@ -17,8 +17,22 @@ namespace SFA_WebAPI.Services
 
         public async Task<string> GetBotReplyAsync(string message)
         {
-    var completion = await _chatClient.CompleteChatAsync(message);
-    return completion.Value.Content[0].Text;
+            // Welcome message from WhatsApp Bot Script
+            var welcomeMessage = "👋 Welcome to the San Fairy Ann Cycling Club! I'm your Club Assistant. I can help you with: 1️⃣ Membership Info 2️⃣ Club Runs 3️⃣ Safety & Insurance 4️⃣ Meetings & Complaints 5️⃣ Contact a Club Officer. Reply with a number or keyword to get started.";
+
+            // Knowledge base summary
+            var knowledgeBase = @"San Fairy Ann Cycling Club (SFACC) is Kent’s largest and friendliest cycling club. Membership benefits include access to club rides, events, discounts, curated routes, and more. To join, visit: https://www.sanfairyanncc.co.uk/join-the-club
+
+SFACC has a club account with RideWithGPS, providing curated cycling routes for all riders in Kent. Members can access special features and routes via the club’s RideWithGPS organization page: https://ridewithgps.com/organizations/633-san-fairy-ann-cycling-club
+
+Strava is a social network for athletes, popular for tracking cycling and running activities. To use Strava: Download the Strava app or visit https://www.strava.com/ and join the SFACC club on Strava to connect with other members.
+
+For club events, rides, membership, kit, and more, visit the club website: https://www.sanfairyanncc.co.uk/";
+
+            // Compose the full prompt
+            var prompt = $"{welcomeMessage}\n\n{knowledgeBase}\n\nUser: {message}";
+            var completion = await _chatClient.CompleteChatAsync(prompt);
+            return completion.Value.Content[0].Text;
         }
     }
 }

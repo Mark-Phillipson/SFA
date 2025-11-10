@@ -16,12 +16,18 @@
         }
     </div>
     <div class="chat-input-row">
-    <input class="chat-input" @bind="CurrentMessage" placeholder="Type a message..." @onkeyup="@(async e => await HandleInputKeyDown(e))" />
-        <button class="send-btn" @onclick="SendMessage">Send</button>
+        <input class="chat-input" @bind="CurrentMessage" placeholder="Type a message..." @onkeyup="@(async e => await HandleInputKeyDown(e))" disabled="@IsLoading" />
+        <button class="send-btn" @onclick="SendMessage" disabled="@IsLoading">Send</button>
     </div>
+    @if (IsLoading)
+    {
+        <div class="loading-indicator">Bot is thinking...</div>
+    }
 </div>
 
+
 @inject IJSRuntime JSRuntime
+@inject HttpClient Http
 
 @code {
     public class ChatMessage
@@ -34,17 +40,49 @@
     private string CurrentMessage = string.Empty;
     private ElementReference messagesContainer;
     private int lastMessageCount = 0;
+    private bool IsLoading = false;
 
     private async Task SendMessage()
     {
-        if (!string.IsNullOrWhiteSpace(CurrentMessage))
+        if (!string.IsNullOrWhiteSpace(CurrentMessage) && !IsLoading)
         {
-            Messages.Add(new ChatMessage { Text = CurrentMessage, IsUser = true });
-            // TODO: Call backend API and add bot response
-            Messages.Add(new ChatMessage { Text = "Bot reply goes here.", IsUser = false });
+            var userMessage = CurrentMessage;
+            Messages.Add(new ChatMessage { Text = userMessage, IsUser = true });
             CurrentMessage = string.Empty;
+            IsLoading = true;
+            await InvokeAsync(StateHasChanged);
+
+            try
+            {
+                var request = new ChatRequest { Message = userMessage };
+                var response = await Http.PostAsJsonAsync("/api/bot/chat", request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var chatResponse = await response.Content.ReadFromJsonAsync<ChatResponse>();
+                    Messages.Add(new ChatMessage { Text = chatResponse?.Reply ?? "(No reply)", IsUser = false });
+                }
+                else
+                {
+                    Messages.Add(new ChatMessage { Text = "Sorry, there was a problem contacting the bot.", IsUser = false });
+                }
+            }
+            catch
+            {
+                Messages.Add(new ChatMessage { Text = "Sorry, there was a problem contacting the bot.", IsUser = false });
+            }
+            IsLoading = false;
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    public class ChatRequest
+    {
+        public string Message { get; set; } = string.Empty;
+    }
+
+    public class ChatResponse
+    {
+        public string Reply { get; set; } = string.Empty;
     }
 
     private async Task HandleInputKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)

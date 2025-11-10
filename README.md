@@ -1,3 +1,19 @@
+# Running Both Projects in Visual Studio Code
+
+To launch both the Blazor PWA (SFA_PWA) and the WebAPI backend (SFA_WebAPI) in development:
+
+1. Open two terminals in VS Code.
+2. In the first terminal, run:
+	```pwsh
+	dotnet run --project SFA_PWA/SFA_PWA.csproj
+	```
+3. In the second terminal, run:
+	```pwsh
+	dotnet run --project SFA_WebAPI/SFA_WebAPI.csproj
+	```
+4. Make sure your Blazor app’s API calls use the correct backend URL (http://localhost:5216/api/bot/chat).
+
+You can copy and paste these commands directly into your VS Code terminals.
 # 🚴‍♂️ San Fairy Ann Cycling Club App
 
 Welcome to the proposed mobile app for the San Fairy Ann Cycling Club! 🎉
