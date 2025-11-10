@@ -1,6 +1,17 @@
 using SFA_WebAPI.Services;
 var builder = WebApplication.CreateBuilder(args);
 
+// Add CORS policy for Blazor frontend
+builder.Services.AddCors(options =>
+{
+	options.AddDefaultPolicy(policy =>
+	{
+		policy.WithOrigins("http://localhost:5158") // Blazor PWA dev URL
+			  .AllowAnyHeader()
+			  .AllowAnyMethod();
+	});
+});
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -16,6 +27,9 @@ var app = builder.Build();
 // Enable Swagger in all environments
 app.UseSwagger();
 app.UseSwaggerUI();
+
+// Enable CORS before routing/authorization
+app.UseCors();
 
 app.UseHttpsRedirection();
 
