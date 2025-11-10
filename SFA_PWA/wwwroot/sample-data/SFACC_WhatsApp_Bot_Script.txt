@@ -1,0 +1,99 @@
+ the information in this document was looking at an old type of bot, so only some of the information is relevant.
+
+The welcome message should be what we use to start designing the bot.
+
+ the other flows will be irrelevant as the AI bot will just pull data from wherever necessary.
+
+# WhatsApp Bot Script for San Fairy Ann Cycling Club (SFACC)
+
+# Format: Structured Text for Easy Import or Adaptation
+
+==============================
+FLOW 1: Welcome Message
+==============================
+👋 Welcome to the San Fairy Ann Cycling Club!
+I'm your Club Assistant. I can help you with:
+1️⃣ Membership Info
+2️⃣ Club Runs
+3️⃣ Safety & Insurance
+4️⃣ Meetings & Complaints
+5️⃣ Contact a Club Officer
+
+Reply with a number or keyword to get started.
+
+Quick Replies:
+- Membership Info
+- Club Runs
+- Safety & Insurance
+- Meetings & Complaints
+- Contact a Club Officer
+
+==============================
+FLOW 2: Membership Info
+==============================
+We offer several types of membership:
+- 🟣 Full Member
+- 🟡 Life Member (elected)
+- 🟢 Honorary Member (elected)
+- 🔵 Social Member (not currently riding)
+- 🧒 Under 18s (discounted)
+- 🏁 Racing Team (invite only)
+- 🔁 Second Charge (race under another club)
+
+Want help choosing the right one?
+
+Quick Replies:
+- Help me choose
+- Show pricing
+- Apply now
+
+==============================
+FLOW 3: Club Runs
+==============================
+🚴 Club Runs are open to all members and prospective riders (max 2 rides before joining).
+✅ Safety first: All riders must have third-party liability insurance.
+📋 Ride leaders report attendance and incidents.
+
+Quick Replies:
+- Upcoming rides
+- Safety guide
+- Join a ride
+
+==============================
+FLOW 4: Safety & Insurance
+==============================
+🛡️ All riders must have third-party liability insurance.
+
+We recommend joining:
+- British Cycling (BC)
+- Cycling UK (CUK)
+- British Masters Cycle Racing (BMCR)
+
+Include your membership number when applying.
+
+Quick Replies:
+- Help with insurance
+- Apply now
+- Back to menu
+
+==============================
+FLOW 5: Meetings & Complaints
+==============================
+📅 Our Annual General Meeting (AGM) is held yearly.
+📝 You can submit agenda items 28 days before the meeting.
+
+Quick Replies:
+- File a complaint
+- Contact Secretary
+- Back to menu
+
+==============================
+FLOW 6: Contact a Club Officer
+==============================
+📬 Who would you like to contact?
+- Membership Director
+- Ride Coordinator
+- Club Secretary
+- President
+
+Reply with the role or name.

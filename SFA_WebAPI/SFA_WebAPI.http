@@ -1,0 +1,6 @@
+@SFA_WebAPI_HostAddress = http://localhost:5216
+
+GET {{SFA_WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

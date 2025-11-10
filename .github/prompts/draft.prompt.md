@@ -1,8 +1,8 @@
-Would it be possible to add more than just Maidstone as a link in the bbc weather.
 
-For example it would be great if we could do something in a twenty mile radius of Maidstone any major town or village
+Could we build a AI bot  that would use the text file attached and be able to search the san Ferry and Cycling Club Website for specific information based on user queries? The bot should be able to understand natural language questions and provide accurate responses by extracting relevant data from the website content. Additionally, it should be capable of handling various topics related to the club, such as membership details, event schedules, and cycling routes.
 
-Maybe a dropdown to select a particular location and then the button can be clicked to launch the weather?
+ it could also be an expert on cycle roots using Strava or RideWithGps.
 
+  the main problem I believe is storing the open AI API key.
 
-Also would it be possible to have the Maidstone weather in an Iframe showing directly on the page?
+   we could use a old older model that is free can you see any problems with this approach?
