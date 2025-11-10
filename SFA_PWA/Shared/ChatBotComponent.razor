@@ -92,13 +92,13 @@
                 }
                 else
                 {
-                    var errorText = $"Error contacting bot: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
+                    var errorText = $"Error contacting bot at {ApiUrl}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
                     Messages.Add(new ChatMessage { Text = errorText, IsUser = false });
                 }
             }
             catch (Exception ex)
             {
-                Messages.Add(new ChatMessage { Text = $"Exception: {ex.Message}", IsUser = false });
+                Messages.Add(new ChatMessage { Text = $"Exception contacting bot at {ApiUrl}: {ex.Message}", IsUser = false });
             }
             IsLoading = false;
             await InvokeAsync(StateHasChanged);
