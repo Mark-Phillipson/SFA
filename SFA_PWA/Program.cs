@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SFA_PWA;
 using System.Text.Json;
+using System.Net.Http;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -18,13 +19,26 @@ if (configDoc.RootElement.TryGetProperty("BotApiUrl", out var botApiUrlElement))
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Register HttpClient for API calls to Bot API
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(botApiUrl) });
+// Register default HttpClient for PWA static/data requests
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+
+// Register BotApi HttpClient for chatbot requests
+builder.Services.AddScoped<BotApiHttpClient>(sp => new BotApiHttpClient(new HttpClient { BaseAddress = new Uri(botApiUrl) }));
 
 // Optionally, register BotApiUrl for DI
 builder.Services.AddSingleton(new BotApiConfig { BotApiUrl = botApiUrl });
 
 await builder.Build().RunAsync();
+
+// BotApiHttpClient wrapper class
+public class BotApiHttpClient
+{
+    public HttpClient Client { get; }
+    public BotApiHttpClient(HttpClient client)
+    {
+        Client = client;
+    }
+}
 
 // BotApiConfig class for DI
 public class BotApiConfig
