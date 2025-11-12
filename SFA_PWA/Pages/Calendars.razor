@@ -7,6 +7,14 @@
 
 <h1>Ride Group Calendars</h1>
 
+<div class="calendar-instructions" style="margin-bottom:1.5em;">
+    <h3>Calendar Usage Tips</h3>
+    <ul>
+        <li><b>Change View:</b> You can set your preferred default view (Month, Week, or Schedule) in <b>Settings</b>. On mobile, the calendar always shows the Schedule view for easier navigation.</li>
+        <li><b>Drill Down for Routes:</b> Click on a ride event in the calendar to view more details. If a route link is available, it will be shown in the event details popup. Use this to access route maps and information for your selected rides.</li>
+    </ul>
+</div>
+
 @if (isCalendarsLoading)
 {
     <div style="position:fixed;top:80px;left:0;width:100%;z-index:1000;pointer-events:none;">
@@ -50,12 +58,12 @@
     private Dictionary<string, bool> selectedGroups = new();
     private List<GroupData> groups = new();
     private bool isMobile = false;
+    private string calendarView = "MONTH";
     // Removed unused isLoading field (was causing CS0414 warning)
     private bool isCalendarsLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-    // isLoading removed
         // Load all groups from groups.json
         try
         {
@@ -76,7 +84,12 @@
         // Detect if mobile screen
         isMobile = await JS.InvokeAsync<bool>("isMobileScreen");
 
-    // isLoading removed
+        // Load calendar view preference for desktop
+        var viewPref = await JS.InvokeAsync<string>("localStorage.getItem", "calendarViewPreference");
+        if (!string.IsNullOrWhiteSpace(viewPref))
+        {
+            calendarView = viewPref;
+        }
 
         // Show loading message for 7 seconds
         await Task.Run(async () => {
@@ -111,7 +124,7 @@
     private string? GetCalendarUrl(GroupData group)
     {
         if (string.IsNullOrWhiteSpace(group.CalendarUrl)) return null;
-        var mode = isMobile ? "AGENDA" : "MONTH";
+        var mode = isMobile ? "AGENDA" : calendarView;
         var url = group.CalendarUrl;
         // Add mode param if not present
         if (!url.Contains("mode="))

@@ -7,6 +7,16 @@
 <h1>Ride Group Preferences</h1>
 <p>Select which San Fairy Ann ride groups you want to follow:</p>
 
+<h2>Calendar View Preference</h2>
+<div style="margin-bottom: 1em;">
+    <label for="calendarView" style="font-size: 1.1em;">Default calendar view for desktop:</label>
+    <select id="calendarView" @bind="calendarView" style="margin-left:1em;font-size:1.1em;padding:0.3em 1em;">
+        <option value="MONTH">Month</option>
+        <option value="WEEK">Week</option>
+        <option value="AGENDA">Schedule</option>
+    </select>
+</div>
+
 
 <h2>Available Groups</h2>
 <div style="margin-bottom: 1em;">
@@ -41,6 +51,20 @@
     private Dictionary<string, bool> selectedGroups = new();
     private List<GroupData> groups = new();
     private bool showOnlyFollowed = false;
+
+    private string _calendarView = "MONTH";
+    private string calendarView
+    {
+        get => _calendarView;
+        set
+        {
+            if (_calendarView != value)
+            {
+                _calendarView = value;
+                JS.InvokeVoidAsync("localStorage.setItem", "calendarViewPreference", _calendarView);
+            }
+        }
+    }
 
     private IEnumerable<GroupData> FilteredGroups => showOnlyFollowed
         ? groups.Where(g => IsSelected(g.Name))
@@ -78,12 +102,20 @@
 
         // Set filter default: show only followed if any are followed
         showOnlyFollowed = selectedGroups.Values.Any(v => v);
+
+            // Load calendar view preference
+            var viewPref = await JS.InvokeAsync<string>("localStorage.getItem", "calendarViewPreference");
+            if (!string.IsNullOrWhiteSpace(viewPref))
+            {
+                calendarView = viewPref;
+            }
     }
 
 
     private async Task SavePreferences()
     {
         await JS.InvokeVoidAsync("localStorage.setItem", "groupPreferences", System.Text.Json.JsonSerializer.Serialize(selectedGroups));
+            await JS.InvokeVoidAsync("localStorage.setItem", "calendarViewPreference", calendarView);
     }
 
     private async Task OnPreferenceChangedAndSave(string groupName, object? value)
@@ -123,4 +155,5 @@
         public string InfoUrl { get; set; } = string.Empty;
         public string CalendarUrl { get; set; } = string.Empty;
     }
+
 }
