@@ -1,0 +1,173 @@
+@using SFA_PWA.Models
+@using Microsoft.AspNetCore.Components.Forms
+@inject IJSRuntime JS
+
+
+<div class="custom-links-container">
+    <div class="custom-links-header">My Custom Links</div>
+
+    @if (Links.Count == 0)
+    {
+        <p class="text-muted">No custom links yet. Add one below!</p>
+    }
+    else
+    {
+        <ul class="custom-links-list">
+            @foreach (var link in Links)
+            {
+                <li class="custom-link-item">
+                    <div class="custom-link-info">
+                        <a class="custom-link-name" href="@link.Url" target="_blank">@link.Name</a>
+                        @if (!string.IsNullOrWhiteSpace(link.Description))
+                        {
+                            <div class="custom-link-desc">@link.Description</div>
+                        }
+                    </div>
+                    <div class="custom-link-actions">
+                        <button class="btn btn-sm btn-outline-primary" @onclick="() => EditLink(link)">Edit</button>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteLink(link.Id)">Delete</button>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+
+    @if (Links.Count < MaxLinks)
+    {
+        <button class="btn btn-success mb-3" @onclick="ShowAddForm">Add Link</button>
+    }
+    else
+    {
+        <p class="text-danger">Maximum of @MaxLinks links reached.</p>
+    }
+
+    @if (IsAddEditFormVisible)
+    {
+        <div class="custom-link-form">
+            <EditForm Model="CurrentLink" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                @if (!string.IsNullOrWhiteSpace(FormErrorMessage))
+                {
+                    <div class="alert alert-danger">@FormErrorMessage</div>
+                }
+                <div class="mb-2">
+                    <label for="name">Name<span class="text-danger">*</span>:</label>
+                    <InputText id="name" class="form-control" @bind-Value="CurrentLink.Name" />
+                </div>
+                <div class="mb-2">
+                    <label for="desc">Description:</label>
+                    <InputText id="desc" class="form-control" @bind-Value="CurrentLink.Description" />
+                </div>
+                <div class="mb-2">
+                    <label for="url">URL<span class="text-danger">*</span>:</label>
+                    <InputText id="url" class="form-control" @bind-Value="CurrentLink.Url" placeholder="https://www.google.com" />
+                    <small class="form-text text-muted">Example: https://www.google.com</small>
+                </div>
+                <button class="btn btn-primary" type="submit">Save</button>
+                <button class="btn btn-secondary" type="button" @onclick="CancelForm">Cancel</button>
+            </EditForm>
+        </div>
+    }
+</div>
+
+@code {
+    private const int MaxLinks = 20;
+    private List<CustomLink> Links = new();
+    private CustomLink CurrentLink = new();
+    private bool IsAddEditFormVisible = false;
+    private bool IsEditMode = false;
+    private string? FormErrorMessage = null;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Compiler", "CS0169")]
+    private ElementReference NameInputRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLinksAsync();
+    }
+
+    private async Task LoadLinksAsync()
+    {
+        var json = await JS.InvokeAsync<string>("localStorage.getItem", "customLinks");
+        if (!string.IsNullOrEmpty(json))
+        {
+            Links = System.Text.Json.JsonSerializer.Deserialize<List<CustomLink>>(json) ?? new();
+        }
+    }
+
+    private async Task SaveLinksAsync()
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(Links);
+        await JS.InvokeVoidAsync("localStorage.setItem", "customLinks", json);
+    }
+
+    private void ShowAddForm()
+    {
+        CurrentLink = new CustomLink();
+        IsEditMode = false;
+        IsAddEditFormVisible = true;
+    }
+
+    private void EditLink(CustomLink link)
+    {
+        CurrentLink = new CustomLink
+        {
+            Id = link.Id,
+            Name = link.Name,
+            Description = link.Description,
+            Url = link.Url,
+            DateAdded = link.DateAdded
+        };
+        IsEditMode = true;
+        IsAddEditFormVisible = true;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        FormErrorMessage = null;
+        var nameExists = Links.Any(l => l.Name?.Trim().ToLower() == CurrentLink.Name?.Trim().ToLower() && l.Id != CurrentLink.Id);
+        var urlExists = Links.Any(l => l.Url?.Trim().ToLower() == CurrentLink.Url?.Trim().ToLower() && l.Id != CurrentLink.Id);
+        if (nameExists)
+        {
+            FormErrorMessage = "A link with this name already exists.";
+            StateHasChanged();
+            return;
+        }
+        if (urlExists)
+        {
+            FormErrorMessage = "A link with this URL already exists.";
+            StateHasChanged();
+            return;
+        }
+        if (IsEditMode)
+        {
+            var idx = Links.FindIndex(l => l.Id == CurrentLink.Id);
+            if (idx >= 0)
+            {
+                Links[idx] = CurrentLink;
+            }
+        }
+        else
+        {
+            if (Links.Count < MaxLinks)
+            {
+                Links.Add(CurrentLink);
+            }
+        }
+        await SaveLinksAsync();
+        IsAddEditFormVisible = false;
+        StateHasChanged();
+    }
+
+    private async void DeleteLink(Guid id)
+    {
+        Links.RemoveAll(l => l.Id == id);
+        await SaveLinksAsync();
+        StateHasChanged();
+    }
+
+    private void CancelForm()
+    {
+        IsAddEditFormVisible = false;
+    }
+}
