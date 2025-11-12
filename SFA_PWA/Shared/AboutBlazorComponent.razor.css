@@ -1,0 +1,73 @@
+/* AboutBlazorComponent.razor.css */
+
+.about-blazor {
+    padding: 1.5rem;
+    font-size: 1.3rem;
+    max-width: 650px;
+    margin: auto;
+}
+
+.about-blazor h2, .about-blazor h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.7rem;
+}
+
+.about-blazor ul {
+    padding-left: 0;
+    list-style: none;
+}
+
+.about-blazor li {
+    margin-bottom: 1.3rem;
+    padding: 1rem 0.7rem;
+    border-radius: 0.5rem;
+    background: #f8f9fa;
+    transition: background 0.2s;
+    font-size: 1.35rem;
+    display: flex;
+    align-items: center;
+}
+
+.about-blazor li:active, .about-blazor li:focus-within {
+    background: #e2e6ea;
+}
+
+.about-blazor .emoji {
+    font-size: 2.2em;
+    margin-right: 0.7em;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.about-blazor a {
+    color: #0078d4;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.3rem;
+    flex: 1;
+    font-size: 1.2em;
+}
+
+.about-blazor a:active, .about-blazor a:focus {
+    background: #e2e6ea;
+    outline: none;
+}
+
+@media (max-width: 600px) {
+    .about-blazor {
+        padding: 0.5rem;
+        font-size: 1.1rem;
+    }
+    .about-blazor li {
+        font-size: 1.1rem;
+        padding: 0.8rem 0.3rem;
+    }
+    .about-blazor h2, .about-blazor h3 {
+        font-size: 1.3rem;
+    }
+    .about-blazor .emoji {
+        font-size: 2.5em;
+    }
+}
