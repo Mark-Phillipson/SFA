@@ -14,15 +14,42 @@
 
 @* Google Map of all cafes link (prominent banner/button) *@
 <div style="margin-bottom: 1.5em; text-align: center;">
-    <a href="https://www.google.com/maps/d/u/0/viewer?hl=en_GB&ll=51.16496111227416%2C0.6610910499999934&mid=1ZbfDVSgeG70tAx6jdZtpBFBIFFU&z=9" target="_blank" rel="noopener noreferrer"
+    <a href="https://www.google.com/maps/d/u/0/viewer?hl=en_GB&ll=51.286400,0.495071&mid=1ZbfDVSgeG70tAx6jdZtpBFBIFFU&z=10" target="_blank" rel="noopener noreferrer"
        style="display: inline-block; background: linear-gradient(90deg, #007bff 60%, #00c6ff 100%); color: #fff; font-size: 1.3em; font-weight: 600; padding: 1em 2em; border-radius: 1.2em; box-shadow: 0 2px 8px rgba(0,0,0,0.10); text-decoration: none; transition: background 0.2s, box-shadow 0.2s; margin-bottom: 0.5em;">
         🗺️ View All Cafes on Google Map
     </a>
 </div>
 
 <div class="row mb-3">
+    <div class="col-md-6">
+        <input type="text" @bind-value="locationInput" @bind-value:event="oninput" placeholder="📍 Type a placename or postcode..." class="form-control" @onkeyup="OnLocationKeyUp" />
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100" @onclick="OnLocationSearch" disabled="@(isSearching)">🗺️ Search Nearby</button>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-secondary w-100" @onclick="ClearLocationSearch">❌ Clear</button>
+    </div>
+    <div class="col-md-2">
+        <input type="number" min="1" max="100" class="form-control" style="width:100%;" @bind="searchRadius" />
+        <span style="font-size:0.9em;">Radius (miles)</span>
+    </div>
+</div>
+<div class="row mb-2">
+    <div class="col-12">
+        @if (!string.IsNullOrWhiteSpace(searchMessage))
+        {
+            <div class="alert alert-info">@searchMessage</div>
+        }
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+    </div>
+</div>
+<div class="row mb-3">
     <div class="col-md-4">
-        <input type="text" @bind-value="filter" @bind-value:event="oninput" placeholder="General search..." class="form-control" @ref="filterBoxRef" />
+        <input type="text" @bind-value="filter" @bind-value:event="oninput" placeholder="🔎 General search..." class="form-control" @ref="filterBoxRef" />
     </div>
     <div class="col-md-4">
         <select @bind="selectedPlace" class="form-select">
@@ -78,7 +105,15 @@ else
     private string selectedPlace = string.Empty;
     private string selectedStatus = string.Empty;
 
-    private IEnumerable<string> Places => cafes?.Select(c => c.Place ?? "").Where(p => !string.IsNullOrWhiteSpace(p)).Distinct().OrderBy(p => p) ?? Enumerable.Empty<string>();
+    private IEnumerable<string> Places =>
+        cafes == null
+            ? Enumerable.Empty<string>()
+            : cafes
+                .Select(c => (c.Place ?? "").Trim())
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .GroupBy(p => p.ToLowerInvariant())
+                .Select(g => g.First())
+                .OrderBy(p => p);
     private IEnumerable<string> Statuses => cafes?.Select(c => c.Status ?? "").Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().OrderBy(s => s) ?? Enumerable.Empty<string>();
     private string locationInput = string.Empty;
     private ElementReference filterBoxRef;
@@ -137,13 +172,13 @@ else
                             cafe.Distance = dist;
                             if (dist <= searchRadius)
                             {
-                                cafe.Location = $"{dist:F1} km from {locationInput}";
+                                cafe.Location = $"{dist:F1} miles from {locationInput}";
                             }
                         }
                     }
                 }
                 var nearbyCount = (cafes ?? new List<Cafe>()).Count(c => c.Location != null);
-                searchMessage = $"Found {nearbyCount} cafe(s) within {searchRadius}km of {results[0].display_name}";
+                searchMessage = $"Found {nearbyCount} cafe(s) within {searchRadius} miles of {results[0].display_name}";
                 errorMessage = string.Empty;
             }
             else
@@ -172,6 +207,9 @@ else
         locationInput = string.Empty;
         searchMessage = string.Empty;
         errorMessage = string.Empty;
+        filter = string.Empty;
+        selectedPlace = string.Empty;
+        selectedStatus = string.Empty;
         // Reset cafes to full list (refetch from Google Sheets)
         _ = OnInitializedAsync();
     }
@@ -199,9 +237,10 @@ else
         }
 
     // Haversine formula to calculate distance (km) between two lat/lng points
+    // Haversine formula to calculate distance (miles) between two lat/lng points
     private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
     {
-        const double R = 6371; // Earth radius in km
+        const double R = 3958.8; // Earth radius in miles
         var dLat = Math.PI * (lat2 - lat1) / 180.0;
         var dLon = Math.PI * (lon2 - lon1) / 180.0;
         lat1 = Math.PI * lat1 / 180.0;
@@ -223,9 +262,9 @@ else
                 .Where(c => !string.IsNullOrWhiteSpace(c.Name) && c.Name != "Name")
                 .ToList();
 
-            // Apply Place filter
+            // Apply Place filter (case-insensitive, trimmed)
             if (!string.IsNullOrWhiteSpace(selectedPlace))
-                filtered = filtered.Where(c => (c.Place ?? "") == selectedPlace).ToList();
+                filtered = filtered.Where(c => string.Equals((c.Place ?? "").Trim(), selectedPlace.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
 
             // Apply Status filter
             if (!string.IsNullOrWhiteSpace(selectedStatus))
@@ -262,7 +301,7 @@ else
                             cafe.Distance = dist;
                             if (dist <= searchRadius)
                             {
-                                cafe.Location = $"{dist:F1} km from {locationInput}";
+                                cafe.Location = $"{dist:F1} miles from {locationInput}";
                             }
                         }
                     }
