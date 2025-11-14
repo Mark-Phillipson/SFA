@@ -25,13 +25,8 @@
     </div> *@
 
     @code {
-        private bool IsDesktop = false;
 
-        protected override async Task OnInitializedAsync()
-        {
-            IsDesktop = await JS.InvokeAsync<bool>("isDesktop");
-        }
-
+        
         [Inject] IJSRuntime JS { get; set; } = default!;
     }
 </div>
