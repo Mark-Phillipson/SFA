@@ -1,1 +1,8 @@
-Great you have linked the cafe list. Don't think we need the Trading or New tags displayed. Have tried to download on my Google Pixel 6a. It gets as far as 'downloading' but cannot find it on my home screen.  Need to consider carefully how we included links to the WhatsApp groups.  If link works just for existing member great. If it's a link to join a particular WA group then the admins of those groups each need to ensure joining is subject to approval. If Joe Public can auto join any group that's not acceptable especially as they then automatically get joined to the SFACC Community which will get them all the member announcements. I have created PDFs of all our newsletters which with Lorna's ok you could link to. Seems a great way forward for us and just what we need. Hopefully Jonathan will work with you on its launch. 👍
+
+Don't think we need the Trading or New tags displayed. 
+Status Filter?
+
+
+  
+
+I have created PDFs of all our newsletters which with Lorna's ok you could link to. Seems a great way forward for us and just what we need. Hopefully Jonathan will work with you on its launch. 👍

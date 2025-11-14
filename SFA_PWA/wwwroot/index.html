@@ -34,6 +34,16 @@
     <script src="js/buildinfo.js"></script>
     <script src="js/chatbot.js"></script>
     <script src="js/site.js"></script>
+    <script>
+        // JS function for Blazor interop to detect desktop
+        window.isDesktop = function () {
+            // Simple check: not mobile if no touch and screen width > 800px
+            var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+            var isWide = window.innerWidth > 800;
+            var isDesktopPlatform = !/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            return isWide && !isTouch && isDesktopPlatform;
+        }
+    </script>
     <script src="_framework/blazor.webassembly.js"></script>
     <script>
         // Register service worker with aggressive update checking
