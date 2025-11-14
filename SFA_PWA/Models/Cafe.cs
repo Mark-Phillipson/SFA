@@ -20,5 +20,9 @@ namespace SFA_PWA.Models
         // For filtering/location
         public string? Location { get; set; }
         public double? Distance { get; set; }
+
+        // For website search feature
+        public string? WebsiteSearchResult { get; set; }
+        public string? WebsiteSearchError { get; set; }
     }
 }
