@@ -22,6 +22,9 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // Register default HttpClient for PWA static/data requests
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
+// Register GoogleSheetCafeService for DI
+builder.Services.AddScoped<SFA_PWA.Services.GoogleSheetCafeService>();
+
 // Register BotApi HttpClient for chatbot requests
 builder.Services.AddScoped<BotApiHttpClient>(sp => new BotApiHttpClient(new HttpClient { BaseAddress = new Uri(botApiUrl) }));
 

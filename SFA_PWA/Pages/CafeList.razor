@@ -6,6 +6,10 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
+@inject SFA_PWA.Services.GoogleSheetCafeService GoogleSheetCafeService
+
+@using SFA_PWA.Models
+
 
 
 @* Google Map of all cafes link (prominent banner/button) *@
@@ -17,41 +21,26 @@
 </div>
 
 <div class="row mb-3">
-    <div class="col-md-6">
-        <input type="text" @bind-value="filter" @bind-value:event="oninput" placeholder="Filter cafes by name or description..." class="form-control" @ref="filterBoxRef" />
+    <div class="col-md-4">
+        <input type="text" @bind-value="filter" @bind-value:event="oninput" placeholder="General search..." class="form-control" @ref="filterBoxRef" />
     </div>
-    <div class="col-md-6">
-        <div class="input-group mb-2">
-            <input type="text" @bind-value="locationInput" @bind-value:event="oninput" placeholder="Enter a location (e.g. Marden, TN12 5AU)..." class="form-control" @onkeyup="OnLocationKeyUp" />
-            <select @bind="searchRadius" class="form-select" style="max-width: 120px;">
-                <option value="5">5 km</option>
-                <option value="10">10 km</option>
-                <option value="15">15 km</option>
-                <option value="20">20 km</option>
-                <option value="30">30 km</option>
-            </select>
-        </div>
-        <div class="btn-group" role="group">
-            <button class="btn btn-primary" @onclick="OnLocationSearch" disabled="@isSearching">
-                @if (isSearching)
-                {
-                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                }
-                Search Nearby
-            </button>
-            @if (searchLat.HasValue)
+    <div class="col-md-4">
+        <select @bind="selectedPlace" class="form-select">
+            <option value="">All Places</option>
+            @foreach (var place in Places)
             {
-                <button class="btn btn-secondary" @onclick="ClearLocationSearch">Clear Search</button>
+                <option value="@place">@place</option>
             }
-        </div>
-        @if (!string.IsNullOrWhiteSpace(searchMessage))
-        {
-            <div class="alert alert-info mt-2 mb-0 py-2" role="alert">@searchMessage</div>
-        }
-        @if (!string.IsNullOrWhiteSpace(errorMessage))
-        {
-            <div class="alert alert-warning mt-2 mb-0 py-2" role="alert">@errorMessage</div>
-        }
+        </select>
+    </div>
+    <div class="col-md-4">
+        <select @bind="selectedStatus" class="form-select">
+            <option value="">All Statuses</option>
+            @foreach (var status in Statuses)
+            {
+                <option value="@status">@status</option>
+            }
+        </select>
     </div>
 </div>
 @if (cafes == null)
@@ -60,40 +49,37 @@
 }
 else
 {
-    <table class="table table-striped cafe-table-responsive">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Map</th>
-                <th>Location</th>
-                <th class="desc-header">Description</th>
-            </tr>
-        </thead>
-        <tbody>
+    <div class="cafe-card-list">
         @foreach (var cafe in FilteredCafes)
         {
-            <tr class="cafe-row-group">
-                <td>@cafe.Name</td>
-                <td>
-                    @if (!string.IsNullOrWhiteSpace(cafe.LatLong) && cafe.LatLong.Contains(','))
+            <div class="cafe-card" style="cursor:pointer" @onclick="() => OpenCafeMap(cafe)">
+                <div class="cafe-card-header">
+                    <span class="cafe-status">@cafe.Status</span>
+                    <span class="cafe-name">@cafe.Name</span>
+                </div>
+                <div class="cafe-card-body">
+                    <div><strong>Address:</strong> @cafe.Address</div>
+                    <div><strong>Place:</strong> @cafe.Place</div>
+                    <div><strong>Postcode:</strong> @cafe.Postcode</div>
+                    <div><strong>Tel:</strong> @cafe.Tel</div>
+                    @if (!string.IsNullOrWhiteSpace(cafe.Notes))
                     {
-                        <button class="btn btn-sm btn-outline-primary" @onclick="@(() => OpenMapAsync(cafe.LatLong!))">Map</button>
+                        <div class="cafe-notes"><strong>Notes:</strong> @cafe.Notes</div>
                     }
-                </td>
-                <td>@(cafe.Location ?? "")</td>
-                <td class="desc-cell desktop-only">@cafe.Description</td>
-            </tr>
-            <tr class="mobile-desc-row cafe-row-group">
-                <td colspan="4" class="desc-cell mobile-only">@cafe.Description</td>
-            </tr>
+                </div>
+            </div>
         }
-        </tbody>
-    </table>
+    </div>
 }
 
 @code {
     private List<Cafe>? cafes;
     private string filter = string.Empty;
+    private string selectedPlace = string.Empty;
+    private string selectedStatus = string.Empty;
+
+    private IEnumerable<string> Places => cafes?.Select(c => c.Place ?? "").Where(p => !string.IsNullOrWhiteSpace(p)).Distinct().OrderBy(p => p) ?? Enumerable.Empty<string>();
+    private IEnumerable<string> Statuses => cafes?.Select(c => c.Status ?? "").Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().OrderBy(s => s) ?? Enumerable.Empty<string>();
     private string locationInput = string.Empty;
     private ElementReference filterBoxRef;
     private bool _focusSet = false;
@@ -136,8 +122,27 @@ else
             {
                 searchLat = double.Parse(results[0].lat, CultureInfo.InvariantCulture);
                 searchLng = double.Parse(results[0].lon, CultureInfo.InvariantCulture);
-                
-                var nearbyCount = FilteredCafes.Count();
+
+                // Calculate distance for each cafe using LatLong field
+                foreach (var cafe in cafes ?? new List<Cafe>())
+                {
+                    cafe.Location = null;
+                    cafe.Distance = null;
+                    if (!string.IsNullOrWhiteSpace(cafe.LatLong) && cafe.LatLong.Contains(','))
+                    {
+                        var parts = cafe.LatLong.Split(',');
+                        if (parts.Length == 2 && double.TryParse(parts[0], out var lat) && double.TryParse(parts[1], out var lng))
+                        {
+                            var dist = CalculateDistance(searchLat.Value, searchLng.Value, lat, lng);
+                            cafe.Distance = dist;
+                            if (dist <= searchRadius)
+                            {
+                                cafe.Location = $"{dist:F1} km from {locationInput}";
+                            }
+                        }
+                    }
+                }
+                var nearbyCount = (cafes ?? new List<Cafe>()).Count(c => c.Location != null);
                 searchMessage = $"Found {nearbyCount} cafe(s) within {searchRadius}km of {results[0].display_name}";
                 errorMessage = string.Empty;
             }
@@ -164,11 +169,11 @@ else
 
     private void ClearLocationSearch()
     {
-        searchLat = null;
-        searchLng = null;
         locationInput = string.Empty;
         searchMessage = string.Empty;
         errorMessage = string.Empty;
+        // Reset cafes to full list (refetch from Google Sheets)
+        _ = OnInitializedAsync();
     }
 
     public class NominatimResult
@@ -188,12 +193,10 @@ else
 
 
     protected override async Task OnInitializedAsync()
-    {
-        // Fetch CSV from wwwroot/sample-data/CafeList-CSV.csv
-        var csvUrl = "sample-data/CafeList-CSV.csv";
-        var csvContent = await Http.GetStringAsync(csvUrl);
-        cafes = LoadCafesFromString(csvContent);
-    }
+        {
+            // Fetch cafes from Google Sheets (read-only)
+            cafes = await GoogleSheetCafeService.GetCafesAsync();
+        }
 
     // Haversine formula to calculate distance (km) between two lat/lng points
     private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
@@ -216,18 +219,40 @@ else
             if (cafes == null)
                 return Enumerable.Empty<Cafe>();
 
-            var filtered = string.IsNullOrWhiteSpace(filter)
-                ? cafes.ToList()
-                : cafes.Where(c => ((c.Name ?? "") + " " + (c.Description ?? "")).Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
+            var filtered = (cafes ?? new List<Cafe>())
+                .Where(c => !string.IsNullOrWhiteSpace(c.Name) && c.Name != "Name")
+                .ToList();
 
-            // If user searched for a location, filter by proximity
+            // Apply Place filter
+            if (!string.IsNullOrWhiteSpace(selectedPlace))
+                filtered = filtered.Where(c => (c.Place ?? "") == selectedPlace).ToList();
+
+            // Apply Status filter
+            if (!string.IsNullOrWhiteSpace(selectedStatus))
+                filtered = filtered.Where(c => (c.Status ?? "") == selectedStatus).ToList();
+
+            // Apply general text filter
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                filtered = filtered.Where(c =>
+                    ((c.Status ?? "") + " " +
+                     (c.Name ?? "") + " " +
+                     (c.Address ?? "") + " " +
+                     (c.Place ?? "") + " " +
+                     (c.Postcode ?? "") + " " +
+                     (c.Tel ?? "") + " " +
+                     (c.Notes ?? "")
+                    ).Contains(filter, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+            }
+
+            // If user searched for a location, filter by proximity using LatLong
             if (searchLat.HasValue && searchLng.HasValue)
             {
                 foreach (var cafe in filtered)
                 {
                     cafe.Location = null;
                     cafe.Distance = null;
-                    
                     if (!string.IsNullOrWhiteSpace(cafe.LatLong) && cafe.LatLong.Contains(','))
                     {
                         var parts = cafe.LatLong.Split(',');
@@ -235,8 +260,7 @@ else
                         {
                             var dist = CalculateDistance(searchLat.Value, searchLng.Value, lat, lng);
                             cafe.Distance = dist;
-                            
-                            if (dist <= searchRadius) // Use selected radius
+                            if (dist <= searchRadius)
                             {
                                 cafe.Location = $"{dist:F1} km from {locationInput}";
                             }
@@ -246,7 +270,7 @@ else
                 // Only show cafes within radius and sort by distance
                 return filtered.Where(c => c.Location != null).OrderBy(c => c.Distance);
             }
-            
+
             // Default: clear location data and sort by name
             foreach (var cafe in filtered)
             {
@@ -256,72 +280,29 @@ else
             return filtered.OrderBy(c => c.Name);
         }
     }
-    private async Task OpenMapAsync(string latLong)
+    private async Task OpenCafeMap(Cafe cafe)
     {
-        var parts = latLong.Split(',');
-        if (parts.Length == 2 && double.TryParse(parts[0], out var lat) && double.TryParse(parts[1], out var lng))
+        string? url = null;
+        if (!string.IsNullOrWhiteSpace(cafe.LatLong) && cafe.LatLong.Contains(','))
         {
-            var url = $"https://www.google.com/maps?q={lat},{lng}";
-            if (JS != null)
+            var parts = cafe.LatLong.Split(',');
+            if (parts.Length == 2 && double.TryParse(parts[0], out var lat) && double.TryParse(parts[1], out var lng))
             {
-                await JS.InvokeVoidAsync("open", url, "_blank");
+                url = $"https://www.google.com/maps?q={lat},{lng}";
             }
+        }
+        else if (!string.IsNullOrWhiteSpace(cafe.GoogleMapLink))
+        {
+            url = cafe.GoogleMapLink;
+        }
+        if (url != null && JS != null)
+        {
+            await JS.InvokeVoidAsync("open", url, "_blank");
         }
     }
 
 
-    private List<Cafe> LoadCafesFromString(string csv)
-    {
-        var lines = csv.Split('\n').Select(l => l.Trim()).Where(l => !string.IsNullOrWhiteSpace(l)).ToList();
-        var list = new List<Cafe>();
-        foreach (var line in lines.Skip(1)) // skip header
-        {
-            var parts = SplitCsvLine(line);
-            if (parts.Length >= 3)
-            {
-                list.Add(new Cafe
-                {
-                    Name = parts[0],
-                    LatLong = parts[1],
-                    Description = parts[2]
-                });
-            }
-        }
-        return list;
-    }
+    // Removed CSV loading logic; now using Google Sheets API
 
-    private string[] SplitCsvLine(string line)
-    {
-        // Simple CSV split, handles quoted fields
-        var result = new List<string>();
-        bool inQuotes = false;
-        var value = "";
-        foreach (var c in line)
-        {
-            if (c == '"')
-            {
-                inQuotes = !inQuotes;
-            }
-            else if (c == ',' && !inQuotes)
-            {
-                result.Add(value);
-                value = "";
-            }
-            else
-            {
-                value += c;
-            }
-        }
-        result.Add(value);
-        return result.ToArray();
-    }
-
-    public class Cafe
-    {
-        public string? Name { get; set; }
-        public string? LatLong { get; set; }
-        public string? Description { get; set; }
-        public string? Location { get; set; } // For nearest area/town with distance
-        public double? Distance { get; set; } // Distance in km for sorting
-    }
+    // Use shared Cafe model from SFA_PWA.Models
 }

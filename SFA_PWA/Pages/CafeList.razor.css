@@ -1,0 +1,59 @@
+.cafe-card-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+.cafe-card {
+    background: #fff;
+    border-radius: 1.2em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    padding: 1em 1.2em;
+    min-width: 260px;
+    max-width: 350px;
+    width: 100%;
+    margin-bottom: 1em;
+    display: flex;
+    flex-direction: column;
+}
+.cafe-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5em;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+.cafe-status {
+    color: #6c63ff;
+    background: #f3f3ff;
+    border-radius: 0.6em;
+    padding: 0.2em 0.7em;
+    font-size: 0.95em;
+}
+.cafe-name {
+    color: #222;
+    font-weight: bold;
+    margin-left: 0.7em;
+}
+.cafe-card-body div {
+    margin-bottom: 0.3em;
+    font-size: 0.98em;
+}
+.cafe-notes {
+    color: #444;
+    font-size: 0.95em;
+    background: #f8f8f8;
+    border-radius: 0.5em;
+    padding: 0.3em 0.7em;
+}
+@media (max-width: 600px) {
+    .cafe-card-list {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .cafe-card {
+        min-width: 0;
+        max-width: 100%;
+    }
+}
