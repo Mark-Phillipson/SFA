@@ -9,18 +9,63 @@ namespace SFA_PWA.Services
 	public class GoogleSheetCafeService
 	{
 		private readonly HttpClient _httpClient;
+		private string _apiKey;
 		private const string SpreadsheetId = "1DvIsV2Cga-xwxNkZs93Slt-_HnJy0noSZzFsGNCMyzo";
 		private const string Range = "'Cafe Data Current'!A1:N250"; // Sheet name with spaces must be in single quotes
-		private const string ApiKey = "AIzaSyCM9YN2xwYjU5vsYD0m73NmiDa8WQIF_rc"; // Google Sheets API key
 
 		public GoogleSheetCafeService(HttpClient httpClient)
 		{
 			_httpClient = httpClient;
+			_apiKey = string.Empty;
+		}
+
+		private async Task EnsureApiKeyAsync()
+		{
+			if (!string.IsNullOrWhiteSpace(_apiKey)) return;
+
+			// Try to get API key from environment variable (server-side only)
+			_apiKey = Environment.GetEnvironmentVariable("GOOGLE_SHEETS_API_KEY") ?? string.Empty;
+			if (!string.IsNullOrWhiteSpace(_apiKey)) return;
+
+			// Fallback: fetch config from wwwroot/appsettings.Development.json via HttpClient (local dev)
+			try
+			{
+				var configJson = await _httpClient.GetStringAsync("appsettings.Development.json");
+				var configDoc = JsonDocument.Parse(configJson);
+				if (configDoc.RootElement.TryGetProperty("GoogleSheetsApiKey", out var apiKeyElement))
+				{
+					_apiKey = apiKeyElement.GetString() ?? string.Empty;
+					return;
+				}
+			}
+			catch (Exception exception)
+			{
+				System.Console.WriteLine("Google Sheets API key not found in appsettings.Development.json: " + exception.Message);
+			}
+			// Fallback: fetch config from wwwroot/appsettings.json via HttpClient (production)
+			try
+			{
+				var configJson = await _httpClient.GetStringAsync("appsettings.json");
+				var configDoc = JsonDocument.Parse(configJson);
+				if (configDoc.RootElement.TryGetProperty("GoogleSheetsApiKey", out var apiKeyElement))
+				{
+					_apiKey = apiKeyElement.GetString() ?? string.Empty;
+				}
+			}
+			catch (Exception exception)
+			{
+				System.Console.WriteLine("Google Sheets API key not found in appsettings.json: " + exception.Message);
+				// Ignore errors, will throw below if not found
+			}
 		}
 
 		public async Task<List<Cafe>> GetCafesAsync()
 		{
-			var url = $"https://sheets.googleapis.com/v4/spreadsheets/{SpreadsheetId}/values/{Range}?key={ApiKey}";
+			await EnsureApiKeyAsync();
+			if (string.IsNullOrWhiteSpace(_apiKey))
+				throw new InvalidOperationException("Google Sheets API key is not configured.");
+
+			var url = $"https://sheets.googleapis.com/v4/spreadsheets/{SpreadsheetId}/values/{Range}?key={_apiKey}";
 			var response = await _httpClient.GetAsync(url);
 			response.EnsureSuccessStatusCode();
 			var json = await response.Content.ReadAsStringAsync();

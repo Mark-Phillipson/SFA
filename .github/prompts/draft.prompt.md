@@ -1,1 +1,0 @@
-Could we have a button on the card that tries to find the official website if it exists for the individual cafes is this doable do you think? Maybe using some kind of search API or something similar?
