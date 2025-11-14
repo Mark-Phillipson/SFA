@@ -81,10 +81,6 @@ else
         {
             <div class="cafe-card" style="cursor:pointer; position:relative; min-height:180px;" @onclick="() => OpenCafeMap(cafe)">
                 <div class="cafe-card-header">
-                    @if (!string.IsNullOrWhiteSpace(cafe.Status))
-                    {
-                        <span class="cafe-status">@cafe.Status</span>
-                    }
                     @if (!string.IsNullOrWhiteSpace(cafe.Name))
                     {
                         <span class="cafe-name">@cafe.Name</span>

@@ -1,0 +1,26 @@
+How to Install a Progressive Web App (PWA) on a Google Pixel 6a
+
+Compatibility:
+- The Google Pixel 6a runs Android and supports Chrome, which has full PWA install support.
+- PWAs are compatible with all modern Android devices, including the Pixel 6a, as long as you use Chrome or another browser with PWA support (e.g., Edge, Firefox).
+
+Installation Steps:
+1. Open Chrome on your Pixel 6a.
+2. Navigate to the PWA site you want to install. (https://polite-sand-0eb4b4703.3.azurestaticapps.net/)
+3. If the site meets install criteria (has a manifest, is HTTPS, etc.), you’ll see an “Install” icon in the address bar or a prompt at the bottom.
+4. Tap “Install” (or use the Chrome menu > “Add to Home screen”).
+5. The app will be added to your home screen and app drawer, and will launch in its own window.
+
+Requirements for the PWA:
+- Served over HTTPS.
+- Has a valid web app manifest (with name, icons, start_url, display).
+- No prefer_related_applications: true in the manifest (otherwise, it will prompt for Play Store app).
+- User must interact with the site (at least one click/tap, 30 seconds on page).
+
+References:
+- Google Chrome Help: Use web apps https://support.google.com/chrome/answer/9658361?hl=en
+- web.dev: Install criteria for PWAs https://web.dev/install-criteria/
+
+Summary:
+- Yes, it is possible and fully compatible to install a PWA on a Google Pixel 6a.
+- The process is simple and works like any other Android device with Chrome.
