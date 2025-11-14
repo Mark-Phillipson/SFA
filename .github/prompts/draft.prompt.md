@@ -1,0 +1,1 @@
+ can we remove the about Blazor link from the NavMenu and change the link in the main layout to open the about Blazor page and also add to the Blazor page a link to the repository at the top after the link to Blazor
