@@ -27,4 +27,9 @@
     <Folder Include="wwwroot\screenshots\" />
   </ItemGroup>
 
+    <!-- Custom target to update buildinfo.json before publish -->
+    <Target Name="GenerateBuildInfo" BeforeTargets="Publish">
+      <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$buildInfo = @{ DotNetVersion = '$(TargetFramework)'; BuildDate = (Get-Date).ToString('o') }; $buildInfo | ConvertTo-Json | Set-Content wwwroot/buildinfo.json&quot;" />
+    </Target>
+
 </Project>
