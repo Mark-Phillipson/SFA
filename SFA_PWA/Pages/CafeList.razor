@@ -60,15 +60,7 @@
             }
         </select>
     </div>
-    <div class="col-md-4">
-        <select @bind="selectedStatus" class="form-select">
-            <option value="">All Statuses</option>
-            @foreach (var status in Statuses)
-            {
-                <option value="@status">@status</option>
-            }
-        </select>
-    </div>
+    <!-- Status dropdown removed -->
 </div>
 @if (cafes == null)
 {
@@ -130,7 +122,7 @@ else
     private List<Cafe>? cafes;
     private string filter = string.Empty;
     private string selectedPlace = string.Empty;
-    private string selectedStatus = string.Empty;
+    // Status filter removed
 
     private IEnumerable<string> Places =>
         cafes == null
@@ -141,7 +133,7 @@ else
                 .GroupBy(p => p.ToLowerInvariant())
                 .Select(g => g.First())
                 .OrderBy(p => p);
-    private IEnumerable<string> Statuses => cafes?.Select(c => c.Status ?? "").Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().OrderBy(s => s) ?? Enumerable.Empty<string>();
+    // Statuses property removed
     private string locationInput = string.Empty;
     private ElementReference filterBoxRef;
     private bool _focusSet = false;
@@ -236,7 +228,7 @@ else
         errorMessage = string.Empty;
         filter = string.Empty;
         selectedPlace = string.Empty;
-        selectedStatus = string.Empty;
+        // selectedStatus reset removed
         // Reset cafes to full list (refetch from Google Sheets)
         _ = OnInitializedAsync();
     }
@@ -293,9 +285,7 @@ else
             if (!string.IsNullOrWhiteSpace(selectedPlace))
                 filtered = filtered.Where(c => string.Equals((c.Place ?? "").Trim(), selectedPlace.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
 
-            // Apply Status filter
-            if (!string.IsNullOrWhiteSpace(selectedStatus))
-                filtered = filtered.Where(c => (c.Status ?? "") == selectedStatus).ToList();
+            // Status filter removed
 
             // Apply general text filter
             if (!string.IsNullOrWhiteSpace(filter))

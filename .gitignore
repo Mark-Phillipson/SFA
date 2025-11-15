@@ -194,3 +194,4 @@ service-worker/
 *.build
 
 # End of file
+SFA_PWA/wwwroot/buildinfo.json
