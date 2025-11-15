@@ -47,11 +47,11 @@
         }
     </div>
 </div>
-<div class="row mb-3">
-    <div class="col-md-4">
+<div class="cafe-filter-row mb-3">
+    <div class="cafe-filter-half">
         <input type="text" @bind-value="filter" @bind-value:event="oninput" placeholder="🔎 General search..." class="form-control" @ref="filterBoxRef" />
     </div>
-    <div class="col-md-4">
+    <div class="cafe-filter-half">
         <select @bind="selectedPlace" class="form-select">
             <option value="">All Places</option>
             @foreach (var place in Places)
@@ -60,7 +60,6 @@
             }
         </select>
     </div>
-    <!-- Status dropdown removed -->
 </div>
 @if (cafes == null)
 {
@@ -73,10 +72,7 @@ else
         {
             <div class="cafe-card" style="cursor:pointer; position:relative; min-height:180px;" @onclick="() => OpenCafeMap(cafe)">
                 <div class="cafe-card-header">
-                    @if (!string.IsNullOrWhiteSpace(cafe.Name))
-                    {
-                        <span class="cafe-name">@cafe.Name</span>
-                    }
+                    <div class="cafe-name" style="display:block; text-align:left;">@cafe.Name</div>
                 </div>
                 <div class="cafe-card-body" style="padding-bottom:2.5em;">
                     @if (!string.IsNullOrWhiteSpace(cafe.Address))
@@ -93,7 +89,7 @@ else
                     }
                     @if (!string.IsNullOrWhiteSpace(cafe.Tel))
                     {
-                        <div><strong>Tel:</strong> @cafe.Tel</div>
+                        <div><strong>Tel:</strong> <span class="cafe-tel">@cafe.Tel</span></div>
                     }
                     @if (!string.IsNullOrWhiteSpace(cafe.Notes))
                     {

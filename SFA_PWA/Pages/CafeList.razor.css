@@ -31,10 +31,13 @@
     padding: 0.2em 0.7em;
     font-size: 0.95em;
 }
-.cafe-name {
+.cafe-card-header .cafe-name {
     color: #222;
     font-weight: bold;
-    margin-left: 0.7em;
+    margin-left: 0;
+    text-align: left;
+    width: 100%;
+    display: block;
 }
 .cafe-card-body div {
     margin-bottom: 0.3em;
@@ -47,6 +50,10 @@
     border-radius: 0.5em;
     padding: 0.3em 0.7em;
 }
+ .cafe-tel {
+     color: #174ea6;
+     font-weight: 600;
+ }
 @media (max-width: 600px) {
     .cafe-card-list {
         flex-direction: column;
@@ -60,4 +67,23 @@
 
 @media (max-width: 768px) {
     .hide-on-mobile { display: none !important; }
+}
+
+.cafe-filter-row {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+.cafe-filter-half {
+    flex: 1 1 0;
+    min-width: 0;
+}
+@media (max-width: 600px) {
+    .cafe-filter-row {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .cafe-filter-half {
+        width: 100%;
+    }
 }
