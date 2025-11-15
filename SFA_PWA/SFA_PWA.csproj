@@ -27,9 +27,16 @@
     <Folder Include="wwwroot\screenshots\" />
   </ItemGroup>
 
-    <!-- Custom target to update buildinfo.json before publish -->
+    <!-- Cross-platform MSBuild WriteLinesToFile task to update buildinfo.json before publish -->
+    <PropertyGroup>
+      <BuildDate>$([System.DateTime]::UtcNow.ToString("o"))</BuildDate>
+      <BuildInfoJson>{"DotNetVersion": "$(TargetFramework)", "BuildDate": "$(BuildDate)"}</BuildInfoJson>
+    </PropertyGroup>
     <Target Name="GenerateBuildInfo" BeforeTargets="Publish">
-      <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$buildInfo = @{ DotNetVersion = '$(TargetFramework)'; BuildDate = (Get-Date).ToString('o') }; $buildInfo | ConvertTo-Json | Set-Content wwwroot/buildinfo.json&quot;" />
+      <WriteLinesToFile
+        File="wwwroot/buildinfo.json"
+        Lines="$(BuildInfoJson)"
+        Overwrite="true" />
     </Target>
 
 </Project>
