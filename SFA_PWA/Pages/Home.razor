@@ -81,7 +81,7 @@
 
 <footer style="text-align:center; margin-top:2em; color:gray; font-size:0.9em;">
     <div>
-        .NET Version: @AppVersion Published Time @BuildDate
+        .NET Version: @AppVersion Last Build Date/Time @BuildDate
     </div>
 </footer>
 
@@ -121,7 +121,22 @@
     {
         if (DateTime.TryParse(isoDate, out var dt))
         {
-            return dt.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+            try
+            {
+                // Use "GMT Standard Time" for Windows, "Europe/London" for Linux/macOS
+                TimeZoneInfo ukZone;
+                if (OperatingSystem.IsWindows())
+                    ukZone = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+                else
+                    ukZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
+                var ukTime = TimeZoneInfo.ConvertTimeFromUtc(dt, ukZone);
+                return ukTime.ToString("yyyy-MM-dd HH:mm");
+            }
+            catch
+            {
+                // Fallback to local time if timezone not found
+                return dt.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+            }
         }
         return isoDate;
     }

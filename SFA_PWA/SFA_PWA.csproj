@@ -32,7 +32,7 @@
       <BuildDate>$([System.DateTime]::UtcNow.ToString("o"))</BuildDate>
       <BuildInfoJson>{"DotNetVersion": "$(TargetFramework)", "BuildDate": "$(BuildDate)"}</BuildInfoJson>
     </PropertyGroup>
-    <Target Name="GenerateBuildInfo" BeforeTargets="Publish">
+    <Target Name="GenerateBuildInfo" BeforeTargets="Build">
       <WriteLinesToFile
         File="wwwroot/buildinfo.json"
         Lines="$(BuildInfoJson)"
