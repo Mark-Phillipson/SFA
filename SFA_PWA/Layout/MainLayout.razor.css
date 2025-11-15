@@ -128,4 +128,38 @@ main {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
     }
+
+    /* Ensure install-pwa popup isn't cut off by the header; anchor and position it */
+    .install-pwa {
+        position: relative;
+    }
+
+    .install-pwa .card {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        right: 0; /* align to right of the button */
+        min-width: 260px;
+        max-width: 420px;
+        z-index: 1050; /* above top-row */
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+    @media (max-width: 640.98px) {
+        /* On mobile, show as full-width panel under the top row */
+        .install-pwa .card {
+            position: absolute;
+            left: 0.75rem;
+            right: 0.75rem;
+            top: calc(100% + 0.25rem);
+            width: calc(100% - 1.5rem);
+            max-width: none;
+        }
+    }
+}
+
+/* Style for emoji glyphs used in action buttons */
+.install-pwa .emoji {
+    margin-right: 0.45rem;
+    font-size: 1.05em;
+    line-height: 0; /* keep emoji aligned with button label */
 }

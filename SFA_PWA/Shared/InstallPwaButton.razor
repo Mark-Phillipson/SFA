@@ -1,0 +1,187 @@
+@using SFA_PWA.Models
+@using System.Text.Json
+@inject IJSRuntime JS
+
+<div class="install-pwa">
+    @if (IsInstalled)
+    {
+        <button class="btn btn-lg btn-secondary" disabled><span class="emoji">✔️</span>@InstalledText</button>
+    }
+    else if (CanPrompt)
+    {
+        <button class="btn btn-lg btn-success" @onclick="PromptInstall"><span class="emoji">🏠</span>Install SFA PWA</button>
+    }
+    else
+    {
+        <button class="btn btn-lg btn-primary" @onclick="ShowFallback"><span class="emoji">❓</span>Interactive How to install</button>
+    }
+
+    @if (ShowInstructions)
+    {
+        <div class="card mt-2 p-3">
+            <div class="card-body">
+                <h5 class="card-title">How to add SFA to your device</h5>
+                <p class="card-text">@InstructionShort</p>
+                <ol>
+                    @foreach (var step in InstructionSteps)
+                    {
+                        <li>@step</li>
+                    }
+                </ol>
+                <div class="d-flex gap-2 mt-2">
+                    <button class="btn btn-outline-secondary" @onclick="OpenSearch"><span class="emoji">🔎</span>Show me (Google)</button>
+                    <button class="btn btn-outline-secondary" @onclick="CopySteps"><span class="emoji">📋</span>Copy steps</button>
+                    <button class="btn btn-link text-danger" @onclick="(()=>ShowInstructions=false)"><span class="emoji">✖️</span>Close</button>
+                </div>
+            </div>
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(StatusMessage))
+    {
+        <div class="text-muted mt-1">@StatusMessage</div>
+    }
+</div>
+
+@code {
+    private DeviceInfo? Device;
+    private bool IsInstalled = false;
+    private bool CanPrompt = false;
+    private bool ShowInstructions = false;
+    private string StatusMessage = string.Empty;
+    private string InstalledText = "App installed";
+
+    private string InstructionShort = string.Empty;
+    private List<string> InstructionSteps = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Device = await JS.InvokeAsync<DeviceInfo>("getDeviceInfo");
+        }
+        catch
+        {
+            Device = new DeviceInfo();
+        }
+
+        try
+        {
+            IsInstalled = await JS.InvokeAsync<bool>("isPwaInstalled");
+        }
+        catch
+        {
+            IsInstalled = false;
+        }
+
+        // We allow the prompt if the deferred PWA prompt is stored
+        try
+        {
+            CanPrompt = await JS.InvokeAsync<bool>("hasDeferredPwaPrompt");
+        }
+        catch
+        {
+            CanPrompt = false;
+        }
+
+        BuildInstructionText();
+    }
+
+    private async Task PromptInstall()
+    {
+        StatusMessage = "Prompting install...";
+        var result = await JS.InvokeAsync<JsonElement>("promptInstall");
+        try
+        {
+            if (result.TryGetProperty("prompted", out var prompted) && prompted.GetBoolean())
+            {
+                if (result.TryGetProperty("outcome", out var outc))
+                {
+                    var outcome = outc.GetString();
+                    StatusMessage = "You chose: " + outcome;
+                    IsInstalled = await JS.InvokeAsync<bool>("isPwaInstalled");
+                }
+                else
+                {
+                    StatusMessage = "Install prompt shown";
+                }
+            }
+            else
+            {
+                // fallback
+                StatusMessage = "No native install prompt available — showing steps.";
+                ShowInstructions = true;
+            }
+        }
+        catch
+        {
+            ShowInstructions = true;
+            StatusMessage = string.Empty;
+        }
+    }
+
+    private void ShowFallback()
+    {
+        ShowInstructions = true;
+    }
+
+    private void BuildInstructionText()
+    {
+        if (Device == null)
+        {
+            InstructionShort = "Follow platform instructions to add to your home screen.";
+            InstructionSteps = new List<string> { "Use browser menu or Share/Share → Add to Home Screen." };
+            return;
+        }
+
+        if (Device.OS == "iOS" || Device.Browser == "Safari")
+        {
+            InstructionShort = "iPhone / iPad: Use Safari to add to your home screen.";
+            InstructionSteps = new List<string>
+            {
+                "Open this page in Safari (the default Apple browser).",
+                "Tap the Share icon (a square with an upward arrow).",
+                "Choose 'Add to Home Screen' and confirm."
+            };
+        }
+        else if (Device.OS == "Android" || Device.Browser == "Chrome")
+        {
+            InstructionShort = "Android: Chrome can add this app to your home screen.";
+            InstructionSteps = new List<string>
+            {
+                "Open this page in Chrome.",
+                "Tap the three-dot menu in the top-right corner.",
+                "Pick 'Install app' or 'Add to Home screen' and confirm."
+            };
+        }
+        else
+        {
+            InstructionShort = "Desktop: install from your browser's menu.";
+            InstructionSteps = new List<string>
+            {
+                "In Chrome or Edge, open the three-dot menu.",
+                "Select 'Install' or 'Apps → Install this site'.",
+                "Follow the browser's prompt to install." 
+            };
+        }
+    }
+
+    private async Task OpenSearch()
+    {
+        var label = Device?.OS ?? "computer";
+        await JS.InvokeVoidAsync("openInstallSearch", label);
+    }
+
+    private async Task CopySteps()
+    {
+        var text = string.Join("\n", InstructionSteps);
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+            StatusMessage = "Steps copied to clipboard!";
+        }
+        catch
+        {
+            StatusMessage = "Unable to copy steps; follow the steps above.";
+        }
+    }
+}

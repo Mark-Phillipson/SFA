@@ -1,5 +1,4 @@
-﻿
-@page "/"
+﻿@page "/"
 
 <PageTitle>Home</PageTitle>
 
@@ -10,14 +9,16 @@
     </div>
 }
 
+
 <h1>Welcome to the San Fairy Ann Cycling Club App!</h1>
 <div class="video-preview" style="margin:2em 0;text-align:center;">
     <h2>YouTube Video</h2>
-    <a href="https://www.youtube.com/watch?v=Nkp0X28te-o" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;text-decoration:none;font-size:1.2em;">
+    <a href="https://www.youtube.com/watch?v=Nkp0X28te-o" target="_blank" rel="noopener noreferrer"
+        style="display:inline-flex;align-items:center;text-decoration:none;font-size:1.2em;">
         <span style="display:inline-block;width:32px;height:32px;margin-right:0.5em;">
             <svg viewBox="0 0 32 32" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
-                <rect width="32" height="32" rx="6" fill="#FF0000"/>
-                <polygon points="13,10 25,16 13,22" fill="#fff"/>
+                <rect width="32" height="32" rx="6" fill="#FF0000" />
+                <polygon points="13,10 25,16 13,22" fill="#fff" />
             </svg>
         </span>
         Watch explanation video on YouTube
@@ -27,19 +28,26 @@
 <div class="instructions">
     <h3>How to use this app:</h3>
     <ul>
-        <li><b>Ride Group Calendars:</b> View upcoming rides for your selected groups on the <b>Calendars</b> page. Choose which groups to follow in <b>Settings</b>.</li>
-        <li><b>Club Links:</b> Access club resources, WhatsApp channels (demo only), social media, and more from the <b>Links</b> page. Use the filter box to quickly find any link or resource.</li>
-    <li><b>Weather:</b> Access Kent weather links on the <b>Weather</b> page. Select a location from the BBC Weather dropdown, or visit the Met Office. No specific day forecasts are shown. The page features a clean UI with weather icons for quick access.</li>
-        <li><b>Groups/Settings:</b> Select which ride groups you want to follow. Your preferences are saved locally.</li>
+        <li><b>Ride Group Calendars:</b> View upcoming rides for your selected groups on the <b>Calendars</b> page.
+            Choose which groups to follow in <b>Settings</b>.</li>
+        <li><b>Club Links:</b> Access club resources, WhatsApp channels (demo only), social media, and more from the
+            <b>Links</b> page. Use the filter box to quickly find any link or resource.</li>
+        <li><b>Weather:</b> Access Kent weather links on the <b>Weather</b> page. Select a location from the BBC Weather
+            dropdown, or visit the Met Office. No specific day forecasts are shown. The page features a clean UI with
+            weather icons for quick access.</li>
+        <li><b>Groups/Settings:</b> Select which ride groups you want to follow. Your preferences are saved locally.
+        </li>
         <li><b>Cafe List:</b> Browse recommended cafes for your rides.</li>
         <li><b>Specification:</b> Review the app’s specification and details.</li>
         <li><b>Feedback:</b> For feedback or issues, use the GitHub link in the <b>Links</b> page.</li>
     </ul>
-    <p><i>Note: WhatsApp group links are for demonstration only and not yet set up for the club. This app works on desktop and mobile, and saves your settings locally for convenience.</i></p>
+    <p><i>Note: WhatsApp group links are for demonstration only and not yet set up for the club. This app works on
+            desktop and mobile, and saves your settings locally for convenience.</i></p>
 </div>
 
 <div class="install-section" style="margin-top:2em;">
     <h2>How to Install This App</h2>
+    <InstallPwaButton />
     <h4>Windows or Mac (Chrome, Edge, Firefox):</h4>
     <ol>
         <li>Open the app in your browser.</li>
@@ -48,8 +56,10 @@
         <li>Follow the prompts to install. The app will appear in your Start menu or Applications folder.</li>
     </ol>
     <div>
-        <img src="screenshots/chrome-install.png" alt="Screenshot: Chrome Install Prompt" style="max-width:300px; margin:0.5em;" />
-        <img src="screenshots/edge-install.png" alt="Screenshot: Edge Install Prompt" style="max-width:300px; margin:0.5em;" />
+        <img src="screenshots/chrome-install.png" alt="Screenshot: Chrome Install Prompt"
+            style="max-width:300px; margin:0.5em;" />
+        <img src="screenshots/edge-install.png" alt="Screenshot: Edge Install Prompt"
+            style="max-width:300px; margin:0.5em;" />
     </div>
     <h4>Android Phone:</h4>
     <ol>
@@ -59,7 +69,8 @@
         <li>Confirm. The app icon will appear on your home screen.</li>
     </ol>
     <div>
-        <img src="screenshots/android-install.png" alt="Screenshot: Android Install" style="max-width:300px; margin:0.5em;" />
+        <img src="screenshots/android-install.png" alt="Screenshot: Android Install"
+            style="max-width:300px; margin:0.5em;" />
     </div>
     <h4>iPhone (Safari):</h4>
     <ol>
@@ -71,7 +82,8 @@
     <div>
         @* <img src="screenshots/iphone-install.png" alt="Screenshot: iPhone Install" style="max-width:300px; margin:0.5em;" /> *@
     </div>
-    <p style="font-size:0.95em;color:#555;"><i>Screenshots are for illustration. Wording and icons may vary by browser and device.</i></p>
+    <p style="font-size:0.95em;color:#555;"><i>Screenshots are for illustration. Wording and icons may vary by browser
+            and device.</i></p>
 </div>
 
 <div class="desktop-bottom-image">
@@ -159,6 +171,3 @@
         public string? BuildDate { get; set; }
     }
 }
-
-
-

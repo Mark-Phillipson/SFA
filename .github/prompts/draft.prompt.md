@@ -1,8 +1,4 @@
 
+Could we have a new Blazor component that has a single button that when clicked will perform a google search for how to install a Blazor PWA on the current device whatever that may be that a desktop browser or a mobile phone?
 
-
-
-  
-
-I have created PDFs of all our newsletters which with Lorna's ok you could link to. Seems a great way forward for us and just what we need. Hopefully Jonathan will work with you on its launch. 👍
-
+Can it detect what kind of device it's running on?
