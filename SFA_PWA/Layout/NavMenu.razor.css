@@ -4,7 +4,8 @@
 
 .top-row {
     min-height: 3.5rem;
-    background-color: #7c3fa0;
+    /* Use the site-wide purple variable defined in MainLayout.razor.css */
+    background-color: #372960;
 }
 
 .navbar-brand {

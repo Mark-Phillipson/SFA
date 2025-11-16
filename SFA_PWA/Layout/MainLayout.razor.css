@@ -58,12 +58,19 @@
     flex-direction: column;
 }
 
+/* Theme variables: define on :root so they're available across all components */
+:root {
+    --sfa-club-purple: #372960; /* San Fairy Ann purple */
+    --sfa-club-blue:   #112a56; /* deep club blue to compliment the purple */
+}
+
 main {
     flex: 1;
 }
 
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    /* Use a single club purple color instead of a gradient */
+    background-color: #372960;
 }
 
 .top-row {

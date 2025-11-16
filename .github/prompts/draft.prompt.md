@@ -1,1 +1,0 @@
-Can we make sure we have page titles for all Blazor  pages for example my custom links does not show a page title.
