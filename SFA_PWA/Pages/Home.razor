@@ -165,7 +165,8 @@
 
     private async Task HideSplashAfterDelayAsync()
     {
-        await Task.Delay(5000);
+        // Reduce splash delay from 5000ms (5s) to 1000ms (1s)
+        await Task.Delay(1000);
         showSplash = false;
         StateHasChanged();
     }
