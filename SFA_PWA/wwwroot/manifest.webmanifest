@@ -1,6 +1,6 @@
 {
-  "name": "FairiesLittleHelper",
-  "short_name": "SFA_FLH",
+  "name": "Fairies Little Helper",
+  "short_name": "FairiesLH",
   "id": "./",
   "start_url": "./",
   "display": "standalone",
