@@ -35,7 +35,7 @@
   { "description": "Strava Routes (Popular and latest public routes)", "url": "https://www.strava.com/routes", "emoji": "🗺️", "category": "Routes" },
   { "description": "Strava Clubs (including San Fairy Ann)", "url": "https://www.strava.com/clubs/4606", "emoji": "📈", "category": "Apps & Tools" },
   { "description": "GitHub Issues (Technical Feedback)", "url": "https://github.com/Mark-Phillipson/SFA/issues", "emoji": "🐙", "category": "Technical Feedback" },
-  { "description": "Main WhatsApp Channel", "url": "https://chat.whatsapp.com/AbCdEfGhIjK1LmN2OpQrSt", "emoji": "💬", "category": "Social" },
+  { "description": "Main WhatsApp Channel", "url": "https://chat.whatsapp.com/", "emoji": "💬", "category": "Social" },
   { "description": "RideWithGPS Milestone Article (How to use RideWithGPS in the club)", "url": "https://static1.squarespace.com/static/619ccd95b4eba4641fcd16f8/t/62d53fc2f1e9ae0eaf6849e2/1658142705415/RideWithGPS-MilestoneArticle.pdf", "emoji": "📄", "category": "Guides" },
   { "description": "RideWithGPS Guide by John Blakeley", "url": "https://drive.google.com/file/d/17XkzSbQHQ2Ux6QgDLllNbPFkDqV2DVXx/view", "emoji": "📘", "category": "Guides" },
   { "description": "Join SFA Club on RideWithGPS (Direct Link)", "url": "https://ridewithgps.com/auto_approve?code=yj7ygURopGyWN0Hh&id=633&q=joined&type=Club", "emoji": "🔗", "category": "Apps & Tools" }

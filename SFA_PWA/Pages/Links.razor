@@ -42,7 +42,12 @@ else
             {
                 <div style="display: flex; flex-direction: column; align-items: flex-start; background: #f8f9fa; border-radius: 1em; box-shadow: 0 1px 4px rgba(0,0,0,0.04); padding: 1em; margin-bottom: 0.5em; min-width: 220px; max-width: 100%; width: 100%;">
                     <a href="@link.url" target="_blank" class="btn btn-outline-primary btn-lg" style="text-decoration: none; display: flex; align-items: center; gap: 0.7em; width: 100%; justify-content: flex-start; word-break: break-word; white-space: normal;">
-                        @if ((link.url?.Contains("github.com/Mark-Phillipson/SFA/issues") ?? false))
+                        @if ((link.url?.Equals("https://www.sanfairyanncc.co.uk/", StringComparison.OrdinalIgnoreCase) ?? false))
+                        {
+                            <img src="SFA-Logo.png" alt="San Fairy Ann Logo" style="height:2.5em;width:2.5em;" />
+                            <span style="font-size:1.3em; font-weight:500; word-break: break-word; white-space: normal;">@link.description</span>
+                        }
+                        else if ((link.url?.Contains("github.com/Mark-Phillipson/SFA/issues") ?? false))
                         {
                             <img src="github-logo.svg" alt="GitHub" style="height:2.5em;width:2.5em;" />
                             <span style="font-size:1.3em; font-weight:500; word-break: break-word; white-space: normal;">GitHub Issues (Feedback)</span>
