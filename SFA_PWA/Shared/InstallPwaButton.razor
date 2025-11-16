@@ -145,13 +145,15 @@
         }
         else if (Device.OS == "Android" || Device.Browser == "Chrome")
         {
-            InstructionShort = "Android: Chrome can add this app to your home screen.";
-            InstructionSteps = new List<string>
-            {
-                "Open this page in Chrome.",
-                "Tap the three-dot menu in the top-right corner.",
-                "Pick 'Install app' or 'Add to Home screen' and confirm."
-            };
+                InstructionShort = "Android: Chrome can add this app to your home screen. Look for the install icon or use the menu.";
+                InstructionSteps = new List<string>
+                {
+                    "Open this page in Chrome on your Android phone (use https:// for installability).",
+                    "Look for an install icon in the address bar (a + or install icon); if it appears, tap it to install.",
+                    "If there's no icon, open the Chrome menu (three dots) and choose 'Install app' or 'Add to Home screen'.",
+                    "Chrome shows a preview and asks you to Add or Install — confirm to finish. The icon will appear in your Home screen and app drawer.",
+                    "To remove, long-press the app icon on your Home screen and pick Remove or Uninstall."
+                }; 
         }
         else
         {

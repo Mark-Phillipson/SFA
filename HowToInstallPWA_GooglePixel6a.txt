@@ -4,14 +4,28 @@ Compatibility:
 - The Google Pixel 6a runs Android and supports Chrome, which has full PWA install support.
 - PWAs are compatible with all modern Android devices, including the Pixel 6a, as long as you use Chrome or another browser with PWA support (e.g., Edge, Firefox).
 
-Installation Steps:
+Installation Steps (Google Pixel 6a / Chrome):
 1. Open Chrome on your Pixel 6a.
-2. Navigate to the PWA site you want to install. (https://polite-sand-0eb4b4703.3.azurestaticapps.net/)
-3. If the site meets install criteria (has a manifest, is HTTPS, etc.), you’ll see an “Install” icon in the address bar or a prompt at the bottom.
-4. Tap “Install” (or use the Chrome menu > “Add to Home screen”).
-5. The app will be added to your home screen and app drawer, and will launch in its own window.
+2. Navigate to the PWA site you want to install (example: https://polite-sand-0eb4b4703.3.azurestaticapps.net/).
+3. Check whether Chrome shows an install icon in the address bar — this means the PWA is installable. If you see the install icon, tap it.
+4. If you don’t see the icon, open the Chrome menu (three dots in the top-right) and select <b>Install app</b> or <b>Add to Home screen</b>.
+5. Chrome will show a preview and ask you to confirm — tap <b>Add</b> or <b>Install</b>.
+6. After installing, the app icon appears on the Home screen and in the app drawer. The app should open in a standalone window (no address bar) if the manifest has <code>display: standalone</code>.
 
+Save and remove from the Home screen:
+- To save again after removal: Re-open the site in Chrome and follow the steps above.
+- To remove: long-press the app icon on the home screen and choose <b>Remove</b> or <b>Uninstall</b> depending on your launcher.
+- Confirm it's a PWA: open from the home screen — a PWA opens like a native app without the browser UI if correctly configured.
+
+- Served over HTTPS.
+- Has a valid web app manifest (with name, icons, start_url, display).
+- No prefer_related_applications: true in the manifest (otherwise, it will prompt for Play Store app).
+- User must interact with the site (at least one click/tap, 30 seconds on page).
 Requirements for the PWA:
+- The app must be served over HTTPS.
+- Your app must include a valid web app manifest with the required members (name or short_name, icons sized 192x192 and 512x512, start_url, and display).
+- Optionally add a service worker to enable offline support and improve installability — the browser sometimes looks for a service worker before showing the install prompt.
+- If your manifest includes <code>prefer_related_applications</code> and it’s set to true, Chrome may prefer recommending a Play Store version instead.
 - Served over HTTPS.
 - Has a valid web app manifest (with name, icons, start_url, display).
 - No prefer_related_applications: true in the manifest (otherwise, it will prompt for Play Store app).
