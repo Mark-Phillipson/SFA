@@ -8,13 +8,14 @@
 
     <main>
         <div class="top-row px-4">
-            <span class="cycling-emojis" style="font-size:2.5rem; line-height:1; vertical-align:middle;">
-                <span class="emoji-all">🚴‍🚲🚴‍♀️</span>
-            </span>
-            
-            <span style="margin-left: 1rem;"></span>
-            <a href="javascript:void(0)" @onclick="HardRefresh" title="Refresh the app" style="cursor: pointer;">🔄 Refresh App</a>
-            <a href="about-blazor">About</a>
+                <span class="cycling-emojis" style="font-size:2.5rem; line-height:1; vertical-align:middle;">
+                    <span class="emoji-all">🚴‍🚲🚴‍♀️</span>
+                </span>
+                <span style="margin-left: 1rem;"></span>
+                <div class="top-links">
+                    <a href="javascript:void(0)" @onclick="HardRefresh" title="Refresh the app" style="cursor: pointer;">🔄 Refresh App</a>
+                    <a href="about-blazor">About</a>
+                </div>
         </div>
 
         <article class="content px-4">
