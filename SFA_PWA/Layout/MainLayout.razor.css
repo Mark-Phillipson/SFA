@@ -84,9 +84,10 @@ main {
 
 .top-links {
     display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
+    flex-direction: row;
+    gap: 1.25rem;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 @media (max-width: 640.98px) {

@@ -63,6 +63,12 @@
                 <span class="nav-text">Club ChatBot</span>
             </NavLink>
         </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link nav-link-center" href="javascript:void(0)" @onclick="HardRefresh" title="Refresh the app" style="cursor: pointer;">
+                <span class="bi bi-arrow-repeat icon-center" aria-hidden="true"></span>
+                <span class="nav-text">Refresh App</span>
+            </NavLink>
+        </div>
         
     </nav>
     <div class="nav-logo">
@@ -78,5 +84,13 @@
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    [Inject]
+    private IJSRuntime JS { get; set; } = default!;
+
+    private async Task HardRefresh()
+    {
+        await JS.InvokeVoidAsync("hardRefresh");
     }
 }
