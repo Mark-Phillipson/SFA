@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@inject IJSRuntime JS
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -11,6 +13,7 @@
             </span>
             
             <span style="margin-left: 1rem;"></span>
+            <a href="javascript:void(0)" @onclick="HardRefresh" title="Refresh the app" style="cursor: pointer;">🔄 Refresh App</a>
             <a href="about-blazor">About</a>
         </div>
 
@@ -19,3 +22,10 @@
         </article>
     </main>
 </div>
+
+@code {
+    private async Task HardRefresh()
+    {
+        await JS.InvokeVoidAsync("hardRefresh");
+    }
+}
