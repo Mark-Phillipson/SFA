@@ -43,30 +43,31 @@
     private List<BbcLocation> bbcLocations = new List<BbcLocation>
 {
 new BbcLocation("Maidstone", "https://www.bbc.co.uk/weather/2643179"),
+new BbcLocation("Ashford", "https://www.bbc.co.uk/weather/2656710"),
 new BbcLocation("Aylesford", "https://www.bbc.co.uk/weather/2656716"),
 new BbcLocation("Bearsted", "https://www.bbc.co.uk/weather/2656085"),
 new BbcLocation("Boxley", "https://www.bbc.co.uk/weather/2655040"),
-new BbcLocation("Detling", "https://www.bbc.co.uk/weather/2651303"),
 new BbcLocation("Chatham", "https://www.bbc.co.uk/weather/2653305"),
-new BbcLocation("Rochester", "https://www.bbc.co.uk/weather/2639268"),
-new BbcLocation("Tonbridge", "https://www.bbc.co.uk/weather/2635703"),
-new BbcLocation("Sevenoaks", "https://www.bbc.co.uk/weather/2638187"),
-new BbcLocation("Ashford", "https://www.bbc.co.uk/weather/2656710"),
-new BbcLocation("Tunbridge Wells", "https://www.bbc.co.uk/weather/2639022"),
-new BbcLocation("Tenterden", "https://www.bbc.co.uk/weather/2636101"),
 new BbcLocation("Cranbrook", "https://www.bbc.co.uk/weather/2652088"),
+new BbcLocation("Detling", "https://www.bbc.co.uk/weather/2651303"),
+new BbcLocation("Faversham", "https://www.bbc.co.uk/weather/2649622"),
 new BbcLocation("Headcorn", "https://www.bbc.co.uk/weather/2647240"),
 new BbcLocation("Lenham", "https://www.bbc.co.uk/weather/2644624"),
-new BbcLocation("Staplehurst", "https://www.bbc.co.uk/weather/2637016"),
 new BbcLocation("Paddock Wood", "https://www.bbc.co.uk/weather/2637016"),
-new BbcLocation("Sittingbourne", "https://www.bbc.co.uk/weather/2637802")
+new BbcLocation("Rochester", "https://www.bbc.co.uk/weather/2639268"),
+new BbcLocation("Sevenoaks", "https://www.bbc.co.uk/weather/2638187"),
+new BbcLocation("Sittingbourne", "https://www.bbc.co.uk/weather/2637802"),
+new BbcLocation("Staplehurst", "https://www.bbc.co.uk/weather/2637016"),
+new BbcLocation("Tenterden", "https://www.bbc.co.uk/weather/2636101"),
+new BbcLocation("Tonbridge", "https://www.bbc.co.uk/weather/2635703"),
+new BbcLocation("Tunbridge Wells", "https://www.bbc.co.uk/weather/2639022")
 };
     private string selectedLocation = "https://www.bbc.co.uk/weather/2643179";
 
-    private void OpenSelectedBBCWeather()
+    private async Task OpenSelectedBBCWeather()
     {
         var url = selectedLocation;
-        JS.InvokeVoidAsync("window.open", url, "_blank");
+        await JS.InvokeVoidAsync("openWeatherUrl", url);
     }
 
     public class BbcLocation
