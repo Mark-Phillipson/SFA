@@ -1,0 +1,40 @@
+
+HelloWorldPlaywrightTests.cs:
+using Microsoft.Playwright;
+using Xunit;
+
+public class HelloWorldPlaywrightTests
+{
+    [Fact]
+    public async Task Test1()
+    {
+        using var playwright = await Playwright.CreateAsync();
+        var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
+        var page = await browser.NewPageAsync();
+        await page.GotoAsync("https://example.com");
+        var title = await page.TitleAsync();
+        Assert.Equal("Example Domain", title);
+        await browser.CloseAsync();
+    }
+}
+
+SFA_PWA.Tests/SFA_PWA.Tests.csproj:
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
+  </ItemGroup>
+</Project>
+
+SFA_PWA.PlaywrightTests/SFA_PWA.PlaywrightTests.csproj:
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Playwright" Version="1.17.0" />
+  </ItemGroup>
+</Project>
