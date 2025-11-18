@@ -6,6 +6,21 @@
 
 <h1 style="color: #003366;">Cycling & Club Links</h1>
 
+@* Dismissible helper/info alert *@
+@if (showHelperText)
+{
+    <div class="alert alert-info alert-dismissible fade show" style="margin-bottom: 1.2em; position: relative;">
+        <button type="button" class="btn-close" style="position: absolute; top: 0.7em; right: 1em;" @onclick="() => showHelperText = false" aria-label="Close"></button>
+        <strong>How to use the links page:</strong>
+        <ul style="margin-top:0.5em; margin-bottom:0.5em;">
+            <li>Use the <b>Filter links</b> box to search by description or URL.</li>
+            <li>Filter by <b>Category</b> using the dropdown to narrow results.</li>
+            <li>Click any link to open it in a new tab.</li>
+            <li>Clear your search or filters at any time to see all links again.</li>
+        </ul>
+    </div>
+}
+
 <div class="filter-row">
     <div class="filter-half filter-input-group">
         <input type="text" @bind="filterText" @bind:event="oninput" placeholder="Filter links..." class="filter-input" @ref="filterInputRef" />
@@ -103,6 +118,7 @@ else
     private List<string> categories = new();
     private ElementReference filterInputRef;
     private bool _hasSetFocus = false;
+    private bool showHelperText = true;
 
 
     protected override async Task OnInitializedAsync()

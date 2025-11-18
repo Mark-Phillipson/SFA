@@ -20,6 +20,21 @@
     </a>
 </div>
 
+@* Helper text for searching/filtering cafes (dismissible) *@
+@if (showHelperText)
+{
+    <div class="alert alert-info alert-dismissible fade show" style="margin-bottom: 1.2em; position: relative;">
+        <button type="button" class="btn-close" style="position: absolute; top: 0.7em; right: 1em;" @onclick="() => showHelperText = false" aria-label="Close"></button>
+        <strong>How to use the cafes list:</strong>
+        <ul style="margin-top:0.5em; margin-bottom:0.5em;">
+            <li>Use the <b>General search</b> box to find cafes by name, address, postcode, or notes.</li>
+            <li>Filter by <b>Place</b> using the dropdown to narrow results to a specific town or area.</li>
+            <li>To find cafes near a destination, enter a <b>placename or postcode</b> and click <b>Search Nearby</b>. Adjust the <b>radius</b> to expand or narrow your search.</li>
+            <li>Clear your search or filters at any time to see all cafes again.</li>
+        </ul>
+    </div>
+}
+
 <div class="row mb-3">
     <div class="col-md-6">
         <input type="text" @bind-value="locationInput" @bind-value:event="oninput" placeholder="📍 Type a placename or postcode..." class="form-control" @onkeyup="OnLocationKeyUp" />
@@ -119,6 +134,7 @@ else
     private string filter = string.Empty;
     private string selectedPlace = string.Empty;
     // Status filter removed
+    private bool showHelperText = true;
 
     private IEnumerable<string> Places =>
         cafes == null

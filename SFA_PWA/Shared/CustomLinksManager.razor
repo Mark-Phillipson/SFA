@@ -3,8 +3,24 @@
 @inject IJSRuntime JS
 
 
+
 <div class="custom-links-container">
     <div class="custom-links-header">My Custom Links</div>
+
+    @* Dismissible helper/info alert *@
+    @if (showHelperText)
+    {
+        <div class="alert alert-info alert-dismissible fade show" style="margin-bottom: 1.2em; position: relative;">
+            <button type="button" class="btn-close" style="position: absolute; top: 0.7em; right: 1em;" @onclick="() => showHelperText = false" aria-label="Close"></button>
+            <strong>How to use custom links:</strong>
+            <ul style="margin-top:0.5em; margin-bottom:0.5em;">
+                <li>Add your own favorite links for quick access.</li>
+                <li>Click <b>Add Link</b> to create a new custom link.</li>
+                <li>Edit or delete links using the buttons next to each entry.</li>
+                <li>Links are saved in your browser and only visible to you.</li>
+            </ul>
+        </div>
+    }
 
     @if (Links.Count == 0)
     {
@@ -78,6 +94,7 @@
     private bool IsAddEditFormVisible = false;
     private bool IsEditMode = false;
     private string? FormErrorMessage = null;
+    private bool showHelperText = true;
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Compiler", "CS0169")]
     @* private ElementReference NameInputRef; *@
 
