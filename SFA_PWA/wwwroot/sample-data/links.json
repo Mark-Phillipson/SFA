@@ -39,5 +39,10 @@
   { "description": "Main WhatsApp Channel", "url": "https://chat.whatsapp.com/", "emoji": "💬", "category": "Social" },
   { "description": "RideWithGPS Milestone Article (How to use RideWithGPS in the club)", "url": "https://static1.squarespace.com/static/619ccd95b4eba4641fcd16f8/t/62d53fc2f1e9ae0eaf6849e2/1658142705415/RideWithGPS-MilestoneArticle.pdf", "emoji": "📄", "category": "Guides" },
   { "description": "RideWithGPS Guide by John Blakeley", "url": "https://drive.google.com/file/d/17XkzSbQHQ2Ux6QgDLllNbPFkDqV2DVXx/view", "emoji": "📘", "category": "Guides" },
-  { "description": "Join SFA Club on RideWithGPS (Direct Link)", "url": "https://ridewithgps.com/auto_approve?code=yj7ygURopGyWN0Hh&id=633&q=joined&type=Club", "emoji": "🔗", "category": "Apps & Tools" }
-]
+  { "description": "Join SFA Club on RideWithGPS (Direct Link)", "url": "https://ridewithgps.com/auto_approve?code=yj7ygURopGyWN0Hh&id=633&q=joined&type=Club", "emoji": "🔗", "category": "Apps & Tools" },
+    { "description": "Evans Cycles Maidstone, 44-48 Lower Stone St, Maidstone ME15 6NA", "url": "https://www.evanscycles.com/tools-maintenance", "emoji": "🛠️", "category": "Cycle Repair Shops" },
+    { "description": "Halfords Maidstone, St Peter's St, Maidstone ME16 0SR", "url": "https://www.halfords.com/locations/maidstone-store/", "emoji": "🛠️", "category": "Cycle Repair Shops" },
+    { "description": "Ken's Bikes, 2-4 Union St, Maidstone ME14 1DY", "url": "https://www.kensbikes.co.uk/", "emoji": "🛠️", "category": "Cycle Repair Shops" },
+    { "description": "Decathlon Chatham, St Peter's Wharf, Chatham ME4 4LL", "url": "https://www.decathlon.co.uk/", "emoji": "🛠️", "category": "Cycle Repair Shops" },
+    { "description": "Senacre Cycles, 9 Senacre Square, Maidstone ME15 8QF, TEL: 01622 752695, EMAIL: support@senacrecycles.co.uk", "url": "https://senacrecycles.co.uk/pages/service-workshop", "emoji": "🛠️", "category": "Cycle Repair Shops" }
+  ]
