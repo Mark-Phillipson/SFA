@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://polite-sand-0eb4b4703.3.azurestaticapps.net/sitemap.xml

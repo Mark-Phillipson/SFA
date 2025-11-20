@@ -1,9 +1,12 @@
 ﻿@page "/weather"
 @using System.Net.Http.Json
+@using SFA_PWA.Shared
 @inject HttpClient Http
 
-<PageTitle>Weather Forecast</PageTitle>
-
+<SeoHeader 
+    Title="Weather Forecast - FairiesLittleHelper" 
+    Description="Check the weather forecast for your cycling rides in Kent." 
+    Url="https://polite-sand-0eb4b4703.3.azurestaticapps.net/weather" />
 
 <h1>Kent Weather Links</h1>
 <p>Select a Kent location to open BBC Weather, or visit the Met Office.</p>
