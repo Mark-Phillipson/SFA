@@ -1,0 +1,148 @@
+@page "/d-group-start-points"
+@using SFA_PWA.Models
+@inject HttpClient Http
+
+<h3>D/D+ Group/Midweakers Start Points</h3>
+
+<div class="dgroup-toolbar">
+  <input placeholder="Search start points..." @bind="searchTerm" @bind:event="oninput" />
+  <select @bind="sortOption">
+    <option value="Name">Sort: Name</option>
+    <option value="Nearest">Sort: Nearest to Maidstone</option>
+  </select>
+  <button class="refresh" @onclick="LoadData">Refresh</button>
+</div>
+
+@if (isLoading)
+{
+  <div>Loading…</div>
+}
+else if (startPoints is null || !startPoints.Any())
+{
+  <div>No start points found.</div>
+}
+else
+{
+  <div class="cards">
+    @foreach (var sp in FilteredAndSorted())
+    {
+      var mapsHref = sp.GoogleMaps ?? (sp.Coordinates?.Lat != null && sp.Coordinates?.Lng != null ? $"https://www.google.com/maps/search/?api=1&query={sp.Coordinates.Lat},{sp.Coordinates.Lng}" : null);
+      var w3Href = !string.IsNullOrWhiteSpace(sp.What3Words) ? (sp.What3Words.Contains(' ') ? $"https://what3words.com/{Uri.EscapeDataString(sp.What3Words.Replace(' ', '/'))}" : (sp.What3Words.Contains('.') ? $"https://what3words.com/{Uri.EscapeDataString(sp.What3Words.Replace('.', '/'))}" : $"https://what3words.com/{Uri.EscapeDataString(sp.What3Words)}")) : null;
+
+      <a class="card" href="@mapsHref" target="_blank" rel="noopener noreferrer">
+        <div class="card-body">
+          <div class="card-title"><strong>@sp.Name</strong></div>
+          @if (!string.IsNullOrWhiteSpace(sp.Location))
+          {
+            <div class="card-location">@sp.Location</div>
+          }
+          @if (!string.IsNullOrWhiteSpace(sp.Postcode))
+          {
+            <div class="card-meta">@sp.Postcode</div>
+          }
+          @if (sp.Coordinates?.Lat != null && sp.Coordinates?.Lng != null)
+          {
+            <div class="card-coords">@sp.Coordinates.Lat, @sp.Coordinates.Lng</div>
+          }
+          @if (!string.IsNullOrWhiteSpace(sp.Notes))
+          {
+            <div class="card-notes">@sp.Notes</div>
+          }
+        </div>
+      </a>
+      <div class="card-actions">
+        @if (!string.IsNullOrWhiteSpace(mapsHref))
+        {
+          <a class="btn" href="@mapsHref" target="_blank" rel="noopener noreferrer">Open Google Maps</a>
+        }
+        @* what3words button is currently disabled because the service/link is not working in-app. Toggle `showWhat3Words` to enable when ready. *@
+        @if (showWhat3Words && !string.IsNullOrWhiteSpace(w3Href))
+        {
+          <a class="btn" href="@w3Href" target="_blank" rel="noopener noreferrer">what3words</a>
+        }
+      </div>
+    }
+  </div>
+}
+
+@code {
+    private List<StartPoint>? startPoints;
+    private string searchTerm = string.Empty;
+    private string sortOption = "Name";
+    private bool isLoading = true;
+    // Feature flag: hide what3words button until service/link is confirmed working
+    private bool showWhat3Words = false;
+
+    // Maidstone approx centre for nearest sorting
+    private const double MaidstoneLat = 51.2728;
+    private const double MaidstoneLng = 0.5231;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        try
+        {
+            var json = await Http.GetStringAsync("/data/d-group-start-points.json");
+            var opts = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var data = System.Text.Json.JsonSerializer.Deserialize<DGroupData>(json, opts);
+            startPoints = data?.StartPoints ?? new List<StartPoint>();
+
+            // compute distances to Maidstone
+            foreach (var sp in startPoints)
+            {
+                if (sp.Coordinates?.Lat != null && sp.Coordinates?.Lng != null)
+                {
+                    sp.DistanceKm = DistanceKm(MaidstoneLat, MaidstoneLng, sp.Coordinates.Lat.Value, sp.Coordinates.Lng.Value);
+                }
+                else sp.DistanceKm = null;
+            }
+        }
+        catch
+        {
+            startPoints = new List<StartPoint>();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private IEnumerable<StartPoint> FilteredAndSorted()
+    {
+        if (startPoints == null) return Enumerable.Empty<StartPoint>();
+        var q = startPoints.AsEnumerable();
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.Trim();
+            q = q.Where(sp => (sp.Name ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+                            || (sp.Location ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+                            || (sp.Postcode ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase));
+        }
+
+        q = sortOption == "Nearest"
+            ? q.OrderBy(sp => sp.DistanceKm ?? double.MaxValue)
+            : q.OrderBy(sp => sp.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+
+        return q;
+    }
+
+    private static double DistanceKm(double lat1, double lon1, double lat2, double lon2)
+    {
+        double R = 6371; // km
+        var dLat = ToRad(lat2 - lat1);
+        var dLon = ToRad(lon2 - lon1);
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                Math.Cos(ToRad(lat1)) * Math.Cos(ToRad(lat2)) *
+                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return R * c;
+    }
+
+    private static double ToRad(double deg) => deg * Math.PI / 180.0;
+}

@@ -24,6 +24,7 @@
 
 
   <ItemGroup>
+    <Folder Include="wwwroot\Assets\" />
     <Folder Include="wwwroot\screenshots\" />
   </ItemGroup>
 
@@ -33,10 +34,7 @@
       <BuildInfoJson>{"DotNetVersion": "$(TargetFramework)", "BuildDate": "$(BuildDate)"}</BuildInfoJson>
     </PropertyGroup>
     <Target Name="GenerateBuildInfo" BeforeTargets="Build">
-      <WriteLinesToFile
-        File="wwwroot/buildinfo.json"
-        Lines="$(BuildInfoJson)"
-        Overwrite="true" />
+      <WriteLinesToFile File="wwwroot/buildinfo.json" Lines="$(BuildInfoJson)" Overwrite="true" />
     </Target>
 
 </Project>

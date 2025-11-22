@@ -1,0 +1,58 @@
+.dgroup-toolbar{
+  display:flex;
+  gap:0.5rem;
+  align-items:center;
+  margin-bottom:1rem;
+}
+.dgroup-toolbar input{
+  flex:1 1 auto;
+  padding:0.5rem;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+.dgroup-toolbar select, .dgroup-toolbar .refresh{
+  padding:0.4rem 0.6rem;
+  border-radius:6px;
+  border:1px solid #ccc;
+  background:#fff;
+}
+.cards{
+  display:flex;
+  flex-direction:column;
+  gap:0.75rem;
+}
+.card{
+  display:block;
+  text-decoration:none;
+  color:inherit;
+  border:1px solid #e0e0e0;
+  border-radius:8px;
+  overflow:hidden;
+}
+.card-body{
+  padding:0.75rem;
+}
+.card-title{ font-size:1.05rem; margin-bottom:0.25rem }
+.card-location{ color:#444; font-size:0.95rem }
+.card-meta{ color:#666; font-size:0.85rem }
+.card-coords{ color:#666; font-size:0.85rem }
+.card-notes{ color:#333; font-size:0.9rem; margin-top:0.5rem }
+.card-actions{
+  display:flex;
+  gap:0.5rem;
+  padding:0.5rem;
+}
+.card-actions .btn{
+  padding:0.4rem 0.6rem;
+  border-radius:6px;
+  border:1px solid #888;
+  background:#fff;
+  text-decoration:none;
+  color:#111;
+  font-size:0.9rem;
+}
+
+@media(min-width:700px){
+  .cards{ flex-direction:row; flex-wrap:wrap }
+  .card{ width:48% }
+}
