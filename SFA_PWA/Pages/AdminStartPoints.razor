@@ -1,0 +1,255 @@
+@page "/admin-startpoints"
+@using System.Net.Http.Json
+@inject IJSRuntime JS
+@inject BotApiHttpClient BotApi
+
+<h3>Admin: D-Group Start Points</h3>
+
+<div class="mb-3">
+    <label>Admin API Key</label>
+    <input @bind="ApiKey" class="form-control" placeholder="Enter API key" />
+    <div class="mt-2">
+        <button class="btn btn-primary me-2" @onclick="SaveApiKey">Save Key</button>
+        <button class="btn btn-secondary" @onclick="ClearApiKey">Clear Key</button>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">@ErrorMessage</div>
+}
+
+<button class="btn btn-success mb-3" @onclick="NewStartPoint">Add New Start Point</button>
+
+@if (StartPoints == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr><th>Name</th><th>Location</th><th>Postcode</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var sp in StartPoints)
+        {
+            <tr>
+                <td>@sp.Name</td>
+                <td>@sp.Location</td>
+                <td>@sp.Postcode</td>
+                <td>
+                    <button class="btn btn-sm btn-primary me-1" @onclick="() => EditStartPoint(sp)">Edit</button>
+                    <button class="btn btn-sm btn-danger" @onclick="() => DeleteStartPoint(sp.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@if (Editing != null)
+{
+    <div class="card p-3">
+        <h5>@(IsNew ? "Add" : "Edit")</h5>
+        <div class="mb-2">
+            <label>Name</label>
+            <input class="form-control" @bind="Editing.Name" />
+        </div>
+        <div class="mb-2">
+            <label>Location</label>
+            <input class="form-control" @bind="Editing.Location" />
+        </div>
+        <div class="mb-2">
+            <label>Postcode</label>
+            <input class="form-control" @bind="Editing.Postcode" />
+        </div>
+        <div>
+            <button class="btn btn-primary me-2" @onclick="Save">Save</button>
+            <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        </div>
+    </div>
+}
+
+@code {
+    private List<SFA_PWA.Models.StartPoint>? StartPoints;
+    private SFA_PWA.Models.StartPoint? Editing;
+    private bool IsNew = false;
+    private string ApiKey = string.Empty;
+    private string? ErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadApiKey();
+        await Refresh();
+    }
+
+    private async Task Refresh()
+    {
+        ErrorMessage = null;
+        try
+        {
+            // Prefer configured backend client
+            var resp = await BotApi.Client.GetAsync("api/startpoints");
+            if (resp.IsSuccessStatusCode)
+            {
+                var contentType = resp.Content.Headers.ContentType?.MediaType ?? string.Empty;
+                if (contentType.Contains("json"))
+                {
+                    StartPoints = await resp.Content.ReadFromJsonAsync<List<SFA_PWA.Models.StartPoint>>();
+                }
+                else
+                {
+                    var txt = await resp.Content.ReadAsStringAsync();
+                    ErrorMessage = $"Expected JSON but server returned {contentType}. Response snippet: {GetSnippet(txt)}";
+                    StartPoints = new List<SFA_PWA.Models.StartPoint>();
+                }
+            }
+            else
+            {
+                var txt = await resp.Content.ReadAsStringAsync();
+                ErrorMessage = $"Request failed: {(int)resp.StatusCode} {resp.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+                StartPoints = new List<SFA_PWA.Models.StartPoint>();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Fallback to same-origin (useful for static/local dev)
+            try
+            {
+                var fb = new HttpClient { BaseAddress = new Uri(NavigationManager.BaseUri) };
+                var resp = await fb.GetAsync("api/startpoints");
+                if (resp.IsSuccessStatusCode)
+                {
+                    var contentType = resp.Content.Headers.ContentType?.MediaType ?? string.Empty;
+                    if (contentType.Contains("json"))
+                    {
+                        StartPoints = await resp.Content.ReadFromJsonAsync<List<SFA_PWA.Models.StartPoint>>();
+                    }
+                    else
+                    {
+                        var txt = await resp.Content.ReadAsStringAsync();
+                        ErrorMessage = $"Fallback: expected JSON but server returned {contentType}. Response snippet: {GetSnippet(txt)}";
+                        StartPoints = new List<SFA_PWA.Models.StartPoint>();
+                    }
+                }
+                else
+                {
+                    var txt = await resp.Content.ReadAsStringAsync();
+                    ErrorMessage = $"Fallback request failed: {(int)resp.StatusCode} {resp.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+                    StartPoints = new List<SFA_PWA.Models.StartPoint>();
+                }
+            }
+            catch (Exception ex2)
+            {
+                ErrorMessage = $"Error contacting API: {ex.Message}; fallback error: {ex2.Message}";
+                StartPoints = new List<SFA_PWA.Models.StartPoint>();
+            }
+        }
+        StateHasChanged();
+    }
+
+    private async Task LoadApiKey()
+    {
+        var k = await JS.InvokeAsync<string>("localStorage.getItem", "adminApiKey");
+        ApiKey = k ?? string.Empty;
+    }
+
+    private async Task SaveApiKey()
+    {
+        await JS.InvokeVoidAsync("localStorage.setItem", "adminApiKey", ApiKey ?? string.Empty);
+    }
+
+    private async Task ClearApiKey()
+    {
+        ApiKey = string.Empty;
+        await JS.InvokeVoidAsync("localStorage.removeItem", "adminApiKey");
+    }
+
+    private void NewStartPoint()
+    {
+        Editing = new SFA_PWA.Models.StartPoint();
+        IsNew = true;
+    }
+
+    private void EditStartPoint(SFA_PWA.Models.StartPoint sp)
+    {
+        Editing = new SFA_PWA.Models.StartPoint
+        {
+            Id = sp.Id,
+            Name = sp.Name,
+            Location = sp.Location,
+            Postcode = sp.Postcode,
+            Notes = sp.Notes,
+            PlusCode = sp.PlusCode,
+            GoogleMaps = sp.GoogleMaps,
+            What3Words = sp.What3Words,
+            Coordinates = sp.Coordinates
+        };
+        IsNew = false;
+    }
+
+    private void Cancel()
+    {
+        Editing = null;
+    }
+
+    private async Task Save()
+    {
+        if (Editing == null) return;
+        if (IsNew)
+        {
+            var req = new HttpRequestMessage(HttpMethod.Post, "api/startpoints")
+            {
+                Content = JsonContent.Create(Editing)
+            };
+            if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
+            var res = await BotApi.Client.SendAsync(req);
+            if (res.IsSuccessStatusCode) { await Refresh(); Editing = null; }
+            else
+            {
+                var txt = await res.Content.ReadAsStringAsync();
+                ErrorMessage = $"Save failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+            }
+        }
+        else
+        {
+            var req = new HttpRequestMessage(HttpMethod.Put, $"api/startpoints/{Editing.Id}")
+            {
+                Content = JsonContent.Create(Editing)
+            };
+            if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
+            var res = await BotApi.Client.SendAsync(req);
+            if (res.IsSuccessStatusCode) { await Refresh(); Editing = null; }
+            else
+            {
+                var txt = await res.Content.ReadAsStringAsync();
+                ErrorMessage = $"Update failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+            }
+        }
+    }
+
+    private async Task DeleteStartPoint(string? id)
+    {
+        if (string.IsNullOrEmpty(id)) return;
+        var req = new HttpRequestMessage(HttpMethod.Delete, $"api/startpoints/{id}");
+        if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
+        var res = await BotApi.Client.SendAsync(req);
+        if (res.IsSuccessStatusCode) await Refresh();
+        else
+        {
+            var txt = await res.Content.ReadAsStringAsync();
+            ErrorMessage = $"Delete failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+        }
+        // No return value needed; method completes after performing the delete and refresh.
+    }
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
+
+    private static string GetSnippet(string s, int len = 300)
+    {
+        if (string.IsNullOrEmpty(s)) return string.Empty;
+        return s.Length <= len ? s : s.Substring(0, len) + "...";
+    }
+}

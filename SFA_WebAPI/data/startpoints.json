@@ -1,0 +1,315 @@
+{
+	"group": "D Group",
+	"source": "d-group.pdf",
+	"startPoints": [
+		{
+			"id": "dg-001",
+			"name": "Appledore",
+			"location": "The St, Appledore",
+			"postcode": "TN26 2AE",
+			"coordinates": { "lat": 51.035158, "lng": 0.78865 },
+			"plusCode": "2QPQ+3F6",
+			"googleMaps": "https://goo.gl/maps/BJiCPcUqvKD4A7sQ9",
+			"what3words": "could workbench sinkhole",
+			"notes": "Closest Post Code. When entering grounds on the dusty road, parking is on left."
+		},
+		{
+			"id": "dg-002",
+			"name": "Aylesford - Station Road Car Park",
+			"location": "Station Road",
+			"postcode": "ME20 7AU",
+			"coordinates": { "lat": 51.3027216, "lng": 0.4824436 },
+			"plusCode": "8F3J+3XP",
+			"googleMaps": "https://goo.gl/maps/thiLyotN9Ww",
+			"what3words": "stream truth emulated",
+			"notes": "There are car parks either side of Station Road."
+		},
+		{
+			"id": "dg-003",
+			"name": "Aylesford - Ferryfields Recreation Ground Car Park",
+			"location": "Station Road",
+			"postcode": "ME20 7UF",
+			"coordinates": { "lat": 51.301225, "lng": 0.477122 },
+			"plusCode": "8F2G+FRQ",
+			"googleMaps": "https://goo.gl/maps/ALmt8M6Wbp6A43fZ9",
+			"what3words": "duos shopper swerves",
+			"notes": "Closest Post Code - Ferryfields is actually across Station Road."
+		},
+		{
+			"id": "dg-004",
+			"name": "Barming",
+			"location": "St. Andrew's Road",
+			"postcode": "ME16 9AN",
+			"coordinates": { "lat": 51.2679207, "lng": 0.4863697 },
+			"plusCode": "7F9P+5G9",
+			"googleMaps": "https://goo.gl/maps/dpwXApFtkRu",
+			"what3words": "almost spoon tulip",
+			"notes": "On-road parking."
+		},
+		{
+			"id": "dg-005",
+			"name": "Brenchley",
+			"location": "Brenchley Road",
+			"postcode": "TN12 7NY",
+			"coordinates": { "lat": 51.1514063, "lng": 0.3914071 },
+			"plusCode": "592R+HH7",
+			"googleMaps": "https://goo.gl/maps/TDkcktkrsRz",
+			"what3words": "jeeps witty shock",
+			"notes": "Opposite Brenchley Garage."
+		},
+		{
+			"id": "dg-006",
+			"name": "Canterbury",
+			"location": "Wincheap Park & Ride Car Park, Ten Perch Road",
+			"postcode": "CT1 3TQ",
+			"coordinates": { "lat": 51.27089, "lng": 1.06123 },
+			"plusCode": "73C6+9F5",
+			"googleMaps": "https://maps.app.goo.gl/Q8R89mkUBotVasKKA",
+			"what3words": "froth spoon final",
+			"notes": "Park & Ride car park, pay at end of stay."
+		},
+		{
+			"id": "dg-007",
+			"name": "Challock",
+			"location": "Blind Lane",
+			"postcode": "TN25 4AU",
+			"coordinates": { "lat": 51.21843, "lng": 0.87824 },
+			"plusCode": "6V9H+97H",
+			"googleMaps": "https://goo.gl/maps/cHB8S3iU5s6sCCY38",
+			"what3words": "urgent rebounded blogging",
+			"notes": "Call Challock Village Hall Secretary to agree use of their car park."
+		},
+		{
+			"id": "dg-008",
+			"name": "Chestnut Street (SUSPENDED)",
+			"location": "Chestnut Street (on-route to Sittingbourne)",
+			"postcode": "ME9 8BT",
+			"coordinates": { "lat": 51.3445108, "lng": 0.6949593 },
+			"plusCode": "8MVV+RX4",
+			"googleMaps": "https://goo.gl/maps/FjFtJNvnnFn",
+			"what3words": "lifeboats pastime rehearsal",
+			"notes": "Parking on-road after the Tudor Rose pub. (SUSPENDED UNTIL A249 WORKS COMPLETED)"
+		},
+		{
+			"id": "dg-009",
+			"name": "Ditton",
+			"location": "Ditton Community Centre, Kiln Barn Road",
+			"postcode": "ME20 6AH",
+			"coordinates": { "lat": 51.293928, "lng": 0.4549439 },
+			"plusCode": "7FV3+HXG",
+			"googleMaps": "https://goo.gl/maps/mTcAbnDYke92",
+			"what3words": "require refrain plugs",
+			"notes": "Free parking."
+		},
+		{
+			"id": "dg-010",
+			"name": "East Malling (King & Queen)",
+			"location": "Car park behind King & Queen pub",
+			"postcode": "ME19 6DD",
+			"coordinates": { "lat": 51.2879472, "lng": 0.4385083 },
+			"plusCode": "7FV3+HXG",
+			"googleMaps": "https://goo.gl/maps/mTcAbnDYke92",
+			"what3words": "require refrain plugs",
+			"notes": "The King & Queen pub is on New Road."
+		},
+		{
+			"id": "dg-011",
+			"name": "East Malling Research Station",
+			"location": "Car Park behind Conference Centre",
+			"postcode": "ME19 6BH",
+			"coordinates": { "lat": 51.284753, "lng": 0.453048 },
+			"plusCode": "7FM3+W63",
+			"googleMaps": "https://goo.gl/maps/gjZMhjaSbddh4McT9",
+			"what3words": "stoppage tolerates markets",
+			"notes": "MW ONLY."
+		},
+		{
+			"id": "dg-012",
+			"name": "Hamstreet",
+			"location": "The St, Hamstreet",
+			"postcode": "TN26 2JF",
+			"coordinates": { "lat": 51.06358, "lng": 0.85541 },
+			"plusCode": "3V74+C5M",
+			"googleMaps": "https://goo.gl/maps/Ktmon8XjYW29rFmF7",
+			"what3words": "deck fidgeting palm",
+			"notes": "Football Field Car Park."
+		},
+		{
+			"id": "dg-013",
+			"name": "Headcorn - Kings Road",
+			"location": "Kings Road",
+			"postcode": "TN27 9QU",
+			"coordinates": { "lat": 51.1693378, "lng": 0.6208141 },
+			"plusCode": "5J9C+P8P",
+			"googleMaps": "https://goo.gl/maps/Ktmon8XjYW29rFmF7",
+			"what3words": "deck fidgeting palm",
+			"notes": "Football Field Car Park."
+		},
+		{
+			"id": "dg-014",
+			"name": "Headcorn - Weald of Kent",
+			"location": "Maidstone Road (A274)",
+			"postcode": "TN27 9PT",
+			"coordinates": { "lat": 51.1881306, "lng": 0.6065524 },
+			"plusCode": "5JQ4+7J3",
+			"googleMaps": "https://goo.gl/maps/e1yHreccTM72",
+			"what3words": "highs digests month",
+			"notes": "Free parking in Golf Club car park."
+		},
+		{
+			"id": "dg-015",
+			"name": "Hollingbourne Station",
+			"location": "Off Eyhorne St",
+			"postcode": "ME17 1TX",
+			"coordinates": { "lat": 51.2647582, "lng": 0.628458 },
+			"plusCode": "5JQ4+7J3",
+			"googleMaps": "https://goo.gl/maps/yTMFFbi7RxKrgSWy5",
+			"what3words": "crunched sweetened index",
+			"notes": "Free parking in road leading up to the station."
+		},
+		{
+			"id": "dg-016",
+			"name": "Hothfield",
+			"location": "Hothfield Common Car Park, Cades Road",
+			"postcode": "TN26 1HD",
+			"coordinates": { "lat": 51.1780747, "lng": 0.8195962 },
+			"plusCode": "7J7H+W94",
+			"googleMaps": "https://goo.gl/maps/DzUQdGYxRyErrsTTA",
+			"what3words": "canny pedicure radiating",
+			"notes": "Free parking."
+		},
+		{
+			"id": "dg-017",
+			"name": "Hunton",
+			"location": "Hunton Village Hall, West Street",
+			"postcode": "ME15 0RR",
+			"coordinates": { "lat": 51.2218904, "lng": 0.4679523 },
+			"plusCode": "5RH9+6RH",
+			"googleMaps": "https://goo.gl/maps/DzUQdGYxRyErrsTTA",
+			"what3words": "matchbox scared tortoises",
+			"notes": "Post code only provides approximate location of car park."
+		},
+		{
+			"id": "dg-018",
+			"name": "Lenham - Dickley Lane",
+			"location": "Dickley Lane",
+			"postcode": "ME17 2DD",
+			"coordinates": { "lat": 51.2431847, "lng": 0.6991989 },
+			"plusCode": "6FC9+Q54",
+			"googleMaps": "https://goo.gl/maps/YSYa8Tvgqu6H8zSAA",
+			"what3words": "fever fried tacky",
+			"notes": "Car Park opposite Marley building."
+		},
+		{
+			"id": "dg-019",
+			"name": "Lenham Community Centre",
+			"location": "Groom Way, Lenham",
+			"postcode": "ME17 2QT",
+			"coordinates": { "lat": 51.237897, "lng": 0.724085 },
+			"plusCode": "6MVX+7MG",
+			"googleMaps": "https://goo.gl/maps/czsKsiEor6t",
+			"what3words": "playback probably pillow",
+			"notes": "Check availability beforehand with Community Centre."
+		},
+		{
+			"id": "dg-020",
+			"name": "Marden - Railway Station",
+			"location": "Railway Station Car Park entrance",
+			"postcode": "TN12 9HS",
+			"coordinates": { "lat": 51.174971, "lng": 0.492587 },
+			"plusCode": "6PQF+4JP",
+			"googleMaps": "https://goo.gl/maps/MYRPrFcGoSC8GEoY9",
+			"what3words": "dandelions look crucially",
+			"notes": "Charge if parking in station car park."
+		},
+		{
+			"id": "dg-021",
+			"name": "Marden - Brigade Fitness",
+			"location": "Willows Business Park, Unit 8, Pattenden Lane",
+			"postcode": "TN12 9QS",
+			"coordinates": { "lat": 51.176935, "lng": 0.489969 },
+			"plusCode": "5FFV+X2P",
+			"googleMaps": "https://goo.gl/maps/Tp8nkKR7EXR2",
+			"what3words": "gather speeds condition",
+			"notes": "Parking available from 8am to 2pm (gates locked at 2pm)."
+		},
+		{
+			"id": "dg-022",
+			"name": "Mote Park - Main Car Park",
+			"location": "Main Car Park",
+			"postcode": "ME15 7SX",
+			"coordinates": { "lat": 51.2687424, "lng": 0.5394308 },
+			"plusCode": "5FGQ+QXH",
+			"googleMaps": "https://goo.gl/maps/FKU9fgCtLC22rBK66",
+			"what3words": "thread cropping dining",
+			"notes": "Car Park is pay and display."
+		},
+		{
+			"id": "dg-023",
+			"name": "Paddock Wood",
+			"location": "Mascalls Court Road",
+			"postcode": "TN12 6NZ",
+			"coordinates": { "lat": 51.171838, "lng": 0.388338 },
+			"plusCode": "7G9Q+FQV",
+			"googleMaps": "https://goo.gl/maps/cfpJD7pLzEz",
+			"what3words": "stole keys sung",
+			"notes": "Putlands Sports & Leisure Centre car park."
+		},
+		{
+			"id": "dg-024",
+			"name": "Rainham - Riverside Country Park",
+			"location": "Riverside Country Park",
+			"postcode": "ME7 2XH",
+			"coordinates": { "lat": 51.3854897, "lng": 0.5969656 },
+			"plusCode": "59CQ+P8P",
+			"googleMaps": "https://maps.app.goo.gl/HeANBfAqD1A72Nw19",
+			"what3words": "such copper animator",
+			"notes": "Lower Rainham Road, Gillingham. Free parking."
+		},
+		{
+			"id": "dg-025",
+			"name": "Snodland",
+			"location": "Brookland Lake Car Park",
+			"postcode": "ME6 5BB",
+			"coordinates": { "lat": 51.3266955, "lng": 0.4489089 },
+			"plusCode": "9HPW+5QW",
+			"googleMaps": "https://goo.gl/maps/2tuaKDxcR432",
+			"what3words": "bluffing snuck trailing",
+			"notes": "Free parking."
+		},
+		{
+			"id": "dg-026",
+			"name": "Staplehurst",
+			"location": "Bell Lane Car Park",
+			"postcode": "TN12 0BA",
+			"coordinates": { "lat": 51.1587807, "lng": 0.5513123 },
+			"plusCode": "8CGX+MHF",
+			"googleMaps": "https://goo.gl/maps/g7P27HpQmLD2",
+			"what3words": "clinic meanwhile portfolio",
+			"notes": "Free parking."
+		},
+		{
+			"id": "dg-027",
+			"name": "Wrotham",
+			"location": "Old London Road",
+			"postcode": "TN15 7DL",
+			"coordinates": { "lat": 51.3109959, "lng": 0.309602 },
+			"plusCode": "5H52+GG7",
+			"googleMaps": "https://goo.gl/maps/irs9Tn5LsgP2",
+			"what3words": "improving sleepers commuted",
+			"notes": "On-road parking."
+		},
+		{
+			"id": "dg-028",
+			"name": "Yalding",
+			"location": "Yalding Railway Station",
+			"postcode": "ME18 6HJ",
+			"coordinates": { "lat": 51.2266635, "lng": 0.4124456 },
+			"plusCode": "8865+9RX",
+			"googleMaps": "https://goo.gl/maps/RerJ8zyHFvs",
+			"what3words": "moral scars mixed",
+			"notes": "Free parking in station car park. If car park full can park in Hampstead Lane."
+		}
+	]
+}
+
