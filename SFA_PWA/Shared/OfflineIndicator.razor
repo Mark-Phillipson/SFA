@@ -1,5 +1,4 @@
 @inject SFA_PWA.Services.NetworkStatusService NetworkStatus
-@implements IAsyncDisposable
 
 @if (!isOnline)
 {
@@ -22,11 +21,5 @@
     {
         isOnline = online;
         InvokeAsync(StateHasChanged);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        NetworkStatus.OnlineStatusChanged -= OnNetworkStatusChanged;
-        await NetworkStatus.DisposeAsync();
     }
 }

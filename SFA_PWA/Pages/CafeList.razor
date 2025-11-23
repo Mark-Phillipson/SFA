@@ -246,7 +246,7 @@ else
         }
     }
 
-    private async Task ClearLocationSearch()
+    private void ClearLocationSearch()
     {
         locationInput = string.Empty;
         searchMessage = string.Empty;
@@ -255,6 +255,11 @@ else
         selectedPlace = string.Empty;
         // selectedStatus reset removed
         // Reset cafes to full list (refetch)
+        _ = RefreshDataAsync();
+    }
+    
+    private async Task RefreshDataAsync()
+    {
         await OnInitializedAsync();
         StateHasChanged();
     }

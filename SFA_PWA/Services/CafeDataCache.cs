@@ -64,7 +64,7 @@ namespace SFA_PWA.Services
             {
                 var json = JsonSerializer.Serialize(cafes);
                 await _jsRuntime.InvokeVoidAsync("localStorage.setItem", LocalStorageKey, json);
-                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", LastUpdateKey, DateTime.UtcNow.ToString("o"));
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", LastUpdateKey, DateTime.UtcNow.ToString("o", System.Globalization.CultureInfo.InvariantCulture));
             }
             catch (Exception ex)
             {
