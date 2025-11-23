@@ -39,3 +39,7 @@ dotnet publish .\SFA_WebAPI\SFA_WebAPI.csproj -c Release -o .\publish
 ---
 
 **Tip:** Make sure your Azure resources (Web App, Resource Group) exist before adding secrets.
+
+The publish seems to failSo to do it manually first do a publish:
+
+if (Test-Path 'C:\Users\MPhil\source\repos\SFA\publish') { Remove-Item 'C:\Users\MPhil\source\repos\SFA\publish\*' -Recurse -Force -ErrorAction SilentlyContinue } else { New-Item -ItemType Directory -Path 'C:\Users\MPhil\source\repos\SFA\publish' | Out-Null }; dotnet publish 'C:\Users\MPhil\source\repos\SFA\SFA_WebAPI\SFA_WebAPI.csproj' -c Release -o 'C:\Users\MPhil\source\repos\SFA\publish'
