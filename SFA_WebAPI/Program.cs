@@ -20,7 +20,31 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 // Add Swagger/OpenAPI support
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("ApiKey", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "ApiKey must appear in header",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Name = "X-API-KEY",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Scheme = "ApiKeyScheme"
+    });
+    var key = new Microsoft.OpenApi.Models.OpenApiSecurityScheme()
+    {
+        Reference = new Microsoft.OpenApi.Models.OpenApiReference
+        {
+            Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+            Id = "ApiKey"
+        },
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header
+    };
+    var requirement = new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        { key, new List<string>() }
+    };
+    c.AddSecurityRequirement(requirement);
+});
 builder.Services.AddSingleton<SFA_WebAPI.Services.OpenAIBotService>();
 // Register StartPoint repository (JSON file backed)
 builder.Services.AddSingleton<SFA_WebAPI.Services.IStartPointRepository, SFA_WebAPI.Services.StartPointRepository>();

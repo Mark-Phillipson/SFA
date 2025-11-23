@@ -17,10 +17,12 @@ namespace SFA_WebAPI.Services
         private readonly string _dataFile;
         private readonly SemaphoreSlim _lock = new(1, 1);
         private readonly JsonSerializerOptions _jsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
+        private readonly ILogger<StartPointRepository> _logger;
 
         // Constructor reads path from configuration so we can point at the PWA's bundled JSON
-        public StartPointRepository(IConfiguration config)
+        public StartPointRepository(IConfiguration config, ILogger<StartPointRepository> logger)
         {
+            _logger = logger;
             var configured = config["StartPointDataPath"] ?? string.Empty;
             if (string.IsNullOrWhiteSpace(configured))
             {
@@ -40,8 +42,13 @@ namespace SFA_WebAPI.Services
                 var dir = Path.GetDirectoryName(_dataFile) ?? Directory.GetCurrentDirectory();
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
             }
+            _logger.LogInformation($"StartPointRepository using file: {_dataFile}");
 
-            if (!File.Exists(_dataFile)) File.WriteAllText(_dataFile, "[]");
+            if (!File.Exists(_dataFile)) 
+            {
+                _logger.LogWarning($"File not found, creating empty array at {_dataFile}");
+                File.WriteAllText(_dataFile, "[]");
+            }
         }
 
         public async Task<List<StartPoint>> GetAllAsync()
@@ -49,39 +56,55 @@ namespace SFA_WebAPI.Services
             await _lock.WaitAsync();
             try
             {
-                var json = await File.ReadAllTextAsync(_dataFile);
-                if (string.IsNullOrWhiteSpace(json)) return new List<StartPoint>();
-
-                using var doc = JsonDocument.Parse(json);
-                var root = doc.RootElement;
-                if (root.ValueKind == JsonValueKind.Array)
-                {
-                    var list = JsonSerializer.Deserialize<List<StartPoint>>(json, _jsonOptions) ?? new List<StartPoint>();
-                    return list;
-                }
-                else if (root.ValueKind == JsonValueKind.Object)
-                {
-                    // Support wrapped structure { group:..., source:..., startPoints: [ ... ] }
-                    if (root.TryGetProperty("startPoints", out var spProp) && spProp.ValueKind == JsonValueKind.Array)
-                    {
-                        var list = JsonSerializer.Deserialize<List<StartPoint>>(spProp.GetRawText(), _jsonOptions) ?? new List<StartPoint>();
-                        return list;
-                    }
-                    // Fallback: try lowercase name
-                    if (root.TryGetProperty("startpoints", out var spProp2) && spProp2.ValueKind == JsonValueKind.Array)
-                    {
-                        var list = JsonSerializer.Deserialize<List<StartPoint>>(spProp2.GetRawText(), _jsonOptions) ?? new List<StartPoint>();
-                        return list;
-                    }
-                }
-
-                return new List<StartPoint>();
+                return await GetAllInternalAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GetAllAsync");
+                throw;
             }
             finally { _lock.Release(); }
         }
 
+        private async Task<List<StartPoint>> GetAllInternalAsync()
+        {
+            if (!File.Exists(_dataFile))
+            {
+                _logger.LogWarning($"File {_dataFile} does not exist in GetAllAsync");
+                return new List<StartPoint>();
+            }
+            var json = await File.ReadAllTextAsync(_dataFile);
+            if (string.IsNullOrWhiteSpace(json)) return new List<StartPoint>();
+
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            if (root.ValueKind == JsonValueKind.Array)
+            {
+                var list = JsonSerializer.Deserialize<List<StartPoint>>(json, _jsonOptions) ?? new List<StartPoint>();
+                return list;
+            }
+            else if (root.ValueKind == JsonValueKind.Object)
+            {
+                // Support wrapped structure { group:..., source:..., startPoints: [ ... ] }
+                if (root.TryGetProperty("startPoints", out var spProp) && spProp.ValueKind == JsonValueKind.Array)
+                {
+                    var list = JsonSerializer.Deserialize<List<StartPoint>>(spProp.GetRawText(), _jsonOptions) ?? new List<StartPoint>();
+                    return list;
+                }
+                // Fallback: try lowercase name
+                if (root.TryGetProperty("startpoints", out var spProp2) && spProp2.ValueKind == JsonValueKind.Array)
+                {
+                    var list = JsonSerializer.Deserialize<List<StartPoint>>(spProp2.GetRawText(), _jsonOptions) ?? new List<StartPoint>();
+                    return list;
+                }
+            }
+
+            return new List<StartPoint>();
+        }
+
         public async Task<StartPoint?> GetByIdAsync(string id)
         {
+            // Reuse GetAllAsync which handles locking
             var list = await GetAllAsync();
             return list.FirstOrDefault(s => s.Id == id);
         }
@@ -92,9 +115,9 @@ namespace SFA_WebAPI.Services
             await _lock.WaitAsync();
             try
             {
-                var list = await GetAllAsync();
+                var list = await GetAllInternalAsync();
                 list.Add(sp);
-                await WriteListAsync(list);
+                await WriteListInternalAsync(list);
             }
             finally { _lock.Release(); }
         }
@@ -104,12 +127,12 @@ namespace SFA_WebAPI.Services
             await _lock.WaitAsync();
             try
             {
-                var list = await GetAllAsync();
+                var list = await GetAllInternalAsync();
                 var idx = list.FindIndex(s => s.Id == id);
                 if (idx == -1) throw new KeyNotFoundException("Start point not found");
                 sp.Id = id;
                 list[idx] = sp;
-                await WriteListAsync(list);
+                await WriteListInternalAsync(list);
             }
             finally { _lock.Release(); }
         }
@@ -119,15 +142,15 @@ namespace SFA_WebAPI.Services
             await _lock.WaitAsync();
             try
             {
-                var list = await GetAllAsync();
+                var list = await GetAllInternalAsync();
                 var removed = list.RemoveAll(s => s.Id == id);
                 if (removed == 0) throw new KeyNotFoundException("Start point not found");
-                await WriteListAsync(list);
+                await WriteListInternalAsync(list);
             }
             finally { _lock.Release(); }
         }
 
-        private async Task WriteListAsync(List<StartPoint> list)
+        private async Task WriteListInternalAsync(List<StartPoint> list)
         {
             // Preserve wrapper metadata (group, source) if present; otherwise write a simple array
             var existing = await File.ReadAllTextAsync(_dataFile);

@@ -19,7 +19,47 @@
     <div class="alert alert-danger" role="alert">@ErrorMessage</div>
 }
 
-<button class="btn btn-success mb-3" @onclick="NewStartPoint">Add New Start Point</button>
+<div class="card mb-3">
+    <div class="card-header">Debug Logs</div>
+    <div class="card-body bg-light" style="max-height: 150px; overflow-y: auto;">
+        @foreach (var log in Logs)
+        {
+            <div>@log</div>
+        }
+    </div>
+</div>
+
+@if (Editing != null)
+{
+    <div class="card p-3 mb-3 border-primary">
+        <h5 class="card-title">@(IsNew ? "Add New Start Point" : $"Edit: {Editing.Name}")</h5>
+        <div class="mb-2">
+            <label>Name</label>
+            <input class="form-control" @bind="Editing.Name" />
+        </div>
+        <div class="mb-2">
+            <label>Location</label>
+            <input class="form-control" @bind="Editing.Location" />
+        </div>
+        <div class="mb-2">
+            <label>Postcode</label>
+            <input class="form-control" @bind="Editing.Postcode" />
+        </div>
+        <div class="mb-2">
+            <label>Notes</label>
+            <textarea class="form-control" @bind="Editing.Notes"></textarea>
+        </div>
+        <div>
+            <button class="btn btn-primary me-2" @onclick="Save" disabled="@IsProcessing">
+                @if (IsProcessing) { <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> }
+                Save
+            </button>
+            <button class="btn btn-secondary" @onclick="Cancel" disabled="@IsProcessing">Cancel</button>
+        </div>
+    </div>
+}
+
+<button class="btn btn-success mb-3" @onclick="NewStartPoint" disabled="@IsProcessing">Add New Start Point</button>
 
 @if (StartPoints == null)
 {
@@ -39,8 +79,11 @@ else
                 <td>@sp.Location</td>
                 <td>@sp.Postcode</td>
                 <td>
-                    <button class="btn btn-sm btn-primary me-1" @onclick="() => EditStartPoint(sp)">Edit</button>
-                    <button class="btn btn-sm btn-danger" @onclick="() => DeleteStartPoint(sp.Id)">Delete</button>
+                    <button class="btn btn-sm btn-primary me-1" @onclick="() => EditStartPoint(sp)" disabled="@IsProcessing">Edit</button>
+                    <button class="btn btn-sm btn-danger" @onclick="() => DeleteStartPoint(sp.Id)" disabled="@IsProcessing">
+                        @if (IsProcessing && ProcessingId == sp.Id) { <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> }
+                        Delete
+                    </button>
                 </td>
             </tr>
         }
@@ -48,38 +91,26 @@ else
     </table>
 }
 
-@if (Editing != null)
-{
-    <div class="card p-3">
-        <h5>@(IsNew ? "Add" : "Edit")</h5>
-        <div class="mb-2">
-            <label>Name</label>
-            <input class="form-control" @bind="Editing.Name" />
-        </div>
-        <div class="mb-2">
-            <label>Location</label>
-            <input class="form-control" @bind="Editing.Location" />
-        </div>
-        <div class="mb-2">
-            <label>Postcode</label>
-            <input class="form-control" @bind="Editing.Postcode" />
-        </div>
-        <div>
-            <button class="btn btn-primary me-2" @onclick="Save">Save</button>
-            <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-        </div>
-    </div>
-}
-
 @code {
     private List<SFA_PWA.Models.StartPoint>? StartPoints;
     private SFA_PWA.Models.StartPoint? Editing;
     private bool IsNew = false;
+    private bool IsProcessing = false;
+    private string? ProcessingId;
     private string ApiKey = string.Empty;
     private string? ErrorMessage;
+    private List<string> Logs = new();
+
+    private void Log(string message)
+    {
+        Logs.Add($"{DateTime.Now:HH:mm:ss} {message}");
+        Console.WriteLine(message);
+        StateHasChanged();
+    }
 
     protected override async Task OnInitializedAsync()
     {
+        Log("OnInitializedAsync started");
         await LoadApiKey();
         await Refresh();
     }
@@ -89,6 +120,7 @@ else
         ErrorMessage = null;
         try
         {
+            Log($"Refreshing list from {BotApi.Client.BaseAddress}");
             // Prefer configured backend client
             var resp = await BotApi.Client.GetAsync("api/startpoints");
             if (resp.IsSuccessStatusCode)
@@ -97,12 +129,14 @@ else
                 if (contentType.Contains("json"))
                 {
                     StartPoints = await resp.Content.ReadFromJsonAsync<List<SFA_PWA.Models.StartPoint>>();
+                    Log($"Loaded {StartPoints?.Count ?? 0} items");
                 }
                 else
                 {
                     var txt = await resp.Content.ReadAsStringAsync();
                     ErrorMessage = $"Expected JSON but server returned {contentType}. Response snippet: {GetSnippet(txt)}";
                     StartPoints = new List<SFA_PWA.Models.StartPoint>();
+                    Log("Error: Expected JSON");
                 }
             }
             else
@@ -110,13 +144,16 @@ else
                 var txt = await resp.Content.ReadAsStringAsync();
                 ErrorMessage = $"Request failed: {(int)resp.StatusCode} {resp.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
                 StartPoints = new List<SFA_PWA.Models.StartPoint>();
+                Log($"Request failed: {resp.StatusCode}");
             }
         }
         catch (Exception ex)
         {
+            Log($"Exception: {ex.Message}");
             // Fallback to same-origin (useful for static/local dev)
             try
             {
+                Log($"Attempting fallback to {NavigationManager.BaseUri}");
                 var fb = new HttpClient { BaseAddress = new Uri(NavigationManager.BaseUri) };
                 var resp = await fb.GetAsync("api/startpoints");
                 if (resp.IsSuccessStatusCode)
@@ -125,6 +162,7 @@ else
                     if (contentType.Contains("json"))
                     {
                         StartPoints = await resp.Content.ReadFromJsonAsync<List<SFA_PWA.Models.StartPoint>>();
+                        Log($"Fallback loaded {StartPoints?.Count ?? 0} items");
                     }
                     else
                     {
@@ -138,12 +176,14 @@ else
                     var txt = await resp.Content.ReadAsStringAsync();
                     ErrorMessage = $"Fallback request failed: {(int)resp.StatusCode} {resp.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
                     StartPoints = new List<SFA_PWA.Models.StartPoint>();
+                    Log($"Fallback failed: {resp.StatusCode}");
                 }
             }
             catch (Exception ex2)
             {
                 ErrorMessage = $"Error contacting API: {ex.Message}; fallback error: {ex2.Message}";
                 StartPoints = new List<SFA_PWA.Models.StartPoint>();
+                Log($"Fallback exception: {ex2.Message}");
             }
         }
         StateHasChanged();
@@ -158,90 +198,172 @@ else
     private async Task SaveApiKey()
     {
         await JS.InvokeVoidAsync("localStorage.setItem", "adminApiKey", ApiKey ?? string.Empty);
+        Log("API Key saved");
     }
 
     private async Task ClearApiKey()
     {
         ApiKey = string.Empty;
         await JS.InvokeVoidAsync("localStorage.removeItem", "adminApiKey");
+        Log("API Key cleared");
     }
 
     private void NewStartPoint()
     {
-        Editing = new SFA_PWA.Models.StartPoint();
-        IsNew = true;
+        Log("NewStartPoint clicked");
+        try
+        {
+            Editing = new SFA_PWA.Models.StartPoint();
+            IsNew = true;
+            StateHasChanged(); // Ensure UI updates
+        }
+        catch (Exception ex)
+        {
+            Log($"Error in NewStartPoint: {ex.Message}");
+        }
     }
 
     private void EditStartPoint(SFA_PWA.Models.StartPoint sp)
     {
-        Editing = new SFA_PWA.Models.StartPoint
+        Log($"EditStartPoint clicked for {sp.Id}");
+        try
         {
-            Id = sp.Id,
-            Name = sp.Name,
-            Location = sp.Location,
-            Postcode = sp.Postcode,
-            Notes = sp.Notes,
-            PlusCode = sp.PlusCode,
-            GoogleMaps = sp.GoogleMaps,
-            What3Words = sp.What3Words,
-            Coordinates = sp.Coordinates
-        };
-        IsNew = false;
+            Editing = new SFA_PWA.Models.StartPoint
+            {
+                Id = sp.Id,
+                Name = sp.Name,
+                Location = sp.Location,
+                Postcode = sp.Postcode,
+                Notes = sp.Notes,
+                PlusCode = sp.PlusCode,
+                GoogleMaps = sp.GoogleMaps,
+                What3Words = sp.What3Words,
+                Coordinates = sp.Coordinates != null ? new SFA_PWA.Models.Coordinates { Lat = sp.Coordinates.Lat, Lng = sp.Coordinates.Lng } : null
+            };
+            IsNew = false;
+            StateHasChanged(); // Ensure UI updates
+        }
+        catch (Exception ex)
+        {
+            Log($"Error in EditStartPoint: {ex.Message}");
+        }
     }
 
     private void Cancel()
     {
+        Log("Cancel clicked");
         Editing = null;
     }
 
     private async Task Save()
     {
+        Log("Save clicked");
         if (Editing == null) return;
-        if (IsNew)
+        IsProcessing = true;
+        StateHasChanged();
+        try
         {
-            var req = new HttpRequestMessage(HttpMethod.Post, "api/startpoints")
+            if (IsNew)
             {
-                Content = JsonContent.Create(Editing)
-            };
-            if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
-            var res = await BotApi.Client.SendAsync(req);
-            if (res.IsSuccessStatusCode) { await Refresh(); Editing = null; }
+                var req = new HttpRequestMessage(HttpMethod.Post, "api/startpoints")
+                {
+                    Content = JsonContent.Create(Editing)
+                };
+                if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
+                var res = await BotApi.Client.SendAsync(req);
+                if (res.IsSuccessStatusCode) 
+                { 
+                    Log("Create success");
+                    await Refresh(); 
+                    Editing = null; 
+                }
+                else
+                {
+                    var txt = await res.Content.ReadAsStringAsync();
+                    ErrorMessage = $"Save failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+                    Log($"Create failed: {res.StatusCode}");
+                }
+            }
             else
             {
-                var txt = await res.Content.ReadAsStringAsync();
-                ErrorMessage = $"Save failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+                var req = new HttpRequestMessage(HttpMethod.Put, $"api/startpoints/{Editing.Id}")
+                {
+                    Content = JsonContent.Create(Editing)
+                };
+                if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
+                var res = await BotApi.Client.SendAsync(req);
+                if (res.IsSuccessStatusCode) 
+                { 
+                    Log("Update success");
+                    await Refresh(); 
+                    Editing = null; 
+                }
+                else
+                {
+                    var txt = await res.Content.ReadAsStringAsync();
+                    ErrorMessage = $"Update failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+                    Log($"Update failed: {res.StatusCode}");
+                }
             }
         }
-        else
+        catch (Exception ex)
         {
-            var req = new HttpRequestMessage(HttpMethod.Put, $"api/startpoints/{Editing.Id}")
-            {
-                Content = JsonContent.Create(Editing)
-            };
-            if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
-            var res = await BotApi.Client.SendAsync(req);
-            if (res.IsSuccessStatusCode) { await Refresh(); Editing = null; }
-            else
-            {
-                var txt = await res.Content.ReadAsStringAsync();
-                ErrorMessage = $"Update failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
-            }
+            Log($"Save exception: {ex.Message}");
+            ErrorMessage = $"Error saving: {ex.Message}";
+        }
+        finally
+        {
+            IsProcessing = false;
+            StateHasChanged();
         }
     }
 
     private async Task DeleteStartPoint(string? id)
     {
-        if (string.IsNullOrEmpty(id)) return;
-        var req = new HttpRequestMessage(HttpMethod.Delete, $"api/startpoints/{id}");
-        if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
-        var res = await BotApi.Client.SendAsync(req);
-        if (res.IsSuccessStatusCode) await Refresh();
-        else
+        Log($"DeleteStartPoint clicked for {id}");
+        if (string.IsNullOrEmpty(id)) 
         {
-            var txt = await res.Content.ReadAsStringAsync();
-            ErrorMessage = $"Delete failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+            Log("Delete aborted: ID is null or empty");
+            return;
         }
-        // No return value needed; method completes after performing the delete and refresh.
+        
+        if (!await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this start point?"))
+        {
+            Log("Delete cancelled by user");
+            return;
+        }
+
+        IsProcessing = true;
+        ProcessingId = id;
+        StateHasChanged();
+        try
+        {
+            var req = new HttpRequestMessage(HttpMethod.Delete, $"api/startpoints/{id}");
+            if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
+            var res = await BotApi.Client.SendAsync(req);
+            if (res.IsSuccessStatusCode) 
+            {
+                Log("Delete success");
+                await Refresh();
+            }
+            else
+            {
+                var txt = await res.Content.ReadAsStringAsync();
+                ErrorMessage = $"Delete failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+                Log($"Delete failed: {res.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log($"Delete exception: {ex.Message}");
+            ErrorMessage = $"Error deleting: {ex.Message}";
+        }
+        finally
+        {
+            IsProcessing = false;
+            ProcessingId = null;
+            StateHasChanged();
+        }
     }
 
     [Inject]
