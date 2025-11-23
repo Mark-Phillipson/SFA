@@ -82,8 +82,23 @@ else
                 <td>@sp.Name</td>
                 <td>@sp.Location</td>
                 <td>@sp.Postcode</td>
-                <td>@sp.GoogleMaps</td>
-                <td>@sp.What3Words</td>
+                <td>
+                    @if (!string.IsNullOrWhiteSpace(sp.GoogleMaps))
+                    {
+                        var mapsHref = sp.GoogleMaps.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                            ? sp.GoogleMaps
+                            : $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString(sp.GoogleMaps)}";
+                        <a href="@mapsHref" target="_blank" rel="noopener noreferrer">@sp.GoogleMaps</a>
+                    }
+                </td>
+                <td>
+                    @if (!string.IsNullOrWhiteSpace(sp.What3Words))
+                    {
+                        var parts = sp.What3Words.Split(new[] { ' ', '.' }, StringSplitOptions.RemoveEmptyEntries).Select(w => Uri.EscapeDataString(w));
+                        var w3Href = $"https://what3words.com/{string.Join('.', parts)}";
+                        <a href="@w3Href" target="_blank" rel="noopener noreferrer">@sp.What3Words</a>
+                    }
+                </td>
                 <td>
                     <button class="btn btn-sm btn-primary me-1" @onclick="() => EditStartPoint(sp)" disabled="@IsProcessing">✏️ Edit</button>
                     <button class="btn btn-sm btn-danger" @onclick="() => DeleteStartPoint(sp.Id)" disabled="@IsProcessing">

@@ -28,7 +28,9 @@ else
     @foreach (var sp in FilteredAndSorted())
     {
       var mapsHref = sp.GoogleMaps ?? (sp.Coordinates?.Lat != null && sp.Coordinates?.Lng != null ? $"https://www.google.com/maps/search/?api=1&query={sp.Coordinates.Lat},{sp.Coordinates.Lng}" : null);
-      var w3Href = !string.IsNullOrWhiteSpace(sp.What3Words) ? (sp.What3Words.Contains(' ') ? $"https://what3words.com/{Uri.EscapeDataString(sp.What3Words.Replace(' ', '/'))}" : (sp.What3Words.Contains('.') ? $"https://what3words.com/{Uri.EscapeDataString(sp.What3Words.Replace('.', '/'))}" : $"https://what3words.com/{Uri.EscapeDataString(sp.What3Words)}")) : null;
+      var w3Href = !string.IsNullOrWhiteSpace(sp.What3Words)
+        ? $"https://what3words.com/{string.Join('.', sp.What3Words.Split(new[] { ' ', '.' }, StringSplitOptions.RemoveEmptyEntries).Select(p => Uri.EscapeDataString(p)))}"
+        : null;
 
       <a class="card" href="@mapsHref" target="_blank" rel="noopener noreferrer">
         <div class="card-body">
