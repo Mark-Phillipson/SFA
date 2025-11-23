@@ -10,7 +10,7 @@
     <option value="Name">Sort: Name</option>
     <option value="Nearest">Sort: Nearest to Maidstone</option>
   </select>
-  <button class="refresh" @onclick="LoadData">Refresh</button>
+  <button class="refresh" @onclick="LoadData">🔄 Refresh</button>
 </div>
 
 @if (isLoading)
@@ -53,12 +53,12 @@ else
       <div class="card-actions">
         @if (!string.IsNullOrWhiteSpace(mapsHref))
         {
-          <a class="btn" href="@mapsHref" target="_blank" rel="noopener noreferrer">Open Google Maps</a>
+          <a class="btn" href="@mapsHref" target="_blank" rel="noopener noreferrer">📍 Open Google Maps</a>
         }
         @* what3words button is currently disabled because the service/link is not working in-app. Toggle `showWhat3Words` to enable when ready. *@
         @if (showWhat3Words && !string.IsNullOrWhiteSpace(w3Href))
         {
-          <a class="btn" href="@w3Href" target="_blank" rel="noopener noreferrer">what3words</a>
+          <a class="btn" href="@w3Href" target="_blank" rel="noopener noreferrer">🗺️ what3words</a>
         }
       </div>
     }

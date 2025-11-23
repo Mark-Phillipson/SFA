@@ -393,6 +393,17 @@
       "googleMaps": "https://goo.gl/maps/RerJ8zyHFvs",
       "what3words": "moral scars mixed",
       "notes": "Free parking in station car park. If car park full can park in Hampstead Lane."
+    },
+    {
+      "id": "dcfd46bf-4a07-4e81-a22c-476e7ae17467",
+      "name": "Testing",
+      "location": "4591",
+      "postcode": "1849",
+      "coordinates": null,
+      "plusCode": null,
+      "googleMaps": null,
+      "what3words": null,
+      "notes": "3979"
     }
   ]
 }

@@ -7,10 +7,10 @@
 
 <div class="mb-3">
     <label>Admin API Key</label>
-    <input @bind="ApiKey" class="form-control" placeholder="Enter API key" />
+    <input type="password" @bind="ApiKey" class="form-control" placeholder="Enter API key" />
     <div class="mt-2">
-        <button class="btn btn-primary me-2" @onclick="SaveApiKey">Save Key</button>
-        <button class="btn btn-secondary" @onclick="ClearApiKey">Clear Key</button>
+        <button class="btn btn-primary me-2" @onclick="SaveApiKey">🔒 Save Key</button>
+        <button class="btn btn-secondary" @onclick="ClearApiKey">🗑️ Clear Key</button>
     </div>
 </div>
 
@@ -19,15 +19,7 @@
     <div class="alert alert-danger" role="alert">@ErrorMessage</div>
 }
 
-<div class="card mb-3">
-    <div class="card-header">Debug Logs</div>
-    <div class="card-body bg-light" style="max-height: 150px; overflow-y: auto;">
-        @foreach (var log in Logs)
-        {
-            <div>@log</div>
-        }
-    </div>
-</div>
+@* Debug logs removed from UI *@
 
 @if (Editing != null)
 {
@@ -52,14 +44,18 @@
         <div>
             <button class="btn btn-primary me-2" @onclick="Save" disabled="@IsProcessing">
                 @if (IsProcessing) { <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> }
-                Save
+                💾 Save
             </button>
-            <button class="btn btn-secondary" @onclick="Cancel" disabled="@IsProcessing">Cancel</button>
+            <button class="btn btn-secondary" @onclick="Cancel" disabled="@IsProcessing">✖ Cancel</button>
         </div>
     </div>
 }
 
-<button class="btn btn-success mb-3" @onclick="NewStartPoint" disabled="@IsProcessing">Add New Start Point</button>
+<button class="btn btn-success mb-3" @onclick="NewStartPoint" disabled="@IsProcessing">➕ Add New Start Point</button>
+
+<div class="mb-2">
+    <input placeholder="Search name, location or postcode..." @bind="searchTerm" @bind:event="oninput" class="form-control" />
+</div>
 
 @if (StartPoints == null)
 {
@@ -72,17 +68,17 @@ else
             <tr><th>Name</th><th>Location</th><th>Postcode</th><th>Actions</th></tr>
         </thead>
         <tbody>
-        @foreach (var sp in StartPoints)
+        @foreach (var sp in FilteredStartPoints())
         {
             <tr>
                 <td>@sp.Name</td>
                 <td>@sp.Location</td>
                 <td>@sp.Postcode</td>
                 <td>
-                    <button class="btn btn-sm btn-primary me-1" @onclick="() => EditStartPoint(sp)" disabled="@IsProcessing">Edit</button>
+                    <button class="btn btn-sm btn-primary me-1" @onclick="() => EditStartPoint(sp)" disabled="@IsProcessing">✏️ Edit</button>
                     <button class="btn btn-sm btn-danger" @onclick="() => DeleteStartPoint(sp.Id)" disabled="@IsProcessing">
                         @if (IsProcessing && ProcessingId == sp.Id) { <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> }
-                        Delete
+                        🗑️ Delete
                     </button>
                 </td>
             </tr>
@@ -99,13 +95,11 @@ else
     private string? ProcessingId;
     private string ApiKey = string.Empty;
     private string? ErrorMessage;
-    private List<string> Logs = new();
+    private string searchTerm = string.Empty;
 
     private void Log(string message)
     {
-        Logs.Add($"{DateTime.Now:HH:mm:ss} {message}");
-        Console.WriteLine(message);
-        StateHasChanged();
+        // Debug logging disabled in UI; keep method as no-op to avoid breaking calls.
     }
 
     protected override async Task OnInitializedAsync()
@@ -368,6 +362,20 @@ else
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
+
+    private IEnumerable<SFA_PWA.Models.StartPoint> FilteredStartPoints()
+    {
+        if (StartPoints == null) return Enumerable.Empty<SFA_PWA.Models.StartPoint>();
+        var q = StartPoints.AsEnumerable();
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.Trim();
+            q = q.Where(sp => (sp.Name ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+                            || (sp.Location ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+                            || (sp.Postcode ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase));
+        }
+        return q;
+    }
 
     private static string GetSnippet(string s, int len = 300)
     {
