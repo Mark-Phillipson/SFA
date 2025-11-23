@@ -1,6 +1,7 @@
 @page "/d-group-start-points"
 @using SFA_PWA.Models
-@inject HttpClient Http
+@using System.Net.Http.Json
+@inject BotApiHttpClient BotApi
 
 <h3>D/D+ Group/Midweakers Start Points</h3>
 
@@ -67,6 +68,8 @@ else
 
 @code {
     private List<StartPoint>? startPoints;
+    // Keep the full list returned from the API so searches can match non-dg test records
+    private List<StartPoint>? allStartPoints;
     private string searchTerm = string.Empty;
     private string sortOption = "Name";
     private bool isLoading = true;
@@ -87,10 +90,20 @@ else
         isLoading = true;
         try
         {
-            var json = await Http.GetStringAsync("/data/d-group-start-points.json");
-            var opts = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var data = System.Text.Json.JsonSerializer.Deserialize<DGroupData>(json, opts);
-            startPoints = data?.StartPoints ?? new List<StartPoint>();
+            // Prefer backend API so edits persist in the WebAPI-managed data file
+            var list = await BotApi.Client.GetFromJsonAsync<List<StartPoint>>("api/startpoints");
+        // The API returns a flat list for all groups; keep the full list and prefer D-Group items for the default view
+        if (list != null)
+        {
+          allStartPoints = list;
+          var dg = list.Where(sp => !string.IsNullOrEmpty(sp.Id) && sp.Id.StartsWith("dg-", StringComparison.OrdinalIgnoreCase)).ToList();
+          startPoints = dg.Any() ? dg : list;
+        }
+        else
+        {
+          allStartPoints = new List<StartPoint>();
+          startPoints = new List<StartPoint>();
+        }
 
             // compute distances to Maidstone
             foreach (var sp in startPoints)
@@ -119,10 +132,12 @@ else
         var q = startPoints.AsEnumerable();
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var term = searchTerm.Trim();
-            q = q.Where(sp => (sp.Name ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
-                            || (sp.Location ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
-                            || (sp.Postcode ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase));
+          // When searching, look across the full API list so test or non-dg records are matched
+          var source = allStartPoints ?? startPoints ?? Enumerable.Empty<StartPoint>();
+          var term = searchTerm.Trim();
+          q = source.Where(sp => (sp.Name ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+                  || (sp.Location ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+                  || (sp.Postcode ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase));
         }
 
         q = sortOption == "Nearest"

@@ -1,4 +1,4 @@
 
-We are using the pi supposedly to update the list in the apr version but currently it's updating the JSON file sitting in the PWA which will not work and will not persist the changes can we investigate this?
-
- I was expecting the data to be updated in the start points JSON file not the one sitting in the PWA root
+We appear to be missing some fields in the CRUD I a the link to the location on google maps and three little words address. Can you add these to the CRUD interface for start points? The fields are:
+- Location on Google Maps (string)
+- what3words address (string)
