@@ -41,6 +41,14 @@
             <label>Notes</label>
             <textarea class="form-control" @bind="Editing.Notes"></textarea>
         </div>
+        <div class="mb-2">
+            <label>Location on Google Maps</label>
+            <input class="form-control" @bind="Editing.GoogleMaps" />
+        </div>
+        <div class="mb-2">
+            <label>what3words address</label>
+            <input class="form-control" @bind="Editing.What3Words" />
+        </div>
         <div>
             <button class="btn btn-primary me-2" @onclick="Save" disabled="@IsProcessing">
                 @if (IsProcessing) { <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> }
@@ -65,7 +73,7 @@ else
 {
     <table class="table">
         <thead>
-            <tr><th>Name</th><th>Location</th><th>Postcode</th><th>Actions</th></tr>
+            <tr><th>Name</th><th>Location</th><th>Postcode</th><th>Google Maps</th><th>what3words</th><th>Actions</th></tr>
         </thead>
         <tbody>
         @foreach (var sp in FilteredStartPoints())
@@ -74,6 +82,8 @@ else
                 <td>@sp.Name</td>
                 <td>@sp.Location</td>
                 <td>@sp.Postcode</td>
+                <td>@sp.GoogleMaps</td>
+                <td>@sp.What3Words</td>
                 <td>
                     <button class="btn btn-sm btn-primary me-1" @onclick="() => EditStartPoint(sp)" disabled="@IsProcessing">✏️ Edit</button>
                     <button class="btn btn-sm btn-danger" @onclick="() => DeleteStartPoint(sp.Id)" disabled="@IsProcessing">
@@ -372,7 +382,9 @@ else
             var term = searchTerm.Trim();
             q = q.Where(sp => (sp.Name ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
                             || (sp.Location ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
-                            || (sp.Postcode ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase));
+                            || (sp.Postcode ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+                            || (sp.GoogleMaps ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+                            || (sp.What3Words ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase));
         }
         return q;
     }
