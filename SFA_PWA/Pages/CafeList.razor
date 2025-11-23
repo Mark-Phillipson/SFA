@@ -255,7 +255,7 @@ else
         selectedPlace = string.Empty;
         // selectedStatus reset removed
         // Reset cafes to full list (refetch)
-        _ = RefreshDataAsync();
+        InvokeAsync(RefreshDataAsync);
     }
     
     private async Task RefreshDataAsync()
@@ -275,7 +275,7 @@ else
         if (firstRender && !_focusSet)
         {
             _focusSet = true;
-            await JS.InvokeVoidAsync("eval", "setTimeout(()=>document.querySelector('[placeholder=\\'Filter cafes by name or description...\\']')?.focus(),0)");
+            await JS.InvokeVoidAsync("focusElementBySelector", "[placeholder='Filter cafes by name or description...']");
         }
     }
 

@@ -2,6 +2,13 @@ window.focusElement = (element) => {
     if (element) element.focus();
 };
 
+window.focusElementBySelector = (selector) => {
+    setTimeout(() => {
+        const element = document.querySelector(selector);
+        if (element) element.focus();
+    }, 0);
+};
+
 window.hardRefresh = () => {
     // Force a hard refresh by reloading from the server, not cache
     location.reload(true);

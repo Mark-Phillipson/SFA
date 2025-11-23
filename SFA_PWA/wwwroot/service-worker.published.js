@@ -67,7 +67,7 @@ async function onFetch(event) {
     
     // For API calls to external services (Google Sheets, etc.) or internal /api/ endpoints,
     // use network-first strategy with cache fallback
-    if (url.hostname !== self.location.hostname || (url.hostname === self.location.hostname && url.pathname.startsWith('/api/'))) {
+    if (url.hostname !== self.location.hostname || url.pathname.startsWith('/api/')) {
         try {
             const response = await fetch(request);
             // Cache successful API responses
