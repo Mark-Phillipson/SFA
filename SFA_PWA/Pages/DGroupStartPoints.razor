@@ -76,7 +76,8 @@ else
     private string sortOption = "Name";
     private bool isLoading = true;
     // Feature flag: hide what3words button until service/link is confirmed working
-    private bool showWhat3Words = false;
+    // Re-enabled per request so the what3words button appears in the UI
+    private bool showWhat3Words = true;
 
     // Maidstone approx centre for nearest sorting
     private const double MaidstoneLat = 51.2728;

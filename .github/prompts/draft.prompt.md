@@ -1,2 +1,2 @@
-
-Regarding the three little words shown in the table can we make this into a link asper the pdf screenshot?
+ please can we reintroduce the link into the PWA plays a component called de group start points do razor?
+ 
