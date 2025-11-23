@@ -15,12 +15,12 @@ namespace SFA_PWA.Services
     /// </summary>
     public class CafeDataCache
     {
-        private readonly GoogleSheetCafeService _googleSheetService;
+        private readonly SFA_PWA.Services.GoogleSheetCafeService _googleSheetService;
         private readonly IJSRuntime _jsRuntime;
         private const string LocalStorageKey = "cachedCafes";
         private const string LastUpdateKey = "cafesLastUpdate";
 
-        public CafeDataCache(GoogleSheetCafeService googleSheetService, IJSRuntime jsRuntime)
+        public CafeDataCache(SFA_PWA.Services.GoogleSheetCafeService googleSheetService, IJSRuntime jsRuntime)
         {
             _googleSheetService = googleSheetService;
             _jsRuntime = jsRuntime;

@@ -41,7 +41,7 @@
         <strong>📱 Offline Mode</strong> - Showing cached cafe data. Connect to the internet to get the latest updates.
         @if (lastUpdateTime.HasValue)
         {
-            <br /><small>Last updated: @lastUpdateTime.Value.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</small>
+            <br /><small>Last updated: @lastUpdateTime.Value.ToLocalTime().ToString("MMM dd, yyyy HH:mm", System.Globalization.CultureInfo.CurrentCulture)</small>
         }
     </div>
 }
