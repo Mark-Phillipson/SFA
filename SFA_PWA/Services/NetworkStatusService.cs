@@ -23,7 +23,7 @@ namespace SFA_PWA.Services
         {
             try
             {
-                return await _jsRuntime.InvokeAsync<bool>("eval", "navigator.onLine");
+                return await _jsRuntime.InvokeAsync<bool>("networkStatusHelper.isOnline");
             }
             catch
             {
@@ -35,19 +35,7 @@ namespace SFA_PWA.Services
         public async Task InitializeAsync()
         {
             _objRef = DotNetObjectReference.Create(this);
-            await _jsRuntime.InvokeVoidAsync("eval", $@"
-                window.addEventListener('online', () => {{
-                    if (window.networkStatusServiceRef) {{
-                        window.networkStatusServiceRef.invokeMethodAsync('NotifyOnlineStatusChanged', true);
-                    }}
-                }});
-                window.addEventListener('offline', () => {{
-                    if (window.networkStatusServiceRef) {{
-                        window.networkStatusServiceRef.invokeMethodAsync('NotifyOnlineStatusChanged', false);
-                    }}
-                }});
-                window.networkStatusServiceRef = arguments[0];
-            ", _objRef);
+            await _jsRuntime.InvokeVoidAsync("networkStatusHelper.initialize", _objRef);
         }
 
         [JSInvokable]
@@ -61,7 +49,7 @@ namespace SFA_PWA.Services
         {
             if (_objRef != null)
             {
-                await _jsRuntime.InvokeVoidAsync("eval", "delete window.networkStatusServiceRef;");
+                await _jsRuntime.InvokeVoidAsync("networkStatusHelper.dispose");
                 _objRef.Dispose();
             }
         }

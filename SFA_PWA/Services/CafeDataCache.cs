@@ -101,7 +101,11 @@ namespace SFA_PWA.Services
                     return null;
                 }
                 
-                return DateTime.Parse(timestamp);
+                if (DateTime.TryParse(timestamp, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out var result))
+                {
+                    return result;
+                }
+                return null;
             }
             catch
             {
