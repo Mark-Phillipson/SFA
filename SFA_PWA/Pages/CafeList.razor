@@ -6,7 +6,7 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
-@inject SFA_PWA.Services.GoogleSheetCafeService GoogleSheetCafeService
+@inject SFA_PWA.Services.CafeDataCache CafeDataCache
 
 @using SFA_PWA.Models
 
@@ -32,6 +32,17 @@
             <li>To find cafes near a destination, enter a <b>placename or postcode</b> and click <b>Search Nearby</b>. Adjust the <b>radius</b> to expand or narrow your search.</li>
             <li>Clear your search or filters at any time to see all cafes again.</li>
         </ul>
+    </div>
+}
+
+@if (isOfflineMode)
+{
+    <div class="alert alert-warning" style="margin-bottom: 1.2em;">
+        <strong>📱 Offline Mode</strong> - Showing cached cafe data. Connect to the internet to get the latest updates.
+        @if (lastUpdateTime.HasValue)
+        {
+            <br /><small>Last updated: @lastUpdateTime.Value.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</small>
+        }
     </div>
 }
 
@@ -135,6 +146,8 @@ else
     private string selectedPlace = string.Empty;
     // Status filter removed
     private bool showHelperText = true;
+    private bool isOfflineMode = false;
+    private DateTime? lastUpdateTime = null;
 
     private IEnumerable<string> Places =>
         cafes == null
@@ -233,7 +246,7 @@ else
         }
     }
 
-    private void ClearLocationSearch()
+    private async void ClearLocationSearch()
     {
         locationInput = string.Empty;
         searchMessage = string.Empty;
@@ -241,8 +254,9 @@ else
         filter = string.Empty;
         selectedPlace = string.Empty;
         // selectedStatus reset removed
-        // Reset cafes to full list (refetch from Google Sheets)
-        _ = OnInitializedAsync();
+        // Reset cafes to full list (refetch)
+        await OnInitializedAsync();
+        StateHasChanged();
     }
 
     public class NominatimResult
@@ -263,8 +277,15 @@ else
 
     protected override async Task OnInitializedAsync()
         {
-            // Fetch cafes from Google Sheets (read-only)
-            cafes = await GoogleSheetCafeService.GetCafesAsync();
+            // Fetch cafes with offline fallback support
+            var result = await CafeDataCache.GetCafesWithCacheAsync();
+            cafes = result.Cafes;
+            isOfflineMode = result.IsFromCache;
+            
+            if (isOfflineMode)
+            {
+                lastUpdateTime = await CafeDataCache.GetLastUpdateTimeAsync();
+            }
         }
 
     // Haversine formula to calculate distance (km) between two lat/lng points

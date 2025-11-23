@@ -1,0 +1,32 @@
+@inject SFA_PWA.Services.NetworkStatusService NetworkStatus
+@implements IAsyncDisposable
+
+@if (!isOnline)
+{
+    <div class="offline-indicator" style="position: fixed; top: 0; left: 0; right: 0; background: #ff9800; color: white; padding: 0.5em; text-align: center; z-index: 9999; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+        <strong>📴 You're Offline</strong> - Some features may not work until you reconnect.
+    </div>
+}
+
+@code {
+    private bool isOnline = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isOnline = await NetworkStatus.IsOnlineAsync();
+        await NetworkStatus.InitializeAsync();
+        NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
+    }
+
+    private void OnNetworkStatusChanged(object? sender, bool online)
+    {
+        isOnline = online;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        NetworkStatus.OnlineStatusChanged -= OnNetworkStatusChanged;
+        await NetworkStatus.DisposeAsync();
+    }
+}

@@ -8,6 +8,7 @@ self.addEventListener('fetch', event => event.respondWith(onFetch(event)));
 
 const cacheNamePrefix = 'offline-cache-';
 const cacheName = `${cacheNamePrefix}${self.assetsManifest.version}`;
+const apiCacheName = 'api-cache-v1';
 const offlineAssetsInclude = [ /\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.webmanifest$/ ];
 const offlineAssetsExclude = [ /^service-worker\.js$/ ];
 
@@ -25,6 +26,9 @@ async function onInstall(event) {
         .filter(asset => !offlineAssetsExclude.some(pattern => pattern.test(asset.url)))
         .map(asset => new Request(asset.url, { integrity: asset.hash, cache: 'no-cache' }));
     await caches.open(cacheName).then(cache => cache.addAll(assetsRequests));
+    
+    // Skip waiting to activate immediately
+    self.skipWaiting();
 }
 
 async function onActivate(event) {
@@ -35,21 +39,70 @@ async function onActivate(event) {
     await Promise.all(cacheKeys
         .filter(key => key.startsWith(cacheNamePrefix) && key !== cacheName)
         .map(key => caches.delete(key)));
+    
+    // Claim clients immediately
+    await self.clients.claim();
 }
 
 async function onFetch(event) {
-    let cachedResponse = null;
-    if (event.request.method === 'GET') {
-        // For all navigation requests, try to serve index.html from cache,
-        // unless that request is for an offline resource.
-        // If you need some URLs to be server-rendered, edit the following check to exclude those URLs
-        const shouldServeIndexHtml = event.request.mode === 'navigate'
-            && !manifestUrlList.some(url => url === event.request.url);
-
-        const request = shouldServeIndexHtml ? 'index.html' : event.request;
-        const cache = await caches.open(cacheName);
-        cachedResponse = await cache.match(request);
+    const { request } = event;
+    const url = new URL(request.url);
+    
+    // Only handle GET requests
+    if (request.method !== 'GET') {
+        return fetch(request);
     }
-
-    return cachedResponse || fetch(event.request);
+    
+    // For navigation requests, try to serve index.html from cache
+    const shouldServeIndexHtml = request.mode === 'navigate'
+        && !manifestUrlList.some(manifestUrl => manifestUrl === request.url);
+    
+    if (shouldServeIndexHtml) {
+        const cache = await caches.open(cacheName);
+        const cachedResponse = await cache.match('index.html');
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+    }
+    
+    // For API calls to external services (Google Sheets, BotAPI), use network-first strategy with cache fallback
+    if (url.hostname !== self.location.hostname || url.pathname.startsWith('/api/')) {
+        try {
+            const response = await fetch(request);
+            // Cache successful API responses
+            if (response.ok) {
+                const apiCache = await caches.open(apiCacheName);
+                apiCache.put(request, response.clone());
+            }
+            return response;
+        } catch (error) {
+            // If network fails, try to return cached API response
+            const apiCache = await caches.open(apiCacheName);
+            const cachedResponse = await apiCache.match(request);
+            if (cachedResponse) {
+                console.log('Serving cached API response for:', request.url);
+                return cachedResponse;
+            }
+            throw error;
+        }
+    }
+    
+    // For static assets, use cache-first strategy
+    const cache = await caches.open(cacheName);
+    const cachedResponse = await cache.match(request);
+    if (cachedResponse) {
+        return cachedResponse;
+    }
+    
+    // If not in cache, fetch from network and cache it
+    try {
+        const response = await fetch(request);
+        if (response.ok) {
+            cache.put(request, response.clone());
+        }
+        return response;
+    } catch (error) {
+        console.error('Fetch failed for:', request.url, error);
+        throw error;
+    }
 }

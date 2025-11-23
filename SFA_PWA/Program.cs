@@ -23,6 +23,12 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 // Register GoogleSheetCafeService for DI
 builder.Services.AddScoped<SFA_PWA.Services.GoogleSheetCafeService>();
 
+// Register CafeDataCache for offline support
+builder.Services.AddScoped<SFA_PWA.Services.CafeDataCache>();
+
+// Register NetworkStatusService for connectivity detection
+builder.Services.AddScoped<SFA_PWA.Services.NetworkStatusService>();
+
 // Register BotApi HttpClient for chatbot requests
 // If BotApiUrl is not set or points to localhost (common when running locally),
 // fall back to the site's origin so production static hosting can call the API
