@@ -1,9 +1,4 @@
 
-Can we change the admin apr key to a password key so the key is not visible in the admin panel?
+We are using the pi supposedly to update the list in the apr version but currently it's updating the JSON file sitting in the PWA which will not work and will not persist the changes can we investigate this?
 
- also can we now remove the debug logs
-
-  also can we add a TextBox for searching and include the name location and postcode in the search
-
-   also can we add emojis to the buttons appropriate for their function?
-   
+ I was expecting the data to be updated in the start points JSON file not the one sitting in the PWA root
