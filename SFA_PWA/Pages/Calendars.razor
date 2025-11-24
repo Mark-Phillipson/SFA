@@ -2,6 +2,8 @@
 @using Microsoft.JSInterop
 @inject HttpClient Http
 @inject IJSRuntime JS
+@inject SFA_PWA.Services.NetworkStatusService NetworkStatus
+@implements IDisposable
 
 <PageTitle>Calendars</PageTitle>
 
@@ -15,16 +17,23 @@
     </ul>
 </div>
 
-@if (isCalendarsLoading)
+@if (!isOnline)
 {
-    <div style="position:fixed;top:80px;left:0;width:100%;z-index:1000;pointer-events:none;">
-        <div class="d-flex justify-content-center align-items-center" style="height:60px;background:rgba(255,255,255,0.95);border-bottom:1px solid #eee;">
-            <p style="margin:0;font-weight:bold;">Calendars are loading...</p>
-        </div>
+    <div class="alert alert-warning">
+        <strong>📴 Offline</strong> - Calendars are not available while offline. Connect to the internet to view ride calendars.
     </div>
 }
+else
+{
+    @if (isCalendarsLoading)
+    {
+        <div style="position:fixed;top:80px;left:0;width:100%;z-index:1000;pointer-events:none;">
+            <div class="d-flex justify-content-center align-items-center" style="height:60px;background:rgba(255,255,255,0.95);border-bottom:1px solid #eee;">
+                <p style="margin:0;font-weight:bold;">Calendars are loading...</p>
+            </div>
+        </div>
+    }
 
-@{
     var selected = groups.Where(g => IsSelected(g.Name) && !string.IsNullOrWhiteSpace(g.CalendarUrl)).ToList();
     if (groups.Count == 0)
     {
@@ -61,9 +70,21 @@
     private string calendarView = "MONTH";
     // Removed unused isLoading field (was causing CS0414 warning)
     private bool isCalendarsLoading = true;
+    private bool isOnline = true;
 
     protected override async Task OnInitializedAsync()
     {
+        // Initialize network status
+        await NetworkStatus.InitializeAsync();
+        NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
+        isOnline = await NetworkStatus.IsOnlineAsync();
+        
+        // Only load calendars if online
+        if (!isOnline)
+        {
+            return;
+        }
+        
         // Load all groups from groups.json
         try
         {
@@ -97,6 +118,17 @@
             isCalendarsLoading = false;
             await InvokeAsync(StateHasChanged);
         });
+    }
+    
+    private void OnNetworkStatusChanged(object? sender, bool online)
+    {
+        isOnline = online;
+        InvokeAsync(StateHasChanged);
+    }
+    
+    public void Dispose()
+    {
+        NetworkStatus.OnlineStatusChanged -= OnNetworkStatusChanged;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

@@ -2,6 +2,8 @@
 @using SFA_PWA.Models
 @using System.Net.Http.Json
 @inject BotApiHttpClient BotApi
+@inject SFA_PWA.Services.NetworkStatusService NetworkStatus
+@implements IDisposable
 
 <h3>D/D+ Group/Midweakers Start Points</h3>
 
@@ -20,7 +22,16 @@
 }
 else if (startPoints is null || !startPoints.Any())
 {
-  <div>No start points found.</div>
+  @if (!isOnline)
+  {
+    <div class="alert alert-warning">
+        <strong>📴 Offline</strong> - Start points are not available while offline. Connect to the internet to view start points.
+    </div>
+  }
+  else
+  {
+    <div>No start points found.</div>
+  }
 }
 else
 {
@@ -75,6 +86,7 @@ else
     private string searchTerm = string.Empty;
     private string sortOption = "Name";
     private bool isLoading = true;
+    private bool isOnline = true;
     // Feature flag: hide what3words button until service/link is confirmed working
     // Re-enabled per request so the what3words button appears in the UI
     private bool showWhat3Words = true;
@@ -85,7 +97,23 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        // Initialize network status
+        await NetworkStatus.InitializeAsync();
+        NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
+        isOnline = await NetworkStatus.IsOnlineAsync();
+        
         await LoadData();
+    }
+    
+    private void OnNetworkStatusChanged(object? sender, bool online)
+    {
+        isOnline = online;
+        InvokeAsync(StateHasChanged);
+    }
+    
+    public void Dispose()
+    {
+        NetworkStatus.OnlineStatusChanged -= OnNetworkStatusChanged;
     }
 
     private async Task LoadData()

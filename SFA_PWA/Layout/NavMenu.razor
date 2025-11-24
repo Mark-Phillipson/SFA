@@ -1,4 +1,7 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@inject SFA_PWA.Services.NetworkStatusService NetworkStatus
+@implements IDisposable
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
     <a class="navbar-brand" href="">Fairies Little Helper</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -69,18 +72,21 @@
                 <span class="nav-text">Club ChatBot</span>
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link nav-link-center" href="admin-startpoints">
-                <span class="bi bi-gear-fill icon-center" aria-hidden="true"></span>
-                <span class="nav-text">Admin</span>
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link nav-link-center" href="javascript:void(0)" @onclick="HardRefresh" title="Refresh the app" style="cursor: pointer;">
-                <span class="bi bi-arrow-repeat icon-center" aria-hidden="true"></span>
-                <span class="nav-text">Refresh App</span>
-            </NavLink>
-        </div>
+        @if (isOnline)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link nav-link-center" href="admin-startpoints">
+                    <span class="bi bi-gear-fill icon-center" aria-hidden="true"></span>
+                    <span class="nav-text">Admin</span>
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link nav-link-center" href="javascript:void(0)" @onclick="HardRefresh" title="Refresh the app" style="cursor: pointer;">
+                    <span class="bi bi-arrow-repeat icon-center" aria-hidden="true"></span>
+                    <span class="nav-text">Refresh App</span>
+                </NavLink>
+            </div>
+        }
         
     </nav>
     <div class="nav-logo" style="display: flex; justify-content: center; align-items: center; width: 100%;">
@@ -90,8 +96,27 @@
 
 @code {
     private bool collapseNavMenu = true;
+    private bool isOnline = true;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await NetworkStatus.InitializeAsync();
+        NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
+        isOnline = await NetworkStatus.IsOnlineAsync();
+    }
+    
+    private void OnNetworkStatusChanged(object? sender, bool online)
+    {
+        isOnline = online;
+        InvokeAsync(StateHasChanged);
+    }
+    
+    public void Dispose()
+    {
+        NetworkStatus.OnlineStatusChanged -= OnNetworkStatusChanged;
+    }
 
     private void ToggleNavMenu()
     {

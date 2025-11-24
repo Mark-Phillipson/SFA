@@ -7,6 +7,8 @@
 @inject IJSRuntime JS
 
 @inject SFA_PWA.Services.CafeDataCache CafeDataCache
+@inject SFA_PWA.Services.NetworkStatusService NetworkStatus
+@implements IDisposable
 
 @using SFA_PWA.Models
 
@@ -96,7 +98,7 @@ else
     <div class="cafe-card-list">
         @foreach (var cafe in FilteredCafes)
         {
-            <div class="cafe-card" style="cursor:pointer; position:relative; min-height:180px;" @onclick="() => OpenCafeMap(cafe)">
+            <div class="cafe-card" style="@(isOnlineForLinks ? "cursor:pointer;" : "cursor:default;") position:relative; min-height:180px;" @onclick="async () => { if (isOnlineForLinks) await OpenCafeMap(cafe); }">
                 <div class="cafe-card-header">
                     <div class="cafe-name" style="display:block; text-align:left;">@cafe.Name</div>
                 </div>
@@ -122,19 +124,22 @@ else
                         <div class="cafe-notes"><strong>Notes:</strong> @cafe.Notes</div>
                     }
                 </div>
-                <div style="position:absolute; bottom:0.7em; right:0.7em; z-index:2;">
-                    <button class="btn btn-light btn-sm" title="Search Google for official website" style="padding:0.35em 0.6em; border-radius:0.7em; border:1px solid #eee; box-shadow:0 1px 4px rgba(0,0,0,0.07);" @onclick="(e) => FindWebsiteAsync(cafe, e)" @onclick:stopPropagation="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22" style="vertical-align:middle;">
-                            <g>
-                                <circle cx="24" cy="24" r="20" fill="#fff"/>
-                                <path fill="#4285F4" d="M34.6 24.3c0-1.1-.1-2.1-.3-3.1H24v5.9h6c-.3 1.6-1.3 2.9-2.7 3.8v3.1h4.4c2.6-2.4 4.1-5.9 4.1-9.7z"/>
-                                <path fill="#34A853" d="M24 38c2.7 0 5-0.9 6.7-2.4l-4.4-3.1c-1.2 0.8-2.7 1.3-4.3 1.3-3.3 0-6.1-2.2-7.1-5.2h-4.4v3.2C12.7 35.8 18 38 24 38z"/>
-                                <path fill="#FBBC05" d="M16.9 28.6c-0.3-0.8-0.5-1.7-0.5-2.6s0.2-1.8 0.5-2.6v-3.2h-4.4C11.7 22.2 11 23.9 11 25.7s0.7 3.5 1.5 5.1l4.4-3.2z"/>
-                                <path fill="#EA4335" d="M24 18.7c1.5 0 2.8 0.5 3.8 1.4l2.8-2.8C28.9 15.9 26.7 15 24 15c-6 0-11.3 2.2-14.9 5.7l4.4 3.2c1-3 3.8-5.2 7.1-5.2z"/>
-                            </g>
-                        </svg>
-                    </button>
-                </div>
+                @if (isOnlineForLinks)
+                {
+                    <div style="position:absolute; bottom:0.7em; right:0.7em; z-index:2;">
+                        <button class="btn btn-light btn-sm" title="Search Google for official website" style="padding:0.35em 0.6em; border-radius:0.7em; border:1px solid #eee; box-shadow:0 1px 4px rgba(0,0,0,0.07);" @onclick="(e) => FindWebsiteAsync(cafe, e)" @onclick:stopPropagation="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22" style="vertical-align:middle;">
+                                <g>
+                                    <circle cx="24" cy="24" r="20" fill="#fff"/>
+                                    <path fill="#4285F4" d="M34.6 24.3c0-1.1-.1-2.1-.3-3.1H24v5.9h6c-.3 1.6-1.3 2.9-2.7 3.8v3.1h4.4c2.6-2.4 4.1-5.9 4.1-9.7z"/>
+                                    <path fill="#34A853" d="M24 38c2.7 0 5-0.9 6.7-2.4l-4.4-3.1c-1.2 0.8-2.7 1.3-4.3 1.3-3.3 0-6.1-2.2-7.1-5.2h-4.4v3.2C12.7 35.8 18 38 24 38z"/>
+                                    <path fill="#FBBC05" d="M16.9 28.6c-0.3-0.8-0.5-1.7-0.5-2.6s0.2-1.8 0.5-2.6v-3.2h-4.4C11.7 22.2 11 23.9 11 25.7s0.7 3.5 1.5 5.1l4.4-3.2z"/>
+                                    <path fill="#EA4335" d="M24 18.7c1.5 0 2.8 0.5 3.8 1.4l2.8-2.8C28.9 15.9 26.7 15 24 15c-6 0-11.3 2.2-14.9 5.7l4.4 3.2c1-3 3.8-5.2 7.1-5.2z"/>
+                                </g>
+                            </svg>
+                        </button>
+                    </div>
+                }
             </div>
         }
     </div>
@@ -148,6 +153,7 @@ else
     private bool showHelperText = true;
     private bool isOfflineMode = false;
     private DateTime? lastUpdateTime = null;
+    private bool isOnlineForLinks = true;
 
     private IEnumerable<string> Places =>
         cafes == null
@@ -282,6 +288,11 @@ else
 
     protected override async Task OnInitializedAsync()
         {
+            // Initialize network status
+            await NetworkStatus.InitializeAsync();
+            NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
+            isOnlineForLinks = await NetworkStatus.IsOnlineAsync();
+            
             // Fetch cafes with offline fallback support
             var result = await CafeDataCache.GetCafesWithCacheAsync();
             cafes = result.Cafes;
@@ -292,6 +303,17 @@ else
                 lastUpdateTime = await CafeDataCache.GetLastUpdateTimeAsync();
             }
         }
+    
+    private void OnNetworkStatusChanged(object? sender, bool online)
+    {
+        isOnlineForLinks = online;
+        InvokeAsync(StateHasChanged);
+    }
+    
+    public void Dispose()
+    {
+        NetworkStatus.OnlineStatusChanged -= OnNetworkStatusChanged;
+    }
 
     // Haversine formula to calculate distance (km) between two lat/lng points
     // Haversine formula to calculate distance (miles) between two lat/lng points

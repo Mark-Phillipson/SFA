@@ -2,6 +2,8 @@
 @using System.Net.Http.Json
 @using SFA_PWA.Shared
 @inject HttpClient Http
+@inject SFA_PWA.Services.NetworkStatusService NetworkStatus
+@implements IDisposable
 
 <SeoHeader 
     Title="Weather Forecast - FairiesLittleHelper" 
@@ -9,31 +11,39 @@
     Url="https://polite-sand-0eb4b4703.3.azurestaticapps.net/weather" />
 
 <h1>Kent Weather Links</h1>
-<p>Select a Kent location to open BBC Weather, or visit the Met Office.</p>
 
-
-
-<h2>Major UK Weather Sites</h2>
-<div class="weather-sites">
-
-    <button class="weather-btn" onclick="window.open('https://www.metoffice.gov.uk/', '_blank')"
-        aria-label="Open Met Office Weather">
-        <span style="font-size:1.2em;vertical-align:middle;margin-right:0.3em;">🌤️</span> Met Office
-    </button>
-
-    <div style="margin-top:1em;">
-        <label for="bbcLocation" style="font-weight:bold;">BBC Weather for:</label>
-        <select id="bbcLocation" class="weather-dropdown" @bind="selectedLocation">
-            @foreach (var loc in bbcLocations)
-            {
-                <option value="@loc.Url">@loc.Name</option>
-            }
-        </select>
-        <button class="weather-btn" @onclick="OpenSelectedBBCWeather" style="margin-left:0.5em;">
-            <span style="font-size:1.2em;vertical-align:middle;margin-right:0.3em;">☁️</span> Open BBC Weather
-        </button>
+@if (!isOnline)
+{
+    <div class="alert alert-warning">
+        <strong>📴 Offline</strong> - Weather links are not available while offline. Connect to the internet to access weather forecasts.
     </div>
-</div>
+}
+else
+{
+    <p>Select a Kent location to open BBC Weather, or visit the Met Office.</p>
+
+    <h2>Major UK Weather Sites</h2>
+    <div class="weather-sites">
+
+        <button class="weather-btn" onclick="window.open('https://www.metoffice.gov.uk/', '_blank')"
+            aria-label="Open Met Office Weather">
+            <span style="font-size:1.2em;vertical-align:middle;margin-right:0.3em;">🌤️</span> Met Office
+        </button>
+
+        <div style="margin-top:1em;">
+            <label for="bbcLocation" style="font-weight:bold;">BBC Weather for:</label>
+            <select id="bbcLocation" class="weather-dropdown" @bind="selectedLocation">
+                @foreach (var loc in bbcLocations)
+                {
+                    <option value="@loc.Url">@loc.Name</option>
+                }
+            </select>
+            <button class="weather-btn" @onclick="OpenSelectedBBCWeather" style="margin-left:0.5em;">
+                <span style="font-size:1.2em;vertical-align:middle;margin-right:0.3em;">☁️</span> Open BBC Weather
+            </button>
+        </div>
+    </div>
+}
 
 
 
@@ -66,6 +76,25 @@ new BbcLocation("Tonbridge", "https://www.bbc.co.uk/weather/2635703"),
 new BbcLocation("Tunbridge Wells", "https://www.bbc.co.uk/weather/2639022")
 };
     private string selectedLocation = "https://www.bbc.co.uk/weather/2643179";
+    private bool isOnline = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await NetworkStatus.InitializeAsync();
+        NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
+        isOnline = await NetworkStatus.IsOnlineAsync();
+    }
+    
+    private void OnNetworkStatusChanged(object? sender, bool online)
+    {
+        isOnline = online;
+        InvokeAsync(StateHasChanged);
+    }
+    
+    public void Dispose()
+    {
+        NetworkStatus.OnlineStatusChanged -= OnNetworkStatusChanged;
+    }
 
     private async Task OpenSelectedBBCWeather()
     {
