@@ -142,10 +142,10 @@
 
         await LoadBuildInfoAsync();
         
-        // Initialize network status
-        isOnline = await NetworkStatus.IsOnlineAsync();
+        // Initialize network status - subscribe to events first to avoid race condition
         await NetworkStatus.InitializeAsync();
         NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
+        isOnline = await NetworkStatus.IsOnlineAsync();
     }
     
     private void OnNetworkStatusChanged(object? sender, bool online)
