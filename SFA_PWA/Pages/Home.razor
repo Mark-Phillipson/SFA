@@ -1,5 +1,7 @@
 ﻿@page "/"
 @using SFA_PWA.Shared
+@inject SFA_PWA.Services.NetworkStatusService NetworkStatus
+@implements IDisposable
 
 <SeoHeader 
     Title="Home - FairiesLittleHelper" 
@@ -16,19 +18,22 @@
 
 
 <h1>Welcome to the San Fairy Ann Cycling Club App!</h1>
-<div class="video-preview" style="margin:2em 0;text-align:center;">
-    <h2>YouTube Video</h2>
-    <a href="https://www.youtube.com/watch?v=Nkp0X28te-o" target="_blank" rel="noopener noreferrer"
-        style="display:inline-flex;align-items:center;text-decoration:none;font-size:1.2em;">
-        <span style="display:inline-block;width:32px;height:32px;margin-right:0.5em;">
-            <svg viewBox="0 0 32 32" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
-                <rect width="32" height="32" rx="6" fill="#FF0000" />
-                <polygon points="13,10 25,16 13,22" fill="#fff" />
-            </svg>
-        </span>
-        Watch explanation video on YouTube
-    </a>
-</div>
+@if (isOnline)
+{
+    <div class="video-preview" style="margin:2em 0;text-align:center;">
+        <h2>YouTube Video</h2>
+        <a href="https://www.youtube.com/watch?v=Nkp0X28te-o" target="_blank" rel="noopener noreferrer"
+            style="display:inline-flex;align-items:center;text-decoration:none;font-size:1.2em;">
+            <span style="display:inline-block;width:32px;height:32px;margin-right:0.5em;">
+                <svg viewBox="0 0 32 32" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="32" height="32" rx="6" fill="#FF0000" />
+                    <polygon points="13,10 25,16 13,22" fill="#fff" />
+                </svg>
+            </span>
+            Watch explanation video on YouTube
+        </a>
+    </div>
+}
 
 <div class="instructions">
     <h3>How to use this app:</h3>
@@ -52,7 +57,16 @@
 
 <div class="install-section" style="margin-top:2em;">
     <h2>How to Install This App</h2>
-    <InstallPwaButton />
+    @if (isOnline)
+    {
+        <InstallPwaButton />
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <strong>📴 Offline</strong> - Install button is not available while offline. Connect to the internet to install the app.
+        </div>
+    }
     <h4>Windows or Mac (Chrome, Edge, Firefox):</h4>
     <ol>
         <li>Open the app in your browser.</li>
@@ -116,6 +130,7 @@
 
 @code {
     private bool showSplash = true;
+    private bool isOnline = true;
 
     private string? AppVersion;
     private string? BuildDate;
@@ -126,6 +141,22 @@
         _ = HideSplashAfterDelayAsync();
 
         await LoadBuildInfoAsync();
+        
+        // Initialize network status
+        isOnline = await NetworkStatus.IsOnlineAsync();
+        await NetworkStatus.InitializeAsync();
+        NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
+    }
+    
+    private void OnNetworkStatusChanged(object? sender, bool online)
+    {
+        isOnline = online;
+        InvokeAsync(StateHasChanged);
+    }
+    
+    public void Dispose()
+    {
+        NetworkStatus.OnlineStatusChanged -= OnNetworkStatusChanged;
     }
 
     private async Task LoadBuildInfoAsync()
