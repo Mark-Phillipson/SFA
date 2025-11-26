@@ -1,3 +1,5 @@
 {
-    "dotnet.defaultSolution": "SFA_PWA.sln"
+    "dotnet.defaultSolution": "SFA_PWA.sln",
+    "appService.defaultWebAppToDeploy": "/subscriptions/f921b96c-ab1c-4de7-93c7-011dc6104df2/resourceGroups/SFAPWA/providers/Microsoft.Web/sites/SFAWebAPI",
+    "appService.deploySubpath": "."
 }

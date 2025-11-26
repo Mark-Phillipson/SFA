@@ -3,10 +3,9 @@
 @inject SFA_PWA.Services.NetworkStatusService NetworkStatus
 @implements IDisposable
 
-<SeoHeader 
-    Title="Home - FairiesLittleHelper" 
-    Description="Welcome to FairiesLittleHelper, your companion for cycling events and cafe stops." 
-    Url="https://polite-sand-0eb4b4703.3.azurestaticapps.net/" 
+<SeoHeader Title="Home - FairiesLittleHelper"
+    Description="Welcome to FairiesLittleHelper, your companion for cycling events and cafe stops."
+    Url="https://polite-sand-0eb4b4703.3.azurestaticapps.net/"
     ImageUrl="https://polite-sand-0eb4b4703.3.azurestaticapps.net/icon-512.png" />
 
 @if (showSplash)
@@ -38,22 +37,32 @@
 <div class="instructions">
     <h3>How to use this app:</h3>
     <ul>
-        <li><b>Ride Group Calendars:</b> View upcoming rides for your selected groups on the <b>Calendars</b> page.
-            Choose which groups to follow in <b>Settings</b>.</li>
         <li><b>Club Links:</b> Access club resources, WhatsApp channels (demo only), social media, and more from the
-            <b>Links</b> page. Use the filter box to quickly find any link or resource.</li>
+            <b>Links</b> page. Use the filter box to quickly find any link or resource.
+        </li>
+        <li><b>My Custom Links:</b> Add your own custom link and resources on the <b>My Custom Links</b> page.</li>
+        <li><b>Groups/Settings:</b> Select which ride groups you want to follow. Your preferences are saved locally.
+        </li>
+
+        <li><b>Followed Calendars:</b> View upcoming rides for your selected groups on the <b>Followed Calendars</b>
+            page.
+            Choose which groups to follow in <b>Settings</b>.</li>
+        <li><b>D Groups/Midweekers Start Points:</b> View the saved start points used by D Groups/Midweekers rides
+            (addresses and notes).
+        </li>
+        <li><b>Cafe List:</b> Browse recommended cafes for your rides.</li>
         <li><b>Weather:</b> Access Kent weather links on the <b>Weather</b> page. Select a location from the BBC Weather
             dropdown, or visit the Met Office. No specific day forecasts are shown. The page features a clean UI with
             weather icons for quick access.</li>
-        <li><b>Groups/Settings:</b> Select which ride groups you want to follow. Your preferences are saved locally.
-        </li>
-        <li><b>Cafe List:</b> Browse recommended cafes for your rides.</li>
-        <li><b>Specification:</b> Review the app’s specification and details.</li>
-        <li><b>Feedback:</b> For feedback or issues, use the GitHub link in the <b>Links</b> page.</li>
+
+        <li><b>WhatsApp Groups:</b> See demo WhatsApp group information and channel names (for reference only).</li>
+        <li><b>Chat Bot:</b> Ask the built‑in chat bot for help or quick information about the club and groups.</li>
     </ul>
     <p><i>Note: WhatsApp group links are for demonstration only and not yet set up for the club. This app works on
             desktop and mobile, and saves your settings locally for convenience.</i></p>
 </div>
+
+
 
 <div class="install-section" style="margin-top:2em;">
     <h2>How to Install This App</h2>
@@ -84,19 +93,27 @@
     <h5>Install this PWA using Chrome on Android</h5>
     <ol>
         <li>Open the site in <b>Chrome</b> on your Android phone (make sure you're on <code>https://</code>).</li>
-        <li>Look for an install icon in the address bar (a +/install icon) — if present, tap it. If not, open the Chrome menu (three dots).</li>
-        <li>In the menu, tap <b>Install app</b> (newer Chrome) or <b>Add to Home screen</b> (older builds). Both add an app icon to your Home screen and app drawer.</li>
-        <li>Chrome may show a preview and prompt you to <b>Add</b> or <b>Install</b> — confirm to finish the installation.</li>
-        <li>After installing, you can open the app from your home screen or app drawer. The PWA opens in its own window without navigation controls if the manifest uses <code>display: standalone</code>.</li>
+        <li>Look for an install icon in the address bar (a +/install icon) — if present, tap it. If not, open the Chrome
+            menu (three dots).</li>
+        <li>In the menu, tap <b>Install app</b> (newer Chrome) or <b>Add to Home screen</b> (older builds). Both add an
+            app icon to your Home screen and app drawer.</li>
+        <li>Chrome may show a preview and prompt you to <b>Add</b> or <b>Install</b> — confirm to finish the
+            installation.</li>
+        <li>After installing, you can open the app from your home screen or app drawer. The PWA opens in its own window
+            without navigation controls if the manifest uses <code>display: standalone</code>.</li>
     </ol>
 
     <h5>Save (or remove) the app from your Home screen</h5>
     <ol>
         <li>To add again: if you removed the icon, re-open the site in Chrome and follow the steps above.</li>
-        <li>To remove: long-press the app icon on the home screen and choose <b>Remove</b> or <b>Uninstall</b> depending on your launcher.</li>
-        <li>To check that it’s a PWA and not a browser shortcut: open the installed app — a PWA should look like a standalone app (no address bar) if the manifest and service worker are configured.</li>
+        <li>To remove: long-press the app icon on the home screen and choose <b>Remove</b> or <b>Uninstall</b> depending
+            on your launcher.</li>
+        <li>To check that it’s a PWA and not a browser shortcut: open the installed app — a PWA should look like a
+            standalone app (no address bar) if the manifest and service worker are configured.</li>
     </ol>
-    <p style="font-size:0.95em;color:#555;"><i>Notes: Wording or prompts can vary between Chrome versions and Android devices. If you don't see an option to install, try updating Chrome or use the "Add to Home screen" option in the menu.</i></p>
+    <p style="font-size:0.95em;color:#555;"><i>Notes: Wording or prompts can vary between Chrome versions and Android
+            devices. If you don't see an option to install, try updating Chrome or use the "Add to Home screen" option
+            in the menu.</i></p>
     <div>
         <img src="screenshots/android-install.png" alt="Screenshot: Android Install"
             style="max-width:300px; margin:0.5em;" />
