@@ -1,6 +1,6 @@
 # Running Both Projects in Visual Studio Code
 
-**Note: This project requires .NET 10 SDK.**
+**Note: This project uses .NET 10 SDK locally. Azure deployment currently uses .NET 9 until Azure Static Web Apps adds .NET 10 support.**
 
 To launch both the Blazor PWA (SFA_PWA) and the WebAPI backend (SFA_WebAPI) in development:
 
