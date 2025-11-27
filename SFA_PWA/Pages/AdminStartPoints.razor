@@ -141,7 +141,7 @@ else
         {
             Log($"Refreshing list from {BotApi.Client.BaseAddress}");
             // Prefer configured backend client
-            var resp = await BotApi.Client.GetAsync("api/startpoints");
+            var resp = await BotApi.Client.GetAsync("api/StartPoints");
             if (resp.IsSuccessStatusCode)
             {
                 var contentType = resp.Content.Headers.ContentType?.MediaType ?? string.Empty;
@@ -161,7 +161,8 @@ else
             else
             {
                 var txt = await resp.Content.ReadAsStringAsync();
-                ErrorMessage = $"Request failed: {(int)resp.StatusCode} {resp.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+                var fullUrl = BotApi.Client.BaseAddress + "api/StartPoints";
+                ErrorMessage = $"Request failed: {(int)resp.StatusCode} {resp.ReasonPhrase} at {fullUrl}. Response snippet: {GetSnippet(txt)}";
                 StartPoints = new List<SFA_PWA.Models.StartPoint>();
                 Log($"Request failed: {resp.StatusCode}");
             }
@@ -174,7 +175,7 @@ else
             {
                 Log($"Attempting fallback to {NavigationManager.BaseUri}");
                 var fb = new HttpClient { BaseAddress = new Uri(NavigationManager.BaseUri) };
-                var resp = await fb.GetAsync("api/startpoints");
+                var resp = await fb.GetAsync("api/StartPoints");
                 if (resp.IsSuccessStatusCode)
                 {
                     var contentType = resp.Content.Headers.ContentType?.MediaType ?? string.Empty;
@@ -193,7 +194,8 @@ else
                 else
                 {
                     var txt = await resp.Content.ReadAsStringAsync();
-                    ErrorMessage = $"Fallback request failed: {(int)resp.StatusCode} {resp.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+                    var fallbackUrl = NavigationManager.BaseUri + "api/StartPoints";
+                    ErrorMessage = $"Fallback request failed: {(int)resp.StatusCode} {resp.ReasonPhrase} at {fallbackUrl}. Response snippet: {GetSnippet(txt)}";
                     StartPoints = new List<SFA_PWA.Models.StartPoint>();
                     Log($"Fallback failed: {resp.StatusCode}");
                 }
@@ -284,7 +286,7 @@ else
         {
             if (IsNew)
             {
-                var req = new HttpRequestMessage(HttpMethod.Post, "api/startpoints")
+                var req = new HttpRequestMessage(HttpMethod.Post, "api/StartPoints")
                 {
                     Content = JsonContent.Create(Editing)
                 };
@@ -299,13 +301,14 @@ else
                 else
                 {
                     var txt = await res.Content.ReadAsStringAsync();
-                    ErrorMessage = $"Save failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+                    var saveUrl = BotApi.Client.BaseAddress + "api/StartPoints";
+                    ErrorMessage = $"Save failed: {(int)res.StatusCode} {res.ReasonPhrase} at {saveUrl}. Response snippet: {GetSnippet(txt)}";
                     Log($"Create failed: {res.StatusCode}");
                 }
             }
             else
             {
-                var req = new HttpRequestMessage(HttpMethod.Put, $"api/startpoints/{Editing.Id}")
+                var req = new HttpRequestMessage(HttpMethod.Put, $"api/StartPoints/{Editing.Id}")
                 {
                     Content = JsonContent.Create(Editing)
                 };
@@ -320,7 +323,8 @@ else
                 else
                 {
                     var txt = await res.Content.ReadAsStringAsync();
-                    ErrorMessage = $"Update failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+                    var updateUrl = BotApi.Client.BaseAddress + $"api/StartPoints/{Editing.Id}";
+                    ErrorMessage = $"Update failed: {(int)res.StatusCode} {res.ReasonPhrase} at {updateUrl}. Response snippet: {GetSnippet(txt)}";
                     Log($"Update failed: {res.StatusCode}");
                 }
             }
@@ -357,7 +361,7 @@ else
         StateHasChanged();
         try
         {
-            var req = new HttpRequestMessage(HttpMethod.Delete, $"api/startpoints/{id}");
+            var req = new HttpRequestMessage(HttpMethod.Delete, $"api/StartPoints/{id}");
             if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
             var res = await BotApi.Client.SendAsync(req);
             if (res.IsSuccessStatusCode) 
@@ -368,7 +372,8 @@ else
             else
             {
                 var txt = await res.Content.ReadAsStringAsync();
-                ErrorMessage = $"Delete failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+                var deleteUrl = BotApi.Client.BaseAddress + $"api/StartPoints/{id}";
+                ErrorMessage = $"Delete failed: {(int)res.StatusCode} {res.ReasonPhrase} at {deleteUrl}. Response snippet: {GetSnippet(txt)}";
                 Log($"Delete failed: {res.StatusCode}");
             }
         }

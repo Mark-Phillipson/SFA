@@ -122,7 +122,7 @@ else
         try
         {
             // Prefer backend API so edits persist in the WebAPI-managed data file
-            var list = await BotApi.Client.GetFromJsonAsync<List<StartPoint>>("api/startpoints");
+            var list = await BotApi.Client.GetFromJsonAsync<List<StartPoint>>("api/StartPoints");
         // The API returns a flat list for all groups; keep the full list and prefer D-Group items for the default view
         if (list != null)
         {

@@ -45,7 +45,7 @@
 
 @code {
     [Parameter]
-    public string ApiUrl { get; set; } = "https://localhost:7289/api/bot/chat";
+    public string ApiUrl { get; set; } = "https://localhost:7289/api/Bot/chat";
 
     private List<ChatMessage> Messages = new();
     private string CurrentMessage = string.Empty;
@@ -90,7 +90,7 @@
                 }
                 else
                 {
-                    var errorText = $"Error contacting bot at {ApiUrl}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
+                    var errorText = $"Error contacting bot at {ApiUrl} (Status: {(int)response.StatusCode} {response.StatusCode}): {await response.Content.ReadAsStringAsync()}";
                     Messages.Add(new ChatMessage { Text = errorText, IsUser = false });
                 }
             }

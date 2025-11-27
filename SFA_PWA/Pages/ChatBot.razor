@@ -15,7 +15,7 @@
 }
 else
 {
-    <ChatBotComponent ApiUrl="@BotApiConfig.BotApiUrl" />
+    <ChatBotComponent ApiUrl="@(BotApiConfig.BotApiUrl + "api/Bot/chat")" />
 }
 
 @code {
