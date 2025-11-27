@@ -1,5 +1,7 @@
 # Running Both Projects in Visual Studio Code
 
+**Note: This project requires .NET 10 SDK.**
+
 To launch both the Blazor PWA (SFA_PWA) and the WebAPI backend (SFA_WebAPI) in development:
 
 1. Open two terminals in VS Code.
