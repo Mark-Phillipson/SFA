@@ -27,6 +27,11 @@
       "src": "sfa.png",
       "type": "image/png",
       "sizes": "128x128 64x64"
+    },
+    {
+      "src": "SFA-Logo.png",
+      "type": "image/png",
+      "sizes": "512x512 192x192 128x128 64x64"
     }
   ]
 }
