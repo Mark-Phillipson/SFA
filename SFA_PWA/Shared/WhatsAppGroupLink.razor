@@ -2,7 +2,14 @@
 
 <div class="col">
     <div class="btn btn-light w-100 py-4 mb-3 whatsapp-group-link d-flex align-items-center justify-content-start" style="font-size: 1.25rem; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-        <span class="me-3 fs-2" aria-hidden="true">@Emoji</span>
+        @if (!string.IsNullOrWhiteSpace(ImageSrc))
+        {
+            <img src="@ImageSrc" alt="@GroupName icon" class="me-3" style="width: 2.5rem; height: 2.5rem; object-fit: contain;" />
+        }
+        else
+        {
+            <span class="me-3 fs-2" aria-hidden="true">@Emoji</span>
+        }
         <span class="fw-bold flex-grow-1">@GroupName</span>
         @if (!string.IsNullOrWhiteSpace(Description))
         {
@@ -16,5 +23,6 @@
     [Parameter] public string? GroupName { get; set; }
     [Parameter] public string? Description { get; set; }
     [Parameter] public string Emoji { get; set; } = "💬";
+    [Parameter] public string? ImageSrc { get; set; }
     [Parameter] public bool IsMain { get; set; } = false;
 }
