@@ -65,7 +65,7 @@
 
 
 <div class="install-section" style="margin-top:2em;">
-    <h2>How to Install This App</h2>
+    <h2>Press Button to Install This App</h2>
     @if (isOnline)
     {
         <InstallPwaButton />
@@ -73,63 +73,10 @@
     else
     {
         <div class="alert alert-info">
-            <strong>📴 Offline</strong> - Install button is not available while offline. Connect to the internet to install the app.
+            <strong>📴 Offline</strong> - Install button is not available while offline. Connect to the internet to install
+            the app.
         </div>
     }
-    <h4>Windows or Mac (Chrome, Edge, Firefox):</h4>
-    <ol>
-        <li>Open the app in your browser.</li>
-        <li>Click the browser’s menu (three dots or lines).</li>
-        <li>Select <b>Install App</b> or <b>Add to desktop</b> (wording may vary).</li>
-        <li>Follow the prompts to install. The app will appear in your Start menu or Applications folder.</li>
-    </ol>
-    <div>
-        <img src="screenshots/chrome-install.png" alt="Screenshot: Chrome Install Prompt"
-            style="max-width:300px; margin:0.5em;" />
-        <img src="screenshots/edge-install.png" alt="Screenshot: Edge Install Prompt"
-            style="max-width:300px; margin:0.5em;" />
-    </div>
-    <h4>Android Phone:</h4>
-    <h5>Install this PWA using Chrome on Android</h5>
-    <ol>
-        <li>Open the site in <b>Chrome</b> on your Android phone (make sure you're on <code>https://</code>).</li>
-        <li>Look for an install icon in the address bar (a +/install icon) — if present, tap it. If not, open the Chrome
-            menu (three dots).</li>
-        <li>In the menu, tap <b>Install app</b> (newer Chrome) or <b>Add to Home screen</b> (older builds). Both add an
-            app icon to your Home screen and app drawer.</li>
-        <li>Chrome may show a preview and prompt you to <b>Add</b> or <b>Install</b> — confirm to finish the
-            installation.</li>
-        <li>After installing, you can open the app from your home screen or app drawer. The PWA opens in its own window
-            without navigation controls if the manifest uses <code>display: standalone</code>.</li>
-    </ol>
-
-    <h5>Save (or remove) the app from your Home screen</h5>
-    <ol>
-        <li>To add again: if you removed the icon, re-open the site in Chrome and follow the steps above.</li>
-        <li>To remove: long-press the app icon on the home screen and choose <b>Remove</b> or <b>Uninstall</b> depending
-            on your launcher.</li>
-        <li>To check that it’s a PWA and not a browser shortcut: open the installed app — a PWA should look like a
-            standalone app (no address bar) if the manifest and service worker are configured.</li>
-    </ol>
-    <p style="font-size:0.95em;color:#555;"><i>Notes: Wording or prompts can vary between Chrome versions and Android
-            devices. If you don't see an option to install, try updating Chrome or use the "Add to Home screen" option
-            in the menu.</i></p>
-    <div>
-        <img src="screenshots/android-install.png" alt="Screenshot: Android Install"
-            style="max-width:300px; margin:0.5em;" />
-    </div>
-    <h4>iPhone (Safari):</h4>
-    <ol>
-        <li>Open the app in Safari.</li>
-        <li>Tap the Share button (square with arrow).</li>
-        <li>Tap <b>Add to Home Screen</b>.</li>
-        <li>Confirm. The app icon will appear on your home screen.</li>
-    </ol>
-    <div>
-        @* <img src="screenshots/iphone-install.png" alt="Screenshot: iPhone Install" style="max-width:300px; margin:0.5em;" /> *@
-    </div>
-    <p style="font-size:0.95em;color:#555;"><i>Screenshots are for illustration. Wording and icons may vary by browser
-            and device.</i></p>
 </div>
 
 <div class="desktop-bottom-image">
@@ -158,19 +105,19 @@
         _ = HideSplashAfterDelayAsync();
 
         await LoadBuildInfoAsync();
-        
+
         // Initialize network status - subscribe to events first to avoid race condition
         await NetworkStatus.InitializeAsync();
         NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
         isOnline = await NetworkStatus.IsOnlineAsync();
     }
-    
+
     private void OnNetworkStatusChanged(object? sender, bool online)
     {
         isOnline = online;
         InvokeAsync(StateHasChanged);
     }
-    
+
     public void Dispose()
     {
         NetworkStatus.OnlineStatusChanged -= OnNetworkStatusChanged;
