@@ -1,0 +1,11 @@
+.offline-indicator {
+    position: relative;
+    width: 100%;
+    background: #ff9800;
+    color: white;
+    padding: 0.5em;
+    text-align: center;
+    z-index: 2;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    margin-bottom: 0.5em;
+}

@@ -1,7 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿
+@inherits LayoutComponentBase
 @inject IJSRuntime JS
-
-<OfflineIndicator />
 
 <div class="page">
     <div class="sidebar">
@@ -18,7 +17,7 @@
                     <a href="about-blazor">About</a>
                 </div>
         </div>
-
+        <OfflineIndicator />
         <article class="content px-4">
             @Body
         </article>
