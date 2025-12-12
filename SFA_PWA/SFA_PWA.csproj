@@ -37,4 +37,29 @@
       <WriteLinesToFile File="wwwroot/buildinfo.json" Lines="$(BuildInfoJson)" Overwrite="true" />
     </Target>
 
+    <Target Name="CreateStableBlazorLoader" AfterTargets="Publish">
+      <ItemGroup>
+        <BlazorRuntimeFiles Include="$(PublishDir)wwwroot\_framework\blazor.webassembly.*.js" />
+      </ItemGroup>
+      <PropertyGroup>
+        <_BlazorHashedFile>%(BlazorRuntimeFiles.Identity)</_BlazorHashedFile>
+        <BlazorHashedFileName>$([System.IO.Path]::GetFileName('$(_BlazorHashedFile)'))</BlazorHashedFileName>
+      </PropertyGroup>
+      <Message Importance="High" Text="Creating stable blazor.webassembly.js loader for @(BlazorRuntimeFiles)" />
+      <ItemGroup>
+        <BlazorLoaderLines Include="(function(){" />
+        <BlazorLoaderLines Include="    var hashed = '$(BlazorHashedFileName)';" />
+        <BlazorLoaderLines Include="    var current = document.currentScript || (function(){" />
+        <BlazorLoaderLines Include="        var scripts = document.getElementsByTagName('script');" />
+        <BlazorLoaderLines Include="        return scripts[scripts.length-1];" />
+        <BlazorLoaderLines Include="    })();" />
+        <BlazorLoaderLines Include="    var s = document.createElement('script');" />
+        <BlazorLoaderLines Include="    s.src = '_framework/' + hashed;" />
+        <BlazorLoaderLines Include="    s.defer = true;" />
+        <BlazorLoaderLines Include="    current.parentNode.insertBefore(s, current);" />
+        <BlazorLoaderLines Include="})();" />
+      </ItemGroup>
+      <WriteLinesToFile File="$(PublishDir)wwwroot\_framework\blazor.webassembly.js" Overwrite="true" Condition=" '@(BlazorRuntimeFiles)' != '' " Lines="@(BlazorLoaderLines)" />
+    </Target>
+
 </Project>
