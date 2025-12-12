@@ -28,7 +28,7 @@ jobs:
         run: dotnet publish SFA_WebAPI/SFA_WebAPI.csproj --configuration Release --output ./publish
 
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v4
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           slot-name: 'production'
