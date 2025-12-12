@@ -27,13 +27,20 @@ jobs:
       - name: Publish
         run: dotnet publish SFA_WebAPI/SFA_WebAPI.csproj --configuration Release --output ./publish
 
+      - name: Archive publish output
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y zip
+          zip -r publish.zip publish
+        shell: bash
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           slot-name: 'production'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./publish
+          package: ./publish.zip
 
 
 # Required secrets:
