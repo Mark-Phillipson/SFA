@@ -1,0 +1,34 @@
+=== Domain checks run at: 12/15/2025 12:15:00 ===
+--- CNAME (www) ---
+
+Name                           Type   TTL   Section    NameHost
+----                           ----   ---   -------    --------
+www.fairieslittlehelper.online CNAME  60    Answer     polite-sand-0eb4b4703.3.azurestaticapps.net
+
+--- TXT (apex) ---
+
+Name                                     Type   TTL   Section    Strings
+----                                     ----   ---   -------    -------
+fairieslittlehelper.online               TXT    1799  Answer     {_w2axrefw2zipm8hyexsv7opdib4a1bg}
+fairieslittlehelper.online               TXT    1799  Answer     {v=spf1 include:spf.efwd.registrar-
+                                                                 servers.com ~all}
+
+--- A (apex) ---
+
+Name                        Type TTL   Section    PrimaryServer               NameAdministrator
+----                        ---- ---   -------    -------------               -----------------     
+fairieslittlehelper.online  SOA  31    Authority  dns1.registrar-servers.com  hostmaster.registrar-s
+                                                                              ervers.com
+
+--- TCP 443 ---
+
+ComputerName     : www.fairieslittlehelper.online
+RemoteAddress    : 20.82.12.44
+RemotePort       : 443
+InterfaceAlias   : Wi-Fi
+SourceAddress    : 192.168.0.8
+TcpTestSucceeded : True
+
+--- HTTPS Request ---
+Invoke-WebRequest error: The remote certificate is invalid according to the validation procedure: RemoteCertificateNameMismatch
+=== DONE ===

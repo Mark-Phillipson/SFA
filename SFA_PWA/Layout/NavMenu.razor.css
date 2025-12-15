@@ -2,6 +2,22 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Center the brand in the sidebar header and keep the toggler accessible */
+.top-row .container-fluid {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* allow absolute positioning of toggler */
+}
+.top-row .navbar-brand {
+    margin: 0; /* remove default left padding so it's truly centered */
+}
+.top-row .navbar-toggler {
+    position: absolute;
+    right: 0.5rem;
+    top: 0.5rem;
+}
+
 .top-row {
     min-height: 3.5rem;
     /* Use the site-wide purple variable defined in MainLayout.razor.css */
@@ -65,7 +81,8 @@
     }
 
     .nav-item ::deep a {
-        color: #d7d7d7;
+        /* Use full white for strong contrast against the club purple sidebar */
+        color: #ffffff;
         border-radius: 4px;
         height: 3rem;
         display: flex;
@@ -74,13 +91,22 @@
     }
 
 .nav-item ::deep a.active {
-    background-color: rgba(255,255,255,0.37);
-    color: white;
+    /* Make active link have a near-opaque white background and dark club purple text
+       so the contrast ratio with the text is high (passes WCAG) */
+    background-color: rgba(255,255,255,0.92);
+    color: var(--sfa-club-purple);
 }
 
 .nav-item ::deep a:hover {
-    background-color: rgba(255,255,255,0.1);
+    /* Subtle hover with white text; keep hover background lightly translucent */
+    background-color: rgba(255,255,255,0.08);
     color: white;
+}
+
+/* Improve keyboard focus visibility */
+.nav-item ::deep a:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
 }
 
 .nav-logo {

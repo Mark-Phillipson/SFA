@@ -23,6 +23,12 @@
     text-align: center;
     margin-top: 32px;
 }
+.site-footer {
+    text-align: center;
+    font-size: 0.9em;
+    color: black;
+    margin-top: 2em;
+}
 @media (min-width: 900px) {
     .desktop-bottom-image {
         display: block;
