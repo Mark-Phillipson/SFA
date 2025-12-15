@@ -9,7 +9,8 @@
 
 <div class="dgroup-toolbar">
   <input placeholder="Search start points..." @bind="searchTerm" @bind:event="oninput" />
-  <select @bind="sortOption">
+  <label class="visually-hidden" for="sortSelect">Sort start points</label>
+  <select id="sortSelect" @bind="sortOption" aria-label="Sort start points">
     <option value="Name">Sort: Name</option>
     <option value="Nearest">Sort: Nearest to Maidstone</option>
   </select>
