@@ -35,10 +35,10 @@
             </label>
             <span style="margin: 0.5em 0 1em 0; font-size: 1.1em; color: #333;">@group.Description</span>
             <div style="display: flex; gap: 1em;">
-                <a href="@group.InfoUrl" target="_blank" class="btn btn-info btn-lg" style="font-size: 1.1em; padding: 0.8em 1.5em; border-radius: 0.7em;">Info</a>
+                <a href="@group.InfoUrl" target="_blank" class="btn btn-info btn-lg" style="font-size: 1.1em; padding: 0.8em 1.5em; border-radius: 0.7em;">@($"{group.Name} Info")</a>
                 @if (!string.IsNullOrWhiteSpace(group.CalendarUrl))
                 {
-                    <a href="@group.CalendarUrl" target="_blank" class="btn btn-success btn-lg" style="font-size: 1.1em; padding: 0.8em 1.5em; border-radius: 0.7em;">Calendar</a>
+                    <a href="@group.CalendarUrl" target="_blank" class="btn btn-success btn-lg" style="font-size: 1.1em; padding: 0.8em 1.5em; border-radius: 0.7em;">@($"{group.Name} Calendar")</a>
                 }
             </div>
         </div>
