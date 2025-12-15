@@ -29,7 +29,8 @@
         </button>
     </div>
     <div class="filter-half">
-        <select @bind="selectedCategory" class="category-select">
+        <label for="categorySelect" class="visually-hidden">Filter by category</label>
+        <select id="categorySelect" @bind="selectedCategory" class="category-select" aria-label="Filter by category">
             <option value="">All Categories</option>
             @foreach (var cat in categories)
             {
