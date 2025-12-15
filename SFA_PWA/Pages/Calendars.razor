@@ -9,13 +9,17 @@
 
 <h1>Ride Group Calendars</h1>
 
-<div class="calendar-instructions" style="margin-bottom:1.5em;">
-    <h3>Calendar Usage Tips</h3>
-    <ul>
-        <li><b>Change View:</b> You can set your preferred default view (Month, Week, or Schedule) in <b>Settings</b>. On mobile, the calendar always shows the Schedule view for easier navigation.</li>
-        <li><b>Drill Down for Routes:</b> Click on a ride event in the calendar to view more details. If a route link is available, it will be shown in the event details popup. Use this to access route maps and information for your selected rides.</li>
-    </ul>
-</div>
+@if (showCalendarInstructions)
+{
+    <div class="calendar-instructions" style="margin-bottom:1.5em;position:relative;">
+        <button type="button" class="btn-close" style="position:absolute;right:10px;top:10px;background:transparent;border:0;font-size:1.25rem;line-height:1;color:#333;cursor:pointer;padding:0;" aria-label="Close" @onclick="CloseInstructions"><span aria-hidden="true">×</span></button>
+        <h2>Calendar Usage Tips</h2>
+        <ul>
+            <li><b>Change View:</b> You can set your preferred default view (Month, Week, or Schedule) in <b>Settings</b>. On mobile, the calendar always shows the Schedule view for easier navigation.</li>
+            <li><b>Drill Down for Routes:</b> Click on a ride event in the calendar to view more details. If a route link is available, it will be shown in the event details popup. Use this to access route maps and information for your selected rides.</li>
+        </ul>
+    </div>
+}
 
 @if (!isOnline)
 {
@@ -49,7 +53,7 @@ else
     {
         foreach (var group in selected)
         {
-            <h3>@group.Name</h3>
+            <h2>@group.Name</h2>
             <div style="width:100%;max-width:800px;margin:auto;min-height:600px;">
                 <iframe 
                     id="calendar-@group.Name"
@@ -71,6 +75,7 @@ else
     // Removed unused isLoading field (was causing CS0414 warning)
     private bool isCalendarsLoading = true;
     private bool isOnline = true;
+    private bool showCalendarInstructions = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,6 +118,13 @@ else
             calendarView = viewPref;
         }
 
+        // Load hide instructions preference
+        var hidePref = await JS.InvokeAsync<string>("localStorage.getItem", "hideCalendarInstructions");
+        if (!string.IsNullOrWhiteSpace(hidePref) && hidePref == "true")
+        {
+            showCalendarInstructions = false;
+        }
+
         // Show loading message for 7 seconds
         await Task.Run(async () => {
             await Task.Delay(7000);
@@ -147,6 +159,13 @@ else
         Console.WriteLine($"[Calendars.razor] OnResize called, mobile: {mobile}");
         isMobile = mobile;
         StateHasChanged();
+    }
+
+    private async Task CloseInstructions()
+    {
+        showCalendarInstructions = false;
+        await JS.InvokeVoidAsync("localStorage.setItem", "hideCalendarInstructions", "true");
+        await InvokeAsync(StateHasChanged);
     }
 
     private bool IsSelected(string groupName)
