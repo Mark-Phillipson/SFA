@@ -50,7 +50,8 @@
 
 <div class="row mb-3">
     <div class="col-md-6">
-        <input type="text" @bind-value="locationInput" @bind-value:event="oninput" placeholder="📍 Type a placename or postcode..." class="form-control" @onkeyup="OnLocationKeyUp" />
+        <label class="visually-hidden" for="locationInput">Search location</label>
+        <input id="locationInput" type="text" @bind-value="locationInput" @bind-value:event="oninput" placeholder="📍 Type a placename or postcode..." class="form-control" @onkeyup="OnLocationKeyUp" />
     </div>
     <div class="col-md-2">
         <button class="btn btn-primary w-100" @onclick="OnLocationSearch" disabled="@(isSearching)">🗺️ Search Nearby</button>
@@ -59,8 +60,9 @@
         <button class="btn btn-secondary w-100" @onclick="ClearLocationSearch">❌ Clear</button>
     </div>
     <div class="col-md-2">
-        <input type="number" min="1" max="100" class="form-control" style="width:100%;" @bind="searchRadius" />
-        <span style="font-size:0.9em;">Radius (miles)</span>
+        <label class="visually-hidden" for="searchRadius">Radius (miles)</label>
+        <input id="searchRadius" type="number" min="1" max="100" class="form-control" style="width:100%;" @bind="searchRadius" />
+        <span style="font-size:0.9em;" aria-hidden="true">Radius (miles)</span>
     </div>
 </div>
 <div class="row mb-2">
@@ -77,10 +79,12 @@
 </div>
 <div class="cafe-filter-row mb-3">
     <div class="cafe-filter-half">
-        <input type="text" @bind-value="filter" @bind-value:event="oninput" placeholder="🔎 General search..." class="form-control" @ref="filterBoxRef" />
+        <label class="visually-hidden" for="filterInput">General search</label>
+        <input id="filterInput" type="text" @bind-value="filter" @bind-value:event="oninput" placeholder="🔎 General search..." class="form-control" @ref="filterBoxRef" />
     </div>
     <div class="cafe-filter-half">
-        <select @bind="selectedPlace" class="form-select">
+        <label class="visually-hidden" for="placeSelect">Filter by place</label>
+        <select id="placeSelect" @bind="selectedPlace" class="form-select">
             <option value="">All Places</option>
             @foreach (var place in Places)
             {
@@ -281,7 +285,7 @@ else
         if (firstRender && !_focusSet)
         {
             _focusSet = true;
-            await JS.InvokeVoidAsync("focusElementBySelector", "[placeholder='Filter cafes by name or description...']");
+            await JS.InvokeVoidAsync("focusElementBySelector", "#filterInput");
         }
     }
 

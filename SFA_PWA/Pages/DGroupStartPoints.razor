@@ -8,7 +8,8 @@
 <h3>D/D+ Group/Midweakers Start Points</h3>
 
 <div class="dgroup-toolbar">
-  <input placeholder="Search start points..." @bind="searchTerm" @bind:event="oninput" />
+  <label class="visually-hidden" for="dgSearch">Search start points</label>
+  <input id="dgSearch" placeholder="Search start points..." @bind="searchTerm" @bind:event="oninput" />
   <label class="visually-hidden" for="sortSelect">Sort start points</label>
   <select id="sortSelect" @bind="sortOption" aria-label="Sort start points">
     <option value="Name">Sort: Name</option>

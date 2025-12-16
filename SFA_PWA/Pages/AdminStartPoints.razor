@@ -6,8 +6,8 @@
 <h3>Admin: D-Group Start Points</h3>
 
 <div class="mb-3">
-    <label>Admin API Key</label>
-    <input type="password" @bind="ApiKey" class="form-control" placeholder="Enter API key" />
+    <label for="apiKeyInput">Admin API Key</label>
+    <input id="apiKeyInput" type="password" @bind="ApiKey" class="form-control" placeholder="Enter API key" />
     <div class="mt-2">
         <button class="btn btn-primary me-2" @onclick="SaveApiKey">🔒 Save Key</button>
         <button class="btn btn-secondary" @onclick="ClearApiKey">🗑️ Clear Key</button>
@@ -26,28 +26,28 @@
     <div class="card p-3 mb-3 border-primary">
         <h5 class="card-title">@(IsNew ? "Add New Start Point" : $"Edit: {Editing.Name}")</h5>
         <div class="mb-2">
-            <label>Name</label>
-            <input class="form-control" @bind="Editing.Name" />
+            <label for="editingName">Name</label>
+            <input id="editingName" class="form-control" @bind="Editing.Name" />
         </div>
         <div class="mb-2">
-            <label>Location</label>
-            <input class="form-control" @bind="Editing.Location" />
+            <label for="editingLocation">Location</label>
+            <input id="editingLocation" class="form-control" @bind="Editing.Location" />
         </div>
         <div class="mb-2">
-            <label>Postcode</label>
-            <input class="form-control" @bind="Editing.Postcode" />
+            <label for="editingPostcode">Postcode</label>
+            <input id="editingPostcode" class="form-control" @bind="Editing.Postcode" />
         </div>
         <div class="mb-2">
-            <label>Notes</label>
-            <textarea class="form-control" @bind="Editing.Notes"></textarea>
+            <label for="editingNotes">Notes</label>
+            <textarea id="editingNotes" class="form-control" @bind="Editing.Notes"></textarea>
         </div>
         <div class="mb-2">
-            <label>Location on Google Maps</label>
-            <input class="form-control" @bind="Editing.GoogleMaps" />
+            <label for="editingGoogleMaps">Location on Google Maps</label>
+            <input id="editingGoogleMaps" class="form-control" @bind="Editing.GoogleMaps" />
         </div>
         <div class="mb-2">
-            <label>what3words address</label>
-            <input class="form-control" @bind="Editing.What3Words" />
+            <label for="editingWhat3Words">what3words address</label>
+            <input id="editingWhat3Words" class="form-control" @bind="Editing.What3Words" />
         </div>
         <div>
             <button class="btn btn-primary me-2" @onclick="Save" disabled="@IsProcessing">
@@ -62,7 +62,8 @@
 <button class="btn btn-success mb-3" @onclick="NewStartPoint" disabled="@IsProcessing">➕ Add New Start Point</button>
 
 <div class="mb-2">
-    <input placeholder="Search name, location or postcode..." @bind="searchTerm" @bind:event="oninput" class="form-control" />
+    <label class="visually-hidden" for="startPointSearch">Search start points</label>
+    <input id="startPointSearch" placeholder="Search name, location or postcode..." @bind="searchTerm" @bind:event="oninput" class="form-control" />
 </div>
 
 @if (StartPoints == null)
@@ -100,8 +101,8 @@ else
                     }
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-primary me-1" @onclick="() => EditStartPoint(sp)" disabled="@IsProcessing">✏️ Edit</button>
-                    <button class="btn btn-sm btn-danger" @onclick="() => DeleteStartPoint(sp.Id)" disabled="@IsProcessing">
+                    <button class="btn btn-sm btn-primary me-1 action-btn" @onclick="() => EditStartPoint(sp)" disabled="@IsProcessing">✏️ Edit</button>
+                    <button class="btn btn-sm btn-danger action-btn" @onclick="() => DeleteStartPoint(sp.Id)" disabled="@IsProcessing">
                         @if (IsProcessing && ProcessingId == sp.Id) { <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> }
                         🗑️ Delete
                     </button>
