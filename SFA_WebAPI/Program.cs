@@ -10,8 +10,8 @@ builder.Services.AddCors(options =>
 		   policy.WithOrigins(
 			   "https://localhost:5158",
 			   "https://polite-sand-0eb4b4703.3.azurestaticapps.net",
-			   "https://www.fairieslittlehelper.online/",
-			   "https://fairieslittlehelper.online/"
+			   "https://www.fairieslittlehelper.online",
+			   "https://fairieslittlehelper.online"
 		 		   )
 		.AllowAnyHeader()
 		.AllowAnyMethod();
