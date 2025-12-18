@@ -15,6 +15,32 @@ To launch both the Blazor PWA (SFA_PWA) and the WebAPI backend (SFA_WebAPI) in d
 
 You can copy and paste these commands directly into your VS Code terminals.
 
+## Running the .NET MAUI app (SFA_MauiApp)
+
+The MAUI project targets multiple frameworks, so specify which target when running with `dotnet watch run` using `--framework` (or `-f`). Example commands:
+
+- **Windows:**
+```pwsh
+dotnet watch run --framework net10.0-windows10.0.19041.0
+```
+- **Android** (requires Android SDK + emulator/device):
+```pwsh
+dotnet watch run --framework net10.0-android
+```
+- **Mac Catalyst** (macOS only):
+```pwsh
+dotnet watch run --framework net10.0-maccatalyst
+```
+- **iOS** (macOS only):
+```pwsh
+dotnet watch run --framework net10.0-ios
+```
+
+**Notes:**
+- Use the exact TFMs listed in `SFA_MauiApp/SFA_MauiApp.csproj`: `net10.0-android`, `net10.0-ios`, `net10.0-maccatalyst` and (on Windows) `net10.0-windows10.0.19041.0`.
+- Platform constraints apply (Android/emulator, macOS for iOS/MacCatalyst).
+- To simplify local dev, either run with `--framework` or temporarily set a single `TargetFramework` in the project file. You can also add a VS Code task to run the preferred target.
+
 ## Shared UI + Services (Razor Class Library)
 
 The app UI (Razor components/pages/layout) and all application services have been extracted into the Razor Class Library project [SFA_RazorClassLibrary](SFA_RazorClassLibrary).
