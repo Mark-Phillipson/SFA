@@ -1,6 +1,6 @@
 @page "/calendars"
 @using Microsoft.JSInterop
-@inject HttpClient Http
+@inject SFA_PWA.Services.IStaticJsonAssetLoader StaticJson
 @inject IJSRuntime JS
 @inject SFA_PWA.Services.NetworkStatusService NetworkStatus
 @implements IDisposable
@@ -94,7 +94,7 @@ else
         // Load all groups from groups.json
         try
         {
-            groups = await Http.GetFromJsonAsync<List<GroupData>>("sample-data/groups.json") ?? new List<GroupData>();
+            groups = await StaticJson.LoadAsync<List<GroupData>>("sample-data/groups.json") ?? new List<GroupData>();
         }
         catch
         {

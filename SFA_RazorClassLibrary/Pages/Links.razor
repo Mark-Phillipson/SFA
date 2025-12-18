@@ -1,6 +1,6 @@
 
 @page "/links"
-@inject HttpClient Http
+@inject SFA_PWA.Services.IStaticJsonAssetLoader StaticJson
 @using Microsoft.AspNetCore.Components.Web
 <PageTitle>Club Links</PageTitle>
 
@@ -127,7 +127,7 @@ else
     {
         try
         {
-            links = await Http.GetFromJsonAsync<List<LinkItem>>("sample-data/links.json");
+            links = await StaticJson.LoadAsync<List<LinkItem>>("sample-data/links.json");
             if (links != null)
             {
                 categories = links

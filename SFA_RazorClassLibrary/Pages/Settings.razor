@@ -74,13 +74,15 @@
     private HttpClient Http { get; set; } = default!;
     [Inject]
     private IJSRuntime JS { get; set; } = default!;
+    [Inject]
+    private SFA_PWA.Services.IStaticJsonAssetLoader StaticJson { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
         // Load all groups from groups.json
         try
         {
-            groups = await Http.GetFromJsonAsync<List<GroupData>>("sample-data/groups.json") ?? new List<GroupData>();
+            groups = await StaticJson.LoadAsync<List<GroupData>>("sample-data/groups.json") ?? new List<GroupData>();
         }
         catch
         {

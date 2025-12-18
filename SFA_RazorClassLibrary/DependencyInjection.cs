@@ -17,6 +17,9 @@ public static class ServiceCollectionExtensions
         // Default HttpClient for static/data requests (hosts may override)
         services.TryAddScoped(_ => new HttpClient { BaseAddress = baseAddress });
 
+        // Default loader for static JSON assets (hosts like MAUI should override)
+        services.TryAddScoped<SFA_PWA.Services.IStaticJsonAssetLoader, SFA_PWA.Services.HttpStaticJsonAssetLoader>();
+
         services.AddScoped<SFA_PWA.Services.GoogleSheetCafeService>();
         services.AddScoped<SFA_PWA.Services.CafeDataCache>();
         services.AddScoped<SFA_PWA.Services.NetworkStatusService>();
