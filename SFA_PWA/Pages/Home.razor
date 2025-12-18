@@ -1,0 +1,184 @@
+﻿@page "/"
+@using SFA_PWA.Shared
+@inject SFA_PWA.Services.NetworkStatusService NetworkStatus
+@implements IDisposable
+
+<SeoHeader Title="Home - FairiesLittleHelper"
+    Description="Welcome to FairiesLittleHelper, your companion for cycling events and cafe stops."
+    Url="https://polite-sand-0eb4b4703.3.azurestaticapps.net/"
+    ImageUrl="https://polite-sand-0eb4b4703.3.azurestaticapps.net/icon-512.png" />
+
+@if (showSplash)
+{
+    <div class="splash-overlay" @onclick="HideSplash">
+        <img src="sfa.png" alt="App Icon" class="splash-icon" />
+    </div>
+}
+
+
+<h1>Welcome to the San Fairy Ann Cycling Club App!</h1>
+@if (isOnline)
+{
+    <div class="video-preview" style="margin:2em 0;text-align:center;">
+        <h2>YouTube Video</h2>
+        <a href="https://www.youtube.com/watch?v=Nkp0X28te-o" target="_blank" rel="noopener noreferrer"
+            style="display:inline-flex;align-items:center;text-decoration:none;font-size:1.2em;">
+            <span style="display:inline-block;width:32px;height:32px;margin-right:0.5em;">
+                <svg viewBox="0 0 32 32" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="32" height="32" rx="6" fill="#FF0000" />
+                    <polygon points="13,10 25,16 13,22" fill="#fff" />
+                </svg>
+            </span>
+            Watch explanation video on YouTube
+        </a>
+    </div>
+}
+
+<div class="instructions">
+    <h3>How to use this app:</h3>
+    <ul>
+        <li><b>Club Links:</b> Access club resources, WhatsApp channels (demo only), social media, and more from the
+            <b>Links</b> page. Use the filter box to quickly find any link or resource.
+        </li>
+        <li><b>My Custom Links:</b> Add your own custom link and resources on the <b>My Custom Links</b> page.</li>
+        <li><b>Groups/Settings:</b> Select which ride groups you want to follow. Your preferences are saved locally.
+        </li>
+
+        <li><b>Followed Calendars:</b> View upcoming rides for your selected groups on the <b>Followed Calendars</b>
+            page.
+            Choose which groups to follow in <b>Settings</b>.</li>
+        <li><b>D Groups/Midweekers Start Points:</b> View the saved start points used by D Groups/Midweekers rides
+            (addresses and notes).
+        </li>
+        <li><b>Cafe List:</b> Browse recommended cafes for your rides.</li>
+        <li><b>Weather:</b> Access Kent weather links on the <b>Weather</b> page. Select a location from the BBC Weather
+            dropdown, or visit the Met Office. No specific day forecasts are shown. The page features a clean UI with
+            weather icons for quick access.</li>
+
+        <li><b>WhatsApp Groups:</b> See WhatsApp group information and channel names.</li>
+        <li><b>Chat Bot:</b> Ask the built‑in chat bot for help or quick information about the club and groups.</li>
+    </ul>
+    <p><i>Note: WhatsApp group links are for demonstration only and not yet set up for the club. This app works on
+            desktop and mobile, and saves your settings locally for convenience.</i></p>
+</div>
+
+
+
+<div class="install-section" style="margin-top:2em;">
+    <h2>Press/Touch Button to Install This App</h2>
+    @if (isOnline)
+    {
+        <InstallPwaButton />
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <strong>📴 Offline</strong> - Install button is not available while offline. When Convenient Connect to the internet to install
+            the app.
+        </div>
+    }
+</div>
+
+<div class="desktop-bottom-image">
+    <img src="DGroupJune7.png" alt="DGroup June 7" />
+</div>
+
+
+<footer class="site-footer">
+    <div>
+        .NET Version: @AppVersion Last Build Date/Time @BuildDate
+    </div>
+</footer>
+
+@inject IJSRuntime JS
+
+@code {
+    private bool showSplash = true;
+    private bool isOnline = true;
+
+    private string? AppVersion;
+    private string? BuildDate;
+
+    protected override async void OnInitialized()
+    {
+        // Start a timer to hide splash after 5 seconds
+        _ = HideSplashAfterDelayAsync();
+
+        await LoadBuildInfoAsync();
+
+        // Initialize network status - subscribe to events first to avoid race condition
+        await NetworkStatus.InitializeAsync();
+        NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
+        isOnline = await NetworkStatus.IsOnlineAsync();
+    }
+
+    private void OnNetworkStatusChanged(object? sender, bool online)
+    {
+        isOnline = online;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        NetworkStatus.OnlineStatusChanged -= OnNetworkStatusChanged;
+    }
+
+    private async Task LoadBuildInfoAsync()
+    {
+        try
+        {
+            var buildInfo = await JS.InvokeAsync<BuildInfo>("fetchBuildInfo");
+            AppVersion = buildInfo?.DotNetVersion ?? "Unknown";
+            BuildDate = buildInfo?.BuildDate != null ? FormatDate(buildInfo.BuildDate) : "Unknown";
+        }
+        catch
+        {
+            AppVersion = "Unknown";
+            BuildDate = "Unknown";
+        }
+        StateHasChanged();
+    }
+
+    private string FormatDate(string isoDate)
+    {
+        if (DateTime.TryParse(isoDate, out var dt))
+        {
+            try
+            {
+                // Use "GMT Standard Time" for Windows, "Europe/London" for Linux/macOS
+                TimeZoneInfo ukZone;
+                if (OperatingSystem.IsWindows())
+                    ukZone = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+                else
+                    ukZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
+                var ukTime = TimeZoneInfo.ConvertTimeFromUtc(dt, ukZone);
+                return ukTime.ToString("yyyy-MM-dd HH:mm");
+            }
+            catch
+            {
+                // Fallback to local time if timezone not found
+                return dt.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+            }
+        }
+        return isoDate;
+    }
+
+    private async Task HideSplashAfterDelayAsync()
+    {
+        // Reduce splash delay from 5000ms (5s) to 1000ms (1s)
+        await Task.Delay(1000);
+        showSplash = false;
+        StateHasChanged();
+    }
+
+    private void HideSplash()
+    {
+        showSplash = false;
+    }
+
+    private class BuildInfo
+    {
+        public string? DotNetVersion { get; set; }
+        public string? BuildDate { get; set; }
+    }
+}

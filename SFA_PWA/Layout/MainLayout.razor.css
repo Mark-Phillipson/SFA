@@ -1,0 +1,208 @@
+/* Animation for cycling emojis moving left to right and looping */
+.cycling-emojis {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    width: 8em; /* Default for mobile */
+    height: 2.5rem;
+}
+
+@media (min-width: 641px) {
+    .cycling-emojis {
+        display: block;
+        width: 100%; /* Full width on desktop */
+    }
+    .emoji-all {
+        left: auto;
+        right: 0;
+        animation: cycle-move-rtl-desktop 3s linear infinite;
+    }
+}
+
+@keyframes cycle-move-rtl-desktop {
+    0% {
+        right: 0;
+    }
+    100% {
+        right: calc(100% + 3em);
+    }
+}
+
+/* Mobile animation only */
+.emoji-all {
+    position: absolute;
+    left: 8em;
+    animation: cycle-move-rtl 3s linear infinite;
+    white-space: nowrap;
+}
+
+@media (min-width: 641px) {
+    .emoji-all {
+        left: auto !important;
+        right: 0;
+        animation: cycle-move-rtl-desktop 8s linear infinite;
+    }
+}
+
+@keyframes cycle-move-rtl {
+    0% {
+        left: 8em;
+    }
+    100% {
+        left: -3em;
+    }
+}
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Theme variables: define on :root so they're available across all components */
+:root {
+    --sfa-club-purple: #372960; /* San Fairy Ann purple */
+    --sfa-club-blue:   #112a56; /* deep club blue to compliment the purple */
+}
+
+main {
+    flex: 1;
+}
+
+.sidebar {
+    /* Use a single club purple color instead of a gradient */
+    background-color: #372960;
+}
+
+.top-row {
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #d6d5d5;
+    justify-content: flex-end;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.top-links {
+    display: flex;
+    flex-direction: row;
+    gap: 1.25rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 640.98px) {
+    .top-links {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5rem;
+    }
+}
+
+    .top-row ::deep a, .top-row ::deep .btn-link {
+        white-space: nowrap;
+        margin-left: 1.5rem;
+        text-decoration: none;
+    }
+
+    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
+        text-decoration: underline;
+    }
+
+    .top-row ::deep a:first-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+@media (max-width: 640.98px) {
+    .top-row {
+        justify-content: space-between;
+    }
+
+    .top-row ::deep a, .top-row ::deep .btn-link {
+        margin-left: 0;
+    }
+}
+
+@media (min-width: 641px) {
+    .page {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 250px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    .top-row {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .top-row.auth ::deep a:first-child {
+        flex: 1;
+        text-align: right;
+        width: 0;
+    }
+
+    .top-row, article {
+        padding-left: 2rem !important;
+        padding-right: 1.5rem !important;
+    }
+
+    /* Ensure install-pwa popup isn't cut off by the header; anchor and position it */
+    .install-pwa {
+        position: relative;
+    }
+
+    .install-pwa .card {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        right: 0; /* align to right of the button */
+        min-width: 260px;
+        max-width: 420px;
+        z-index: 1050; /* above top-row */
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+    @media (max-width: 640.98px) {
+        /* On mobile, show as full-width panel under the top row */
+        .install-pwa .card {
+            position: absolute;
+            left: 0.75rem;
+            right: 0.75rem;
+            top: calc(100% + 0.25rem);
+            width: calc(100% - 1.5rem);
+            max-width: none;
+        }
+    }
+}
+
+/* Style for emoji glyphs used in action buttons */
+.install-pwa .emoji {
+    margin-right: 0.45rem;
+    font-size: 1.05em;
+    line-height: 0; /* keep emoji aligned with button label */
+}
+
+/* Footer styling: ensure sufficient contrast and readable sizing */
+.site-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    margin-top: 2em;
+    color: #2b2b2b; /* dark text on light background to meet WCAG */
+    font-size: 0.9em;
+}
+.site-footer a {
+    color: var(--sfa-club-purple);
+}
+.site-footer a:focus-visible {
+    outline: 2px solid var(--sfa-club-purple);
+    outline-offset: 2px;
+}
