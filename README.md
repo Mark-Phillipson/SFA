@@ -22,6 +22,7 @@ The MAUI project targets multiple frameworks, so specify which target when runni
 - **Windows:**
 ```pwsh
 dotnet watch run --framework net10.0-windows10.0.19041.0
+$env:DOTNET_HOST_PATH="C:\Program Files\dotnet\dotnet.exe"; dotnet watch run --framework net10.0-windows10.0.19041.0
 ```
 - **Android** (requires Android SDK + emulator/device):
 ```pwsh
