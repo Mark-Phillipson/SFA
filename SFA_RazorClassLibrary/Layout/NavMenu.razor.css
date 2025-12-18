@@ -15,7 +15,8 @@
 .top-row .navbar-toggler {
     position: absolute;
     right: 0.5rem;
-    top: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .top-row {

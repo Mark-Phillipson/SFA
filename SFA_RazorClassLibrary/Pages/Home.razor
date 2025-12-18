@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using SFA_PWA.Shared
 @inject SFA_PWA.Services.NetworkStatusService NetworkStatus
+@inject SFA_PWA.Services.ISfaHostCapabilities HostCapabilities
 @implements IDisposable
 
 <SeoHeader Title="Home - FairiesLittleHelper"
@@ -58,37 +59,43 @@
         <li><b>WhatsApp Groups:</b> See WhatsApp group information and channel names.</li>
         <li><b>Chat Bot:</b> Ask the built‑in chat bot for help or quick information about the club and groups.</li>
     </ul>
-    <p><i>Note: WhatsApp group links are for demonstration only and not yet set up for the club. This app works on
-            desktop and mobile, and saves your settings locally for convenience.</i></p>
+    
 </div>
 
 
 
-<div class="install-section" style="margin-top:2em;">
-    <h2>Press/Touch Button to Install This App</h2>
-    @if (isOnline)
-    {
-        <InstallPwaButton />
-    }
-    else
-    {
-        <div class="alert alert-info">
-            <strong>📴 Offline</strong> - Install button is not available while offline. When Convenient Connect to the internet to install
-            the app.
-        </div>
-    }
-</div>
+@if (HostCapabilities.SupportsPwaInstall)
+{
+    <div class="install-section" style="margin-top:2em;">
+        <h2>Press/Touch Button to Install This App</h2>
+        @if (isOnline)
+        {
+            <InstallPwaButton />
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <strong>📴 Offline</strong> - Install button is not available while offline. When Convenient Connect to the internet to install
+                the app.
+            </div>
+        }
+    </div>
+}
 
 <div class="desktop-bottom-image">
     <img src="DGroupJune7.png" alt="DGroup June 7" />
 </div>
 
 
-<footer class="site-footer">
-    <div>
-        .NET Version: @AppVersion Last Build Date/Time @BuildDate
-    </div>
-</footer>
+
+@if (HostCapabilities.SupportsPwaInstall)
+{
+    <footer class="site-footer">
+        <div>
+            .NET Version: @AppVersion Last Build Date/Time @BuildDate
+        </div>
+    </footer>
+}
 
 @inject IJSRuntime JS
 
