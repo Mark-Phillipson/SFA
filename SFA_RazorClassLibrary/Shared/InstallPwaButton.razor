@@ -1,6 +1,12 @@
 @using SFA_PWA.Models
 @using System.Text.Json
 @inject IJSRuntime JS
+@inject SFA_PWA.Services.ISfaHostCapabilities HostCapabilities
+
+@if (!HostCapabilities.SupportsPwaInstall)
+{
+    return;
+}
 
 <div class="install-pwa">
     @if (IsInstalled)

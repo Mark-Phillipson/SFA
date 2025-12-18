@@ -1,4 +1,5 @@
 @inject SFA_PWA.Services.NetworkStatusService NetworkStatus
+@inject SFA_PWA.Services.ISfaHostCapabilities HostCapabilities
 @implements IDisposable
 
 @if (!isOnline)
@@ -14,8 +15,19 @@
     protected override async Task OnInitializedAsync()
     {
         isOnline = await NetworkStatus.IsOnlineAsync();
-        await NetworkStatus.InitializeAsync();
-        NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
+
+        if (HostCapabilities.SupportsBrowserNetworkEvents)
+        {
+            try
+            {
+                await NetworkStatus.InitializeAsync();
+                NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
+            }
+            catch
+            {
+                // Keep banner safe if JS helpers are unavailable.
+            }
+        }
     }
 
     private void OnNetworkStatusChanged(object? sender, bool online)

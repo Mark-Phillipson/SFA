@@ -63,4 +63,16 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="..\SFA_PWA\wwwroot\sfa.png" Link="wwwroot\sfa.png" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="..\SFA_PWA\wwwroot\SFA-Logo.png" Link="wwwroot\SFA-Logo.png" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="..\SFA_PWA\wwwroot\DGroupJune7.png" Link="wwwroot\DGroupJune7.png" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="..\SFA_PWA\wwwroot\BlazorIcon.png" Link="wwwroot\BlazorIcon.png" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="..\SFA_PWA\wwwroot\github-logo.svg" Link="wwwroot\github-logo.svg" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\SFA_RazorClassLibrary\SFA_RazorClassLibrary.csproj" />
+    </ItemGroup>
+
 </Project>

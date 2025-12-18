@@ -2,12 +2,12 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:SFA_MauiApp"
-             xmlns:components="clr-namespace:SFA_MauiApp.Components"
+             xmlns:rcl="clr-namespace:SFA_PWA;assembly=SFA_RazorClassLibrary"
              x:Class="SFA_MauiApp.MainPage">
 
     <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
         <BlazorWebView.RootComponents>
-            <RootComponent Selector="#app" ComponentType="{x:Type components:Routes}" />
+            <RootComponent Selector="#app" ComponentType="{x:Type rcl:App}" />
         </BlazorWebView.RootComponents>
     </BlazorWebView>
 

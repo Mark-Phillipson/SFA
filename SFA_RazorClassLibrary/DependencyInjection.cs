@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Net.Http;
 
@@ -11,8 +12,10 @@ public static class ServiceCollectionExtensions
         Uri baseAddress,
         Uri botApiBaseUri)
     {
-        // Default HttpClient for static/data requests
-        services.AddScoped(_ => new HttpClient { BaseAddress = baseAddress });
+        services.TryAddSingleton<SFA_PWA.Services.ISfaHostCapabilities, SFA_PWA.Services.BrowserHostCapabilities>();
+
+        // Default HttpClient for static/data requests (hosts may override)
+        services.TryAddScoped(_ => new HttpClient { BaseAddress = baseAddress });
 
         services.AddScoped<SFA_PWA.Services.GoogleSheetCafeService>();
         services.AddScoped<SFA_PWA.Services.CafeDataCache>();

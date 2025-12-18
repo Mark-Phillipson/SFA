@@ -10,17 +10,25 @@ namespace SFA_PWA.Services
     public class NetworkStatusService : IAsyncDisposable
     {
         private readonly IJSRuntime _jsRuntime;
+        private readonly ISfaHostCapabilities _hostCapabilities;
         private DotNetObjectReference<NetworkStatusService>? _objRef;
 
-        public NetworkStatusService(IJSRuntime jsRuntime)
+        public NetworkStatusService(IJSRuntime jsRuntime, ISfaHostCapabilities hostCapabilities)
         {
             _jsRuntime = jsRuntime;
+            _hostCapabilities = hostCapabilities;
         }
 
         public event EventHandler<bool>? OnlineStatusChanged;
 
         public async Task<bool> IsOnlineAsync()
         {
+            if (!_hostCapabilities.SupportsBrowserNetworkEvents)
+            {
+                // Treat unknown as online to avoid showing a false offline banner.
+                return true;
+            }
+
             try
             {
                 return await _jsRuntime.InvokeAsync<bool>("networkStatusHelper.isOnline");
@@ -34,8 +42,30 @@ namespace SFA_PWA.Services
 
         public async Task InitializeAsync()
         {
+            if (!_hostCapabilities.SupportsBrowserNetworkEvents)
+            {
+                return;
+            }
+
+            if (_objRef != null)
+            {
+                return;
+            }
+
             _objRef = DotNetObjectReference.Create(this);
-            await _jsRuntime.InvokeVoidAsync("networkStatusHelper.initialize", _objRef);
+
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("networkStatusHelper.initialize", _objRef);
+            }
+            catch (JSException)
+            {
+                // No-op (e.g., host didn't include the JS helper).
+            }
+            catch (InvalidOperationException)
+            {
+                // No-op (e.g., JS runtime not available yet).
+            }
         }
 
         [JSInvokable]
@@ -49,8 +79,20 @@ namespace SFA_PWA.Services
         {
             if (_objRef != null)
             {
-                await _jsRuntime.InvokeVoidAsync("networkStatusHelper.dispose");
+                try
+                {
+                    await _jsRuntime.InvokeVoidAsync("networkStatusHelper.dispose");
+                }
+                catch (JSException)
+                {
+                    // Ignore.
+                }
+                catch (InvalidOperationException)
+                {
+                    // Ignore.
+                }
                 _objRef.Dispose();
+                _objRef = null;
             }
         }
     }
