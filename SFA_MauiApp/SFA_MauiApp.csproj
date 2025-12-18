@@ -4,10 +4,11 @@
         <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
         <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
 
-        <!-- Workaround: avoid Brotli compression tasks that can fail if DOTNET_HOST_PATH isn't set (observed during dotnet watch/build). -->
+        <!-- Workaround: avoid Brotli compression tasks that can fail if DOTNET_HOST_PATH isn't set (observed during dotnet watch/build).
         <EnableDefaultCompressionFormats>false</EnableDefaultCompressionFormats>
         <BuildCompressionFormats>gzip</BuildCompressionFormats>
         <PublishCompressionFormats>gzip</PublishCompressionFormats>
+        -->
 
         <!-- Note for MacCatalyst:
             The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
