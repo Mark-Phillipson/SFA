@@ -15,6 +15,16 @@ To launch both the Blazor PWA (SFA_PWA) and the WebAPI backend (SFA_WebAPI) in d
 
 You can copy and paste these commands directly into your VS Code terminals.
 
+## Testing the Web API with curl
+
+You can test your production Web API endpoint using curl. Replace the URL and endpoint as needed:
+
+
+```sh
+curl -X POST "https://sfawebapi-c9bgawf9evfkg6dp.westeurope-01.azurewebsites.net/api/Bot/chat" -H "accept: application/json" -H "Content-Type: application/json" -d '{"message": "How can I join the club?"}'
+```
+
+
 ## Running the .NET MAUI app (SFA_MauiApp)
 
 The MAUI project targets multiple frameworks, so specify which target when running with `dotnet watch run` using `--framework` (or `-f`). Example commands:
@@ -38,6 +48,9 @@ dotnet watch run --framework net10.0-ios
 ```
 
 **Notes:**
+
+If your API requires authentication or a POST request, update the command accordingly.
+
 - Use the exact TFMs listed in `SFA_MauiApp/SFA_MauiApp.csproj`: `net10.0-android`, `net10.0-ios`, `net10.0-maccatalyst` and (on Windows) `net10.0-windows10.0.19041.0`.
 - Platform constraints apply (Android/emulator, macOS for iOS/MacCatalyst).
 - To simplify local dev, either run with `--framework` or temporarily set a single `TargetFramework` in the project file. You can also add a VS Code task to run the preferred target.
