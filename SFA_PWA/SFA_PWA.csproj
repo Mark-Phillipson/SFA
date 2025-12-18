@@ -17,6 +17,26 @@
   <PackageReference Include="Microsoft.AspNetCore.Components" Version="10.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SFA_RazorClassLibrary\SFA_RazorClassLibrary.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Layout\**\*.cs" />
+    <Compile Remove="Models\**\*.cs" />
+    <Compile Remove="Services\**\*.cs" />
+
+    <RazorComponent Remove="App.razor" />
+    <RazorComponent Remove="_Imports.razor" />
+    <RazorComponent Remove="Layout\**\*.razor" />
+    <RazorComponent Remove="Pages\**\*.razor" />
+    <RazorComponent Remove="Shared\**\*.razor" />
+
+    <Content Remove="Layout\**\*.razor.css" />
+    <Content Remove="Pages\**\*.razor.css" />
+    <Content Remove="Shared\**\*.razor.css" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />

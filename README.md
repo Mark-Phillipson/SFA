@@ -14,6 +14,41 @@ To launch both the Blazor PWA (SFA_PWA) and the WebAPI backend (SFA_WebAPI) in d
 4. Make sure your Blazor app’s API calls use the correct backend URL (http://localhost:5216/api/bot/chat).
 
 You can copy and paste these commands directly into your VS Code terminals.
+
+## Shared UI + Services (Razor Class Library)
+
+The app UI (Razor components/pages/layout) and all application services have been extracted into the Razor Class Library project [SFA_RazorClassLibrary](SFA_RazorClassLibrary).
+
+- [SFA_PWA](SFA_PWA) is now a thin Blazor WebAssembly host.
+- A future .NET MAUI Blazor (Hybrid) host can reference the same library to reuse the UI + services.
+
+### Registering services from a host
+
+The host should register the shared services via the extension method in [SFA_RazorClassLibrary/DependencyInjection.cs](SFA_RazorClassLibrary/DependencyInjection.cs).
+
+Blazor WebAssembly host example (current):
+
+```csharp
+builder.Services.AddSfaPwaServices(
+	new Uri(builder.HostEnvironment.BaseAddress),
+	new Uri(botApiUrl));
+```
+
+MAUI host example (not included in this repo yet):
+
+```csharp
+// In MauiProgram.CreateMauiApp()
+builder.Services.AddSfaPwaServices(
+	baseAddress: new Uri("https://example.invalid/"),
+	botApiBaseUri: new Uri("https://your-api-host/"));
+```
+
+Notes:
+
+- `baseAddress` is used to create the default `HttpClient` for loading app data; choose an appropriate base URI for your host.
+- `botApiBaseUri` should match where your WebAPI is hosted (used by the chatbot/admin start points features).
+- Web-host-only files like [SFA_PWA/wwwroot/index.html](SFA_PWA/wwwroot/index.html) remain in the WASM host. If/when you create the MAUI host, you may need to provide equivalent static assets (images/css/js) or move selected assets into an RCL `wwwroot/` later.
+
 # 🚴‍♂️ San Fairy Ann Cycling Club App
 
 Welcome to the proposed mobile app for the San Fairy Ann Cycling Club! 🎉
