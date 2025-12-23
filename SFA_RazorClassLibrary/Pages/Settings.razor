@@ -79,45 +79,51 @@ else
                 <span style="font-weight: bold;">@group.Name</span>
             </label>
             <span style="margin: 0.5em 0 1em 0; font-size: 1.1em; color: #333;">@group.Description</span>
-            @* Per-group upcoming events pulled from calendars on page load *@
-            @if (isGroupEventsLoading)
-            {
-                <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">Loading events...</div>
-            }
-            else if (groupUpcomingEvents.TryGetValue(group.Name, out var gEvents) && gEvents.Any())
-            {
-                <div style="margin:0.4em 0 0.8em 0;width:100%;">
-                    <strong style="font-size:0.95em;">Upcoming:</strong>
-                    <div style="margin-top:0.4em;display:flex;flex-direction:column;gap:0.4em;">
-                        @foreach (var ev in gEvents.Take(3))
-                        {
-                            <div style="font-size:0.95em;color:#222;">
-                                <div><strong>@FormatEventDate(ev.Start)</strong> @ev.Start.ToLocalTime().ToString("HH:mm")</div>
-                                <div style="color:#444;">@(!string.IsNullOrWhiteSpace(ev.Location) ? ev.Location : "(location not specified)")</div>
-                                @if (ev.RouteLinks?.Count > 0)
-                                {
-                                    <div style="margin-top:0.2em;font-size:0.85em;color:#007bff;"><a href="@ev.RouteLinks[0]" target="_blank" rel="noopener noreferrer">Route link</a></div>
-                                }
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-            else
-            {
-                    <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">No upcoming Wednesday or Saturday rides found.</div>
-                    @if (groupDiagnostics.TryGetValue(group.Name, out var diag))
+                @* Place action buttons above per-group upcoming events *@
+                <div style="display: flex; gap: 1em; margin-bottom:0.6em;">
+                    <a href="@group.InfoUrl" target="_blank" class="btn btn-info btn-lg" style="font-size: 1.1em; padding: 0.6em 1.2em; border-radius: 0.7em;">@($"{group.Name} Info")</a>
+                    @if (!string.IsNullOrWhiteSpace(group.CalendarUrl))
                     {
-                        <div style="font-size:0.85em;color:#666;margin-top:0.4em;">@diag</div>
+                        <a href="@group.CalendarUrl" target="_blank" class="btn btn-success btn-lg" style="font-size: 1.1em; padding: 0.6em 1.2em; border-radius: 0.7em;">@($"{group.Name} Calendar")</a>
                     }
-            }
-            <div style="display: flex; gap: 1em;">
-                <a href="@group.InfoUrl" target="_blank" class="btn btn-info btn-lg" style="font-size: 1.1em; padding: 0.8em 1.5em; border-radius: 0.7em;">@($"{group.Name} Info")</a>
-                @if (!string.IsNullOrWhiteSpace(group.CalendarUrl))
+                </div>
+
+                @* Per-group upcoming events pulled from calendars on page load *@
+                @if (isGroupEventsLoading)
                 {
-                    <a href="@group.CalendarUrl" target="_blank" class="btn btn-success btn-lg" style="font-size: 1.1em; padding: 0.8em 1.5em; border-radius: 0.7em;">@($"{group.Name} Calendar")</a>
+                    <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">Loading events...</div>
                 }
-            </div>
+                else if (groupUpcomingEvents.TryGetValue(group.Name, out var gEvents) && gEvents.Any())
+                {
+                    <div style="margin:0.4em 0 0.8em 0;width:100%;">
+                        <strong style="font-size:0.95em;">Upcoming:</strong>
+                        <div style="margin-top:0.4em;display:flex;flex-direction:column;gap:0.4em;">
+                            @foreach (var ev in gEvents.Take(3))
+                            {
+                                <div style="font-size:0.95em;color:#222;">
+                                    <div><strong>@FormatEventDate(ev.Start)</strong> @ev.Start.ToLocalTime().ToString("HH:mm")</div>
+                                    <div style="color:#444;">@(!string.IsNullOrWhiteSpace(ev.Location) ? ev.Location : "(location not specified)")</div>
+                                    @if (ev.RouteLinks?.Count > 0)
+                                    {
+                                        <div style="margin-top:0.2em;font-size:0.85em;color:#007bff;"><a href="@ev.RouteLinks[0]" target="_blank" rel="noopener noreferrer">Route link</a></div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    if (groupDiagnostics.TryGetValue(group.Name, out var diag))
+                    {
+                        <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">@diag</div>
+                    }
+                    else
+                    {
+                        <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">No upcoming Wednesday or Saturday rides found.</div>
+                    }
+                }
+            
         </div>
     }
 </div>
