@@ -17,6 +17,51 @@
     </select>
 </div>
 
+<h2 style="margin-top:2em;">Upcoming Rides (Wednesday &amp; Saturday)</h2>
+@if (isEventsLoading)
+{
+    <p>Loading upcoming rides...</p>
+}
+else if (upcomingEvents == null || upcomingEvents.Count == 0)
+{
+    <p>No upcoming Wednesday or Saturday rides for your selected groups.</p>
+}
+else
+{
+    <div style="display:flex;flex-direction:column;gap:1em;max-width:900px;">
+        @foreach (var ev in upcomingEvents)
+        {
+            <div style="padding:1em;border-radius:0.6em;background:#fff;border:1px solid #e6e6e6;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <strong>@ev.GroupName</strong>
+                        <div style="font-size:0.95em;color:#333;margin-top:0.2em;">@ev.Summary</div>
+                    </div>
+                    <div style="text-align:right;font-size:0.95em;color:#444;">
+                        <div>@FormatEventDate(ev.Start)</div>
+                        <div style="font-size:0.85em;color:#666;">@ev.Start.ToLocalTime().ToString("HH:mm")</div>
+                    </div>
+                </div>
+                <div style="margin-top:0.6em;font-size:0.95em;color:#222;">
+                    <strong>Location:</strong> @(!string.IsNullOrWhiteSpace(ev.Location) ? ev.Location : "(not specified)")
+                </div>
+                @if (ev.RouteLinks?.Count > 0)
+                {
+                    <div style="margin-top:0.6em;">
+                        <strong>Route Links:</strong>
+                        <ul>
+                            @foreach (var link in ev.RouteLinks)
+                            {
+                                <li><a href="@link" target="_blank" rel="noopener noreferrer">@link</a></li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+
 
 <h2>Available Groups</h2>
 <div style="margin-bottom: 1em;">
@@ -34,6 +79,38 @@
                 <span style="font-weight: bold;">@group.Name</span>
             </label>
             <span style="margin: 0.5em 0 1em 0; font-size: 1.1em; color: #333;">@group.Description</span>
+            @* Per-group upcoming events pulled from calendars on page load *@
+            @if (isGroupEventsLoading)
+            {
+                <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">Loading events...</div>
+            }
+            else if (groupUpcomingEvents.TryGetValue(group.Name, out var gEvents) && gEvents.Any())
+            {
+                <div style="margin:0.4em 0 0.8em 0;width:100%;">
+                    <strong style="font-size:0.95em;">Upcoming:</strong>
+                    <div style="margin-top:0.4em;display:flex;flex-direction:column;gap:0.4em;">
+                        @foreach (var ev in gEvents.Take(3))
+                        {
+                            <div style="font-size:0.95em;color:#222;">
+                                <div><strong>@FormatEventDate(ev.Start)</strong> @ev.Start.ToLocalTime().ToString("HH:mm")</div>
+                                <div style="color:#444;">@(!string.IsNullOrWhiteSpace(ev.Location) ? ev.Location : "(location not specified)")</div>
+                                @if (ev.RouteLinks?.Count > 0)
+                                {
+                                    <div style="margin-top:0.2em;font-size:0.85em;color:#007bff;"><a href="@ev.RouteLinks[0]" target="_blank" rel="noopener noreferrer">Route link</a></div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                    <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">No upcoming Wednesday or Saturday rides found.</div>
+                    @if (groupDiagnostics.TryGetValue(group.Name, out var diag))
+                    {
+                        <div style="font-size:0.85em;color:#666;margin-top:0.4em;">@diag</div>
+                    }
+            }
             <div style="display: flex; gap: 1em;">
                 <a href="@group.InfoUrl" target="_blank" class="btn btn-info btn-lg" style="font-size: 1.1em; padding: 0.8em 1.5em; border-radius: 0.7em;">@($"{group.Name} Info")</a>
                 @if (!string.IsNullOrWhiteSpace(group.CalendarUrl))
@@ -76,6 +153,8 @@
     private IJSRuntime JS { get; set; } = default!;
     [Inject]
     private SFA_PWA.Services.IStaticJsonAssetLoader StaticJson { get; set; } = default!;
+    [Inject]
+    private SFA_PWA.Services.CalendarFeedService CalendarFeed { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -111,6 +190,8 @@
             {
                 calendarView = viewPref;
             }
+        // Load latest events for all groups on page load
+        await LoadGroupEventsAsync();
     }
 
 
@@ -131,6 +212,8 @@
             isChecked = false;
         selectedGroups[groupName] = isChecked;
         await SavePreferences();
+        // Refresh upcoming events when preferences change
+        await RefreshUpcomingEventsAsync();
     }
 
     private bool IsSelected(string groupName)
@@ -150,12 +233,107 @@
         selectedGroups[groupName] = isChecked;
     }
 
+    // Upcoming events
+    private List<SFA_PWA.Services.CalendarEvent> upcomingEvents = new();
+    private bool isEventsLoading = false;
+
+    private async Task RefreshUpcomingEventsAsync()
+    {
+        try
+        {
+            isEventsLoading = true;
+            StateHasChanged();
+
+            var selected = groups.Where(g => selectedGroups.ContainsKey(g.Name) && selectedGroups[g.Name] && !string.IsNullOrWhiteSpace(g.CalendarUrl))
+                                 .Select(g => (g.Name, g.CalendarUrl));
+            if (!selected.Any())
+            {
+                upcomingEvents = new List<SFA_PWA.Services.CalendarEvent>();
+                return;
+            }
+
+            upcomingEvents = await CalendarFeed.GetUpcomingWedSatForGroupsAsync(selected);
+        }
+        catch
+        {
+            upcomingEvents = new List<SFA_PWA.Services.CalendarEvent>();
+        }
+        finally
+        {
+            isEventsLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private Dictionary<string, List<SFA_PWA.Services.CalendarEvent>> groupUpcomingEvents = new();
+    private bool isGroupEventsLoading = false;
+    private Dictionary<string, string> groupDiagnostics = new();
+
+    private async Task LoadGroupEventsAsync()
+    {
+        try
+        {
+            isGroupEventsLoading = true;
+            StateHasChanged();
+
+            var all = groups.Where(g => !string.IsNullOrWhiteSpace(g.CalendarUrl)).Select(g => (g.Name, g.CalendarUrl));
+            if (!all.Any())
+            {
+                groupUpcomingEvents = new Dictionary<string, List<SFA_PWA.Services.CalendarEvent>>();
+                return;
+            }
+
+            // Clear diagnostics; we'll only show a simple user-facing message if no entry is found.
+            groupDiagnostics = new Dictionary<string, string>();
+
+            var events = await CalendarFeed.GetUpcomingWedSatForGroupsAsync(all);
+            groupUpcomingEvents = events.GroupBy(e => e.GroupName)
+                                        .ToDictionary(g => g.Key, g => g.ToList());
+
+            // For groups without events, set a clear user-facing message rather than debug text
+            foreach (var grp in groups)
+            {
+                if (!groupUpcomingEvents.ContainsKey(grp.Name) || groupUpcomingEvents[grp.Name].Count == 0)
+                {
+                    groupDiagnostics[grp.Name] = "No entry found on the calendar.";
+                }
+            }
+        }
+        catch
+        {
+            groupUpcomingEvents = new Dictionary<string, List<SFA_PWA.Services.CalendarEvent>>();
+        }
+        finally
+        {
+            isGroupEventsLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
     public class GroupData
     {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string InfoUrl { get; set; } = string.Empty;
         public string CalendarUrl { get; set; } = string.Empty;
+    }
+
+    private string FormatEventDate(DateTime utc)
+    {
+        try
+        {
+            TimeZoneInfo ukZone;
+            if (OperatingSystem.IsWindows())
+                ukZone = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+            else
+                ukZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
+            var local = TimeZoneInfo.ConvertTimeFromUtc(utc.ToUniversalTime(), ukZone);
+            return local.ToString("yyyy-MM-dd ddd");
+        }
+        catch
+        {
+            return utc.ToLocalTime().ToString("yyyy-MM-dd ddd");
+        }
     }
 
 }

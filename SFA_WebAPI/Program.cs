@@ -24,6 +24,8 @@ builder.Services.AddControllers();
 // Add OpenAPI support
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+// Register HttpClient factory for proxy requests
+builder.Services.AddHttpClient();
 builder.Services.AddSingleton<SFA_WebAPI.Services.OpenAIBotService>();
 // Register StartPoint repository (JSON file backed)
 builder.Services.AddSingleton<SFA_WebAPI.Services.IStartPointRepository, SFA_WebAPI.Services.StartPointRepository>();

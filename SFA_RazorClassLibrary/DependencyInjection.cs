@@ -22,6 +22,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<SFA_PWA.Services.GoogleSheetCafeService>();
         services.AddScoped<SFA_PWA.Services.CafeDataCache>();
+        services.AddScoped<SFA_PWA.Services.CalendarFeedService>();
         services.AddScoped<SFA_PWA.Services.NetworkStatusService>();
 
         // Bot API client + config
