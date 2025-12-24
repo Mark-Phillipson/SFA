@@ -1,3 +1,4 @@
+@using System.Diagnostics
 @using System.Globalization
 @using System.Linq
 @using System.Net.Http
@@ -48,6 +49,15 @@
     </div>
 }
 
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show" style="margin-bottom: 1.2em; white-space: pre-wrap; overflow-x: auto; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 0.9em;">
+        <button type="button" class="btn-close" style="position: absolute; top: 0.7em; right: 1em;" @onclick="() => errorMessage = string.Empty" aria-label="Close"></button>
+        <strong>❌ Error:</strong> 
+        <br />@errorMessage
+    </div>
+}
+
 <div class="row mb-3">
     <div class="col-md-6">
         <label class="visually-hidden" for="locationInput">Search location</label>
@@ -70,10 +80,6 @@
         @if (!string.IsNullOrWhiteSpace(searchMessage))
         {
             <div class="alert alert-info">@searchMessage</div>
-        }
-        @if (!string.IsNullOrWhiteSpace(errorMessage))
-        {
-            <div class="alert alert-danger">@errorMessage</div>
         }
     </div>
 </div>
@@ -203,14 +209,20 @@ else
 
         try
         {
+            Debug.WriteLine($"[CafeList] Location search started for: {locationInput}");
+            
             // Use OpenStreetMap Nominatim API for geocoding
             var url = $"https://nominatim.openstreetmap.org/search?format=json&q={Uri.EscapeDataString(locationInput)}&countrycodes=gb&limit=1";
+            Debug.WriteLine($"[CafeList] Nominatim URL: {url}");
+            
             var results = await Http.GetFromJsonAsync<List<NominatimResult>>(url);
+            Debug.WriteLine($"[CafeList] Nominatim returned {results?.Count ?? 0} results");
             
             if (results != null && results.Count > 0)
             {
                 searchLat = double.Parse(results[0].lat, CultureInfo.InvariantCulture);
                 searchLng = double.Parse(results[0].lon, CultureInfo.InvariantCulture);
+                Debug.WriteLine($"[CafeList] Location found: {results[0].display_name} ({searchLat}, {searchLng})");
 
                 // Calculate distance for each cafe using LatLong field
                 foreach (var cafe in cafes ?? new List<Cafe>())
@@ -233,6 +245,7 @@ else
                 }
                 var nearbyCount = (cafes ?? new List<Cafe>()).Count(c => c.Location != null);
                 searchMessage = $"Found {nearbyCount} cafe(s) within {searchRadius} miles of {results[0].display_name}";
+                Debug.WriteLine($"[CafeList] Search complete: {nearbyCount} cafes found");
                 errorMessage = string.Empty;
             }
             else
@@ -241,11 +254,14 @@ else
                 searchLng = null;
                 errorMessage = $"Location '{locationInput}' not found. Try a nearby town or postcode.";
                 searchMessage = string.Empty;
+                Debug.WriteLine($"[CafeList] Location not found: {locationInput}");
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error searching location: {ex.Message}";
+            Debug.WriteLine($"[CafeList] ERROR in OnLocationSearch: {ex.Message}");
+            Debug.WriteLine($"[CafeList] StackTrace: {ex.StackTrace}");
+            errorMessage = $"Error searching location:\n\n{ex.GetType().Name}: {ex.Message}\n\nStackTrace:\n{ex.StackTrace}";
             searchLat = null;
             searchLng = null;
         }
@@ -291,22 +307,39 @@ else
 
 
     protected override async Task OnInitializedAsync()
+    {
+        try
         {
+            Debug.WriteLine("[CafeList] OnInitializedAsync started");
+            
             // Initialize network status
             await NetworkStatus.InitializeAsync();
             NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
             isOnlineForLinks = await NetworkStatus.IsOnlineAsync();
+            Debug.WriteLine($"[CafeList] Network online: {isOnlineForLinks}");
             
             // Fetch cafes with offline fallback support
+            Debug.WriteLine("[CafeList] Fetching cafes from cache...");
             var result = await CafeDataCache.GetCafesWithCacheAsync();
             cafes = result.Cafes;
             isOfflineMode = result.IsFromCache;
+            Debug.WriteLine($"[CafeList] Loaded {cafes?.Count ?? 0} cafes, isOfflineMode: {isOfflineMode}");
             
             if (isOfflineMode)
             {
                 lastUpdateTime = await CafeDataCache.GetLastUpdateTimeAsync();
+                Debug.WriteLine($"[CafeList] Last update time: {lastUpdateTime}");
             }
+            
+            Debug.WriteLine("[CafeList] OnInitializedAsync completed successfully");
         }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[CafeList] ERROR in OnInitializedAsync: {ex.Message}");
+            Debug.WriteLine($"[CafeList] StackTrace: {ex.StackTrace}");
+            errorMessage = $"Failed to load cafes:\n\n{ex.GetType().Name}: {ex.Message}\n\nStackTrace:\n{ex.StackTrace}";
+        }
+    }
     
     private void OnNetworkStatusChanged(object? sender, bool online)
     {
@@ -338,95 +371,149 @@ else
     {
         get
         {
-            if (cafes == null)
-                return Enumerable.Empty<Cafe>();
-
-            var filtered = (cafes ?? new List<Cafe>())
-                .Where(c => !string.IsNullOrWhiteSpace(c.Name) && c.Name != "Name")
-                .ToList();
-
-            // Apply Place filter (case-insensitive, trimmed)
-            if (!string.IsNullOrWhiteSpace(selectedPlace))
-                filtered = filtered.Where(c => string.Equals((c.Place ?? "").Trim(), selectedPlace.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
-
-            // Status filter removed
-
-            // Apply general text filter
-            if (!string.IsNullOrWhiteSpace(filter))
+            try
             {
-                filtered = filtered.Where(c =>
-                    ((c.Status ?? "") + " " +
-                     (c.Name ?? "") + " " +
-                     (c.Address ?? "") + " " +
-                     (c.Place ?? "") + " " +
-                     (c.Postcode ?? "") + " " +
-                     (c.Tel ?? "") + " " +
-                     (c.Notes ?? "")
-                    ).Contains(filter, StringComparison.OrdinalIgnoreCase)
-                ).ToList();
-            }
+                Debug.WriteLine("[CafeList] FilteredCafes property getter called");
+                
+                if (cafes == null)
+                {
+                    Debug.WriteLine("[CafeList] Cafes list is null");
+                    return Enumerable.Empty<Cafe>();
+                }
 
-            // If user searched for a location, filter by proximity using LatLong
-            if (searchLat.HasValue && searchLng.HasValue)
-            {
+                var filtered = (cafes ?? new List<Cafe>())
+                    .Where(c => !string.IsNullOrWhiteSpace(c.Name) && c.Name != "Name")
+                    .ToList();
+                Debug.WriteLine($"[CafeList] After name filter: {filtered.Count} cafes");
+
+                // Apply Place filter (case-insensitive, trimmed)
+                if (!string.IsNullOrWhiteSpace(selectedPlace))
+                {
+                    filtered = filtered.Where(c => string.Equals((c.Place ?? "").Trim(), selectedPlace.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+                    Debug.WriteLine($"[CafeList] After place filter ({selectedPlace}): {filtered.Count} cafes");
+                }
+
+                // Status filter removed
+
+                // Apply general text filter
+                if (!string.IsNullOrWhiteSpace(filter))
+                {
+                    filtered = filtered.Where(c =>
+                        ((c.Status ?? "") + " " +
+                         (c.Name ?? "") + " " +
+                         (c.Address ?? "") + " " +
+                         (c.Place ?? "") + " " +
+                         (c.Postcode ?? "") + " " +
+                         (c.Tel ?? "") + " " +
+                         (c.Notes ?? "")
+                        ).Contains(filter, StringComparison.OrdinalIgnoreCase)
+                    ).ToList();
+                    Debug.WriteLine($"[CafeList] After text filter ({filter}): {filtered.Count} cafes");
+                }
+
+                // If user searched for a location, filter by proximity using LatLong
+                if (searchLat.HasValue && searchLng.HasValue)
+                {
+                    Debug.WriteLine($"[CafeList] Applying location filter (lat: {searchLat}, lng: {searchLng}, radius: {searchRadius}mi)");
+                    foreach (var cafe in filtered)
+                    {
+                        cafe.Location = null;
+                        cafe.Distance = null;
+                        if (!string.IsNullOrWhiteSpace(cafe.LatLong) && cafe.LatLong.Contains(','))
+                        {
+                            var parts = cafe.LatLong.Split(',');
+                            if (parts.Length == 2 && double.TryParse(parts[0], out var lat) && double.TryParse(parts[1], out var lng))
+                            {
+                                var dist = CalculateDistance(searchLat.Value, searchLng.Value, lat, lng);
+                                cafe.Distance = dist;
+                                if (dist <= searchRadius)
+                                {
+                                    cafe.Location = $"{dist:F1} miles from {locationInput}";
+                                }
+                            }
+                        }
+                    }
+                    // Only show cafes within radius and sort by distance
+                    var nearbyResult = filtered.Where(c => c.Location != null).OrderBy(c => c.Distance).ToList();
+                    Debug.WriteLine($"[CafeList] After location filter: {nearbyResult.Count} cafes nearby");
+                    return nearbyResult;
+                }
+
+                // Default: clear location data and sort by name
                 foreach (var cafe in filtered)
                 {
                     cafe.Location = null;
                     cafe.Distance = null;
-                    if (!string.IsNullOrWhiteSpace(cafe.LatLong) && cafe.LatLong.Contains(','))
-                    {
-                        var parts = cafe.LatLong.Split(',');
-                        if (parts.Length == 2 && double.TryParse(parts[0], out var lat) && double.TryParse(parts[1], out var lng))
-                        {
-                            var dist = CalculateDistance(searchLat.Value, searchLng.Value, lat, lng);
-                            cafe.Distance = dist;
-                            if (dist <= searchRadius)
-                            {
-                                cafe.Location = $"{dist:F1} miles from {locationInput}";
-                            }
-                        }
-                    }
                 }
-                // Only show cafes within radius and sort by distance
-                return filtered.Where(c => c.Location != null).OrderBy(c => c.Distance);
+                var result = filtered.OrderBy(c => c.Name).ToList();
+                Debug.WriteLine($"[CafeList] Final filtered result: {result.Count} cafes");
+                return result;
             }
-
-            // Default: clear location data and sort by name
-            foreach (var cafe in filtered)
+            catch (Exception ex)
             {
-                cafe.Location = null;
-                cafe.Distance = null;
+                Debug.WriteLine($"[CafeList] ERROR in FilteredCafes property: {ex.Message}");
+                Debug.WriteLine($"[CafeList] StackTrace: {ex.StackTrace}");
+                errorMessage = $"Error filtering cafes:\n\n{ex.GetType().Name}: {ex.Message}\n\nStackTrace:\n{ex.StackTrace}";
+                return Enumerable.Empty<Cafe>();
             }
-            return filtered.OrderBy(c => c.Name);
         }
     }
     private async Task OpenCafeMap(Cafe cafe)
     {
-        string? url = null;
-        if (!string.IsNullOrWhiteSpace(cafe.LatLong) && cafe.LatLong.Contains(','))
+        try
         {
-            var parts = cafe.LatLong.Split(',');
-            if (parts.Length == 2 && double.TryParse(parts[0], out var lat) && double.TryParse(parts[1], out var lng))
+            Debug.WriteLine($"[CafeList] Opening map for cafe: {cafe.Name}");
+            
+            string? url = null;
+            if (!string.IsNullOrWhiteSpace(cafe.LatLong) && cafe.LatLong.Contains(','))
             {
-                url = $"https://www.google.com/maps?q={lat},{lng}";
+                var parts = cafe.LatLong.Split(',');
+                if (parts.Length == 2 && double.TryParse(parts[0], out var lat) && double.TryParse(parts[1], out var lng))
+                {
+                    url = $"https://www.google.com/maps?q={lat},{lng}";
+                    Debug.WriteLine($"[CafeList] Using LatLong: {url}");
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(cafe.GoogleMapLink))
+            {
+                url = cafe.GoogleMapLink;
+                Debug.WriteLine($"[CafeList] Using GoogleMapLink: {url}");
+            }
+            
+            if (url != null && JS != null)
+            {
+                await JS.InvokeVoidAsync("open", url, "_blank");
+                Debug.WriteLine($"[CafeList] Map opened successfully");
+            }
+            else
+            {
+                Debug.WriteLine($"[CafeList] Could not generate URL for cafe");
             }
         }
-        else if (!string.IsNullOrWhiteSpace(cafe.GoogleMapLink))
+        catch (Exception ex)
         {
-            url = cafe.GoogleMapLink;
-        }
-        if (url != null && JS != null)
-        {
-            await JS.InvokeVoidAsync("open", url, "_blank");
+            Debug.WriteLine($"[CafeList] ERROR in OpenCafeMap: {ex.Message}");
+            Debug.WriteLine($"[CafeList] StackTrace: {ex.StackTrace}");
         }
     }
 
     // Open Google search for the cafe's official website
     private async Task FindWebsiteAsync(Cafe cafe, MouseEventArgs e)
     {
-        string query = $"{cafe.Name} {cafe.Place} {cafe.Postcode} official website";
-        string googleUrl = $"https://www.google.com/search?q={Uri.EscapeDataString(query)}";
-        await JS.InvokeVoidAsync("open", googleUrl, "_blank");
+        try
+        {
+            Debug.WriteLine($"[CafeList] Finding website for: {cafe.Name}");
+            string query = $"{cafe.Name} {cafe.Place} {cafe.Postcode} official website";
+            string googleUrl = $"https://www.google.com/search?q={Uri.EscapeDataString(query)}";
+            Debug.WriteLine($"[CafeList] Opening URL: {googleUrl}");
+            await JS.InvokeVoidAsync("open", googleUrl, "_blank");
+            Debug.WriteLine($"[CafeList] Website search opened");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[CafeList] ERROR in FindWebsiteAsync: {ex.Message}");
+            Debug.WriteLine($"[CafeList] StackTrace: {ex.StackTrace}");
+        }
     }
 
 

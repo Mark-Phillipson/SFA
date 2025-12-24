@@ -10,7 +10,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddSfaPwaServices(
         this IServiceCollection services,
         Uri baseAddress,
-        Uri botApiBaseUri)
+        Uri botApiBaseUri,
+        string? googleSheetsApiKey = null)
     {
         services.TryAddSingleton<SFA_PWA.Services.ISfaHostCapabilities, SFA_PWA.Services.BrowserHostCapabilities>();
 
@@ -20,7 +21,7 @@ public static class ServiceCollectionExtensions
         // Default loader for static JSON assets (hosts like MAUI should override)
         services.TryAddScoped<SFA_PWA.Services.IStaticJsonAssetLoader, SFA_PWA.Services.HttpStaticJsonAssetLoader>();
 
-        services.AddScoped<SFA_PWA.Services.GoogleSheetCafeService>();
+        services.AddScoped(_ => new SFA_PWA.Services.GoogleSheetCafeService(new HttpClient { BaseAddress = baseAddress }, googleSheetsApiKey));
         services.AddScoped<SFA_PWA.Services.CafeDataCache>();
         services.AddScoped<SFA_PWA.Services.CalendarFeedService>();
         services.AddScoped<SFA_PWA.Services.NetworkStatusService>();

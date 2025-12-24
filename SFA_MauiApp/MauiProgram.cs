@@ -26,7 +26,8 @@ public static class MauiProgram
 		// Load the same wwwroot/appsettings.json shape as the PWA host.
 		var baseAddress = new Uri("https://0.0.0.0/");
 		var botApiBaseUri = GetBotApiBaseUriFromAppSettings();
-		builder.Services.AddSfaPwaServices(baseAddress, botApiBaseUri);
+		var googleSheetsApiKey = GetGoogleSheetsApiKeyFromAppSettings();
+		builder.Services.AddSfaPwaServices(baseAddress, botApiBaseUri, googleSheetsApiKey);
 		// Ensure Razor components that @inject HttpClient get a BaseAddress-backed client.
 		builder.Services.AddScoped(_ => new HttpClient { BaseAddress = baseAddress });
 
@@ -60,5 +61,29 @@ public static class MauiProgram
 
 		// Fallback to the current production host.
 		return new Uri("https://sfawebapi-c9bgawf9evfkg6dp.westeurope-01.azurewebsites.net/");
+	}
+
+	public static string GetGoogleSheetsApiKeyFromAppSettings()
+	{
+		try
+		{
+			using var stream = FileSystem.OpenAppPackageFileAsync("wwwroot/appsettings.json").GetAwaiter().GetResult();
+			using var doc = JsonDocument.Parse(stream);
+			if (doc.RootElement.TryGetProperty("GoogleSheetsApiKey", out var apiKeyElement))
+			{
+				var apiKey = apiKeyElement.GetString();
+				if (!string.IsNullOrWhiteSpace(apiKey))
+				{
+					return apiKey;
+				}
+			}
+		}
+		catch
+		{
+			// Ignore and fall back to environment variable
+		}
+
+		// Fallback to environment variable
+		return Environment.GetEnvironmentVariable("GOOGLE_SHEETS_API_KEY") ?? string.Empty;
 	}
 }

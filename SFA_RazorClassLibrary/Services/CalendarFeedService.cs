@@ -191,8 +191,8 @@ namespace SFA_PWA.Services
                         // Use server-side proxy to fetch ICS (avoids CORS issues)
                         var probeSrc = g.CalendarUrl;
                         var proxyEndpoint = !string.IsNullOrWhiteSpace(_apiBaseUrl)
-                            ? $"{_apiBaseUrl}/api/calendar/ics?src={Uri.EscapeDataString(probeSrc)}"
-                            : $"api/calendar/ics?src={Uri.EscapeDataString(probeSrc)}";
+                            ? $"{_apiBaseUrl}/api/calendar/ics?src={Uri.EscapeDataString(probeSrc ?? string.Empty)}"
+                            : $"api/calendar/ics?src={Uri.EscapeDataString(probeSrc ?? string.Empty)}";
                         var text = await _http.GetStringAsync(proxyEndpoint);
                         events = ParseIcs(text, g.Name);
                     }
@@ -244,10 +244,11 @@ namespace SFA_PWA.Services
             return results.OrderBy(e => e.Start).ToList();
         }
 
-        private string? ConvertEmbedToIcsUrl(string embedUrl)
+        private string? ConvertEmbedToIcsUrl(string? embedUrl)
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(embedUrl)) return null;
                     var m = Regex.Match(embedUrl, "[?&]src=([^&]+)", RegexOptions.IgnoreCase);
                 if (!m.Success) return embedUrl;
                 var src = Uri.UnescapeDataString(m.Groups[1].Value);

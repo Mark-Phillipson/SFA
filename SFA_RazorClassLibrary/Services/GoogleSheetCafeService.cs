@@ -13,10 +13,10 @@ namespace SFA_PWA.Services
 		private const string SpreadsheetId = "1DvIsV2Cga-xwxNkZs93Slt-_HnJy0noSZzFsGNCMyzo";
 		private const string Range = "'Cafe Data Current'!A1:N250"; // Sheet name with spaces must be in single quotes
 
-		public GoogleSheetCafeService(HttpClient httpClient)
+		public GoogleSheetCafeService(HttpClient httpClient, string? apiKey = null)
 		{
 			_httpClient = httpClient;
-			_apiKey = string.Empty;
+			_apiKey = apiKey ?? string.Empty;
 		}
 
 		private async Task EnsureApiKeyAsync()
@@ -27,7 +27,7 @@ namespace SFA_PWA.Services
 			_apiKey = Environment.GetEnvironmentVariable("GOOGLE_SHEETS_API_KEY") ?? string.Empty;
 			if (!string.IsNullOrWhiteSpace(_apiKey)) return;
 
-			// Fallback: fetch config from wwwroot/appsettings.Development.json via HttpClient (local dev)
+			// Fallback: fetch config from wwwroot/appsettings.Development.json via HttpClient (web only)
 			try
 			{
 				var configJson = await _httpClient.GetStringAsync("appsettings.Development.json");
@@ -42,7 +42,7 @@ namespace SFA_PWA.Services
 			{
 				System.Console.WriteLine("Google Sheets API key not found in appsettings.Development.json: " + exception.Message);
 			}
-			// Fallback: fetch config from wwwroot/appsettings.json via HttpClient (production)
+			// Fallback: fetch config from wwwroot/appsettings.json via HttpClient (web only)
 			try
 			{
 				var configJson = await _httpClient.GetStringAsync("appsettings.json");

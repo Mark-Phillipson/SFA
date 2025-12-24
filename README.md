@@ -23,7 +23,7 @@ You can test your production Web API endpoint using curl. Replace the URL and en
 ```sh
 curl -X POST "https://sfawebapi-c9bgawf9evfkg6dp.westeurope-01.azurewebsites.net/api/Bot/chat" -H "accept: application/json" -H "Content-Type: application/json" -d '{"message": "How can I join the club?"}'
 ```
-
+adb logcat > cafes-log.txt
 
 ## Running the .NET MAUI app (SFA_MauiApp)
 
