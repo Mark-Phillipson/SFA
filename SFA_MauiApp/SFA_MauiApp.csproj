@@ -26,13 +26,13 @@
         <Nullable>enable</Nullable>
 
         <!-- Display name -->
-        <ApplicationTitle>SFA_MauiApp</ApplicationTitle>
+        <ApplicationTitle>Fairies Little Helper</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.sfa_mauiapp</ApplicationId>
+        <ApplicationId>online.fairieslittlehelper</ApplicationId>
 
         <!-- Versions -->
-        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+        <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
         <ApplicationVersion>1</ApplicationVersion>
 
         <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
@@ -43,6 +43,16 @@
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+    </PropertyGroup>
+
+    <!-- Android Release Signing Configuration -->
+    <PropertyGroup Condition="$(TargetFramework.Contains('android')) and '$(Configuration)' == 'Release'">
+        <AndroidPackageFormat>aab</AndroidPackageFormat>
+        <AndroidKeyStore>true</AndroidKeyStore>
+        <AndroidSigningKeyStore>$(MSBuildThisFileDirectory)..\fairies_keystore.keystore</AndroidSigningKeyStore>
+        <AndroidSigningKeyAlias>fairies_key</AndroidSigningKeyAlias>
+        <AndroidSigningKeyPass>Basil9!Brush</AndroidSigningKeyPass>
+        <AndroidSigningStorePass>Basil9!Brush</AndroidSigningStorePass>
     </PropertyGroup>
 
     <ItemGroup>
