@@ -16,6 +16,15 @@
   border:1px solid #ccc;
   background:#fff;
 }
+.dgroup-toolbar{ flex-wrap:nowrap }
+
+/* Stack Sort on a new line for small screens */
+@media(max-width:600px){
+  .dgroup-toolbar{ flex-wrap:wrap }
+  .dgroup-toolbar input{ flex:1 1 100% }
+  .dgroup-toolbar select{ flex:1 1 100%; margin-top:0.5rem }
+  .dgroup-toolbar .refresh{ margin-left:auto }
+}
 .cards{
   display:flex;
   flex-direction:column;
