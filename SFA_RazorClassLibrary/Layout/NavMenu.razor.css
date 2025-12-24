@@ -125,6 +125,13 @@
     height: auto;
 }
 
+/* Hide admin menu on small screens */
+@media (max-width: 640px) {
+    .hide-on-mobile {
+        display: none !important;
+    }
+}
+
 @media (min-width: 641px) {
     .navbar-toggler {
         display: none;
