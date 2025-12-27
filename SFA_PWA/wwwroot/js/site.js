@@ -55,3 +55,32 @@ window.openWeatherUrl = (webUrl) => {
         window.open(webUrl, '_blank');
     }
 };
+
+// Helpers for NavMenu responsiveness: auto-expand on small phone portrait and notify .NET on changes
+window.navMenu = {
+    _handler: null,
+    isSmallPhonePortrait: function() {
+        // Pixel 6a width is ~412px; 430px gives a small safety margin
+        return window.matchMedia('(max-width: 430px) and (orientation: portrait)').matches;
+    },
+    registerNavMenuResizeCallback: function(dotNetObj) {
+        if (this._handler) {
+            window.removeEventListener('resize', this._handler);
+            window.removeEventListener('orientationchange', this._handler);
+        }
+        this._handler = () => {
+            const matches = window.matchMedia('(max-width: 430px) and (orientation: portrait)').matches;
+            // Notify .NET about the current state
+            dotNetObj.invokeMethodAsync('UpdateMenuForScreen', matches);
+        };
+        window.addEventListener('resize', this._handler);
+        window.addEventListener('orientationchange', this._handler);
+    },
+    unregisterNavMenuResizeCallback: function() {
+        if (this._handler) {
+            window.removeEventListener('resize', this._handler);
+            window.removeEventListener('orientationchange', this._handler);
+            this._handler = null;
+        }
+    }
+};

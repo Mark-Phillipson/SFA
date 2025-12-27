@@ -97,6 +97,7 @@
 @code {
     private bool collapseNavMenu = true;
     private bool isOnline = true;
+    private DotNetObjectReference<NavMenu>? dotNetRef;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
@@ -106,7 +107,37 @@
         NetworkStatus.OnlineStatusChanged += OnNetworkStatusChanged;
         isOnline = await NetworkStatus.IsOnlineAsync();
     }
-    
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            try
+            {
+                // Initialize menu state based on screen size/orientation
+                var isSmallPortrait = await JS.InvokeAsync<bool>("navMenu.isSmallPhonePortrait");
+                collapseNavMenu = !isSmallPortrait;
+
+                // Register resize/orientation callback so menu updates automatically
+                await JS.InvokeVoidAsync("navMenu.registerNavMenuResizeCallback", dotNetRef);
+
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (Exception)
+            {
+                // If JS isn't available for some reason, ignore and keep default behavior
+            }
+        }
+    }
+
+    [JSInvokable]
+    public Task UpdateMenuForScreen(bool isSmallPortrait)
+    {
+        collapseNavMenu = !isSmallPortrait;
+        return InvokeAsync(StateHasChanged);
+    }
+
     private void OnNetworkStatusChanged(object? sender, bool online)
     {
         isOnline = online;
@@ -115,6 +146,14 @@
     
     public void Dispose()
     {
+        try
+        {
+            // Fire-and-forget unregister (Dispose can't be async)
+            JS.InvokeVoidAsync("navMenu.unregisterNavMenuResizeCallback");
+        }
+        catch { }
+
+        dotNetRef?.Dispose();
         NetworkStatus.OnlineStatusChanged -= OnNetworkStatusChanged;
     }
 
