@@ -17,50 +17,6 @@
     </select>
 </div>
 
-<h2 style="margin-top:2em;">Upcoming Rides (Wednesday &amp; Saturday)</h2>
-@if (isEventsLoading)
-{
-    <p>Loading upcoming rides...</p>
-}
-else if (upcomingEvents == null || upcomingEvents.Count == 0)
-{
-    <p>No upcoming Wednesday or Saturday rides for your selected groups.</p>
-}
-else
-{
-    <div style="display:flex;flex-direction:column;gap:1em;max-width:900px;">
-        @foreach (var ev in upcomingEvents)
-        {
-            <div style="padding:1em;border-radius:0.6em;background:#fff;border:1px solid #e6e6e6;">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <div>
-                        <strong>@ev.GroupName</strong>
-                        <div style="font-size:0.95em;color:#333;margin-top:0.2em;">@ev.Summary</div>
-                    </div>
-                    <div style="text-align:right;font-size:0.95em;color:#444;">
-                        <div>@FormatEventDate(ev.Start)</div>
-                        <div style="font-size:0.85em;color:#666;">@ev.Start.ToLocalTime().ToString("HH:mm")</div>
-                    </div>
-                </div>
-                <div style="margin-top:0.6em;font-size:0.95em;color:#222;">
-                    <strong>Location:</strong> @(!string.IsNullOrWhiteSpace(ev.Location) ? ev.Location : "(not specified)")
-                </div>
-                @if (ev.RouteLinks?.Count > 0)
-                {
-                    <div style="margin-top:0.6em;">
-                        <strong>Route Links:</strong>
-                        <ul>
-                            @foreach (var link in ev.RouteLinks)
-                            {
-                                <li><a href="@link" target="_blank" rel="noopener noreferrer">@link</a></li>
-                            }
-                        </ul>
-                    </div>
-                }
-            </div>
-        }
-    </div>
-}
 
 
 <h2>Available Groups</h2>
