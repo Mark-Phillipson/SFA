@@ -14,6 +14,8 @@ namespace SFA_PWA.Services
         public DateTime Start { get; set; }
         public string Summary { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
+        // OriginalDescription stores the event description (if present) so the UI can show useful text when Location is empty.
+        public string OriginalDescription { get; set; } = string.Empty;
         public List<string> RouteLinks { get; set; } = new();
     }
 
@@ -162,6 +164,7 @@ namespace SFA_PWA.Services
                                                 var start = el.GetProperty("start").GetDateTime();
                                                 var summary = el.TryGetProperty("summary", out var sEl) ? sEl.GetString() ?? string.Empty : string.Empty;
                                                 var location = el.TryGetProperty("location", out var lEl) ? lEl.GetString() ?? string.Empty : string.Empty;
+                                                var description = el.TryGetProperty("description", out var dEl) ? dEl.GetString() ?? string.Empty : string.Empty;
                                                 var links = new List<string>();
                                                 if (el.TryGetProperty("links", out var linksEl) && linksEl.ValueKind == JsonValueKind.Array)
                                                 {
@@ -173,7 +176,15 @@ namespace SFA_PWA.Services
                                                         }
                                                     }
                                                 }
-                                                list.Add(new CalendarEvent { GroupName = g.Name, Start = start.ToUniversalTime(), Summary = summary, Location = location, RouteLinks = links });
+                                                list.Add(new CalendarEvent
+                                                {
+                                                    GroupName = g.Name,
+                                                    Start = start.ToUniversalTime(),
+                                                    Summary = summary,
+                                                    Location = location,
+                                                    OriginalDescription = !string.IsNullOrWhiteSpace(description) ? (description.Length > 500 ? description.Substring(0, 500) : description) : string.Empty,
+                                                    RouteLinks = links
+                                                });
                                             }
                                             catch { }
                                         }
@@ -306,6 +317,7 @@ namespace SFA_PWA.Services
                         Start = EnsureUtcAssumeEuropeLondon(start),
                         Summary = summary,
                         Location = location,
+                        OriginalDescription = !string.IsNullOrWhiteSpace(desc) ? (desc.Length > 500 ? desc.Substring(0, 500) : desc) : string.Empty,
                         RouteLinks = links
                     });
                 }

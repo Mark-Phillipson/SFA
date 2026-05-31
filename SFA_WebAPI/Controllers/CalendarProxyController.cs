@@ -278,7 +278,7 @@ namespace SFA_WebAPI.Controllers
                                         if (!links.Contains(u)) links.Add(u);
                                     }
                                 }
-                                items.Add(new { start = startDt.Value, summary, location, links });
+                                items.Add(new { start = startDt.Value, summary, location, links, description });
                             }
                         }
                         catch { }

@@ -1,0 +1,135 @@
+@using SFA_PWA.Services
+@using Microsoft.AspNetCore.Components
+
+<div style="background: #f8f9fa; border-radius: 1em; box-shadow: 0 1px 4px rgba(0,0,0,0.04); padding: 1.2em; min-width: 280px; display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 0.5em;">
+    <label style="display: flex; align-items: center; gap: 1em; font-size: 1.3em; width:100%;">
+        @if (ShowCheckbox)
+        {
+            <input type="checkbox" checked="@IsSelected" @onchange="OnCheckboxChanged" style="width: 2.2em; height: 2.2em; accent-color: #007bff;" />
+        }
+        <span style="font-weight: bold;">@Name</span>
+    </label>
+    <span style="margin: 0.5em 0 1em 0; font-size: 1.1em; color: #333; width:100%;">@Description</span>
+
+    <div style="display: flex; gap: 1em; margin-bottom:0.6em; width:100%;">
+        <a href="@InfoUrl" target="_blank" class="btn btn-info btn-lg" style="font-size: 1.1em; padding: 0.6em 1.2em; border-radius: 0.7em;">@Name Info</a>
+        @if (!string.IsNullOrWhiteSpace(CalendarUrl))
+        {
+            <a href="@CalendarUrl" target="_blank" class="btn btn-success btn-lg" style="font-size: 1.1em; padding: 0.6em 1.2em; border-radius: 0.7em;">@Name Calendar</a>
+        }
+    </div>
+
+    @if (IsLoading)
+    {
+        <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">Loading events...</div>
+    }
+    else if (Events != null && Events.Any())
+    {
+        <div style="margin:0.4em 0 0.8em 0;width:100%;">
+            <strong style="font-size:0.95em;">Upcoming:</strong>
+            <div style="margin-top:0.4em;display:flex;flex-direction:column;gap:0.4em;">
+                @foreach (var ev in Events.Take(3))
+                {
+                    <div style="font-size:0.95em;color:#222;">
+                        <div><strong>@FormatEventDate(ev.Start)</strong> @ev.Start.ToLocalTime().ToString("HH:mm")</div>
+                        <div style="color:#444;">@GetDisplayLocation(ev)</div>
+                        @if (ev.RouteLinks?.Count > 0)
+                        {
+                            <div style="margin-top:0.2em;font-size:0.85em;color:#007bff;"><a href="@ev.RouteLinks[0]" target="_blank" rel="noopener noreferrer">Route link</a></div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        if (!string.IsNullOrWhiteSpace(Diagnostics))
+        {
+            <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">@Diagnostics</div>
+        }
+        else
+        {
+            <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">No upcoming Wednesday or Saturday rides found.</div>
+        }
+    }
+
+</div>
+
+@code {
+    [Parameter]
+    public string Name { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Description { get; set; } = string.Empty;
+
+    [Parameter]
+    public string InfoUrl { get; set; } = string.Empty;
+
+    [Parameter]
+    public string CalendarUrl { get; set; } = string.Empty;
+
+    [Parameter]
+    public List<CalendarEvent>? Events { get; set; }
+
+    [Parameter]
+    public bool IsSelected { get; set; }
+
+    [Parameter]
+    public bool ShowCheckbox { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<bool> OnSelectionChanged { get; set; }
+
+    [Parameter]
+    public string? Diagnostics { get; set; }
+
+    [Parameter]
+    public bool IsLoading { get; set; } = false;
+
+    private async Task OnCheckboxChanged(ChangeEventArgs e)
+    {
+        bool isChecked = false;
+        if (e.Value is bool b) isChecked = b;
+        else if (e.Value is string s && bool.TryParse(s, out var p)) isChecked = p;
+        IsSelected = isChecked;
+        if (OnSelectionChanged.HasDelegate)
+        {
+            await OnSelectionChanged.InvokeAsync(isChecked);
+        }
+    }
+
+    private string FormatEventDate(DateTime utc)
+    {
+        try
+        {
+            TimeZoneInfo ukZone;
+            if (OperatingSystem.IsWindows())
+                ukZone = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+            else
+                ukZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
+            var local = TimeZoneInfo.ConvertTimeFromUtc(utc.ToUniversalTime(), ukZone);
+            return local.ToString("yyyy-MM-dd ddd");
+        }
+        catch
+        {
+            return utc.ToLocalTime().ToString("yyyy-MM-dd ddd");
+        }
+    }
+
+    private string GetDisplayLocation(CalendarEvent ev)
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(ev.Location)) return ev.Location;
+            if (!string.IsNullOrWhiteSpace(ev.OriginalDescription))
+            {
+                var s = ev.OriginalDescription.Trim();
+                return s.Length > 200 ? s.Substring(0, 200) + "..." : s;
+            }
+            if (!string.IsNullOrWhiteSpace(ev.Summary)) return ev.Summary;
+        }
+        catch { }
+        return "(location not specified)";
+    }
+}
