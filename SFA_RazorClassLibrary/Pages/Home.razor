@@ -6,12 +6,13 @@
 @inject SFA_RazorClassLibrary.Services.NetworkStatusService NetworkStatus
 @inject SFA_RazorClassLibrary.Services.IStaticJsonAssetLoader StaticJson
 @inject SFA_RazorClassLibrary.Services.CalendarFeedService CalendarFeed
+@inject IJSRuntime JS
 @implements IDisposable
 
 <SeoHeader Title="Home - FairiesLittleHelper"
-    Description="Welcome to FairiesLittleHelper, your companion for cycling events and cafe stops."
-    Url="https://polite-sand-0eb4b4703.3.azurestaticapps.net/"
-    ImageUrl="https://polite-sand-0eb4b4703.3.azurestaticapps.net/icon-512.png" />
+           Description="Welcome to FairiesLittleHelper, your companion for cycling events and cafe stops."
+           Url="https://polite-sand-0eb4b4703.3.azurestaticapps.net/"
+           ImageUrl="https://polite-sand-0eb4b4703.3.azurestaticapps.net/icon-512.png" />
 
 
 @if (showSplash)
@@ -24,49 +25,252 @@
 
 <h1>Welcome to the San Fairy Ann Cycling Club App!</h1>
 
-<div style="background:#e9f7ef;border:1px solid #d4edda;padding:1em;margin-bottom:1em;border-radius:0.5em;">
-    @if (followedGroups == null || !followedGroups.Any())
-    {
-        <div class="alert alert-info">You are not following any groups. Choose some in <a href="/settings">Settings</a>.</div>
-    }
-    else if (isGroupEventsLoading)
-    {
-        <div style="font-size:0.95em;color:#2c7a2c;">Loading upcoming rides for your followed groups...</div>
-    }
-    else
-    {
-        var allFiltered = homeFilteredGroupEvents.SelectMany(kv => kv.Value).ToList();
-        if (allFiltered.Any())
+<div class="col-md-8">
+    <div style="background:#e9f7ef;border:1px solid #d4edda;padding:1em;border-radius:0.5em;margin-bottom:0.5rem;">
+        @if (nextDayLocalDate.HasValue && nextDayEvents.Any())
         {
-            TimeZoneInfo ukZone;
-            try
-            {
-                if (OperatingSystem.IsWindows()) ukZone = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
-                else ukZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
-            }
-            catch
-            {
-                ukZone = TimeZoneInfo.Local;
-            }
-
-            var earliestUkDate = allFiltered.Min(ev => TimeZoneInfo.ConvertTimeFromUtc(ev.Start, ukZone).Date);
+            <h4>Next rides: @nextDayLocalDate.Value.ToString("yyyy-MM-dd ddd")</h4>
+            <ul class="list-unstyled">
+                @foreach (var ev in nextDayEvents)
+                {
+                    <li style="margin-bottom:0.75rem;">
+                        <strong>@ev.GroupName</strong> — @FormatEventDate(ev.Start) <br />
+                        <small>@GetDisplayLocation(ev)</small>
+                        @if (ev.RouteLinks != null && ev.RouteLinks.Count > 0)
+                        {
+                            <div><a href="@ev.RouteLinks[0]" target="_blank">Route link</a></div>
+                        }
+                    </li>
+                }
+            </ul>
         }
-    }
+        else
+        {
+            <div>No upcoming Wednesday or Saturday rides found for your followed groups.</div>
+        }
+    </div>
 </div>
+
+<div class="row" style="margin-bottom:1em;">
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">How to use</h5>
+                <p class="card-text">Follow the groups you want in <a href="/settings">Settings</a>. This homepage shows
+                    the next Wednesday or Saturday rides for the groups you follow.</p>
+                    <p class="card-text">Watch our tutorials on <a
+                        href="https://www.youtube.com/channel/UCagNNvjqAX003KNIANSkGXA" target="_blank">YouTube</a>.</p>
+                        <InstallPwaButton />
+                    </div>
+                </div>
+            </div>
+
+        </div>
 
 @code {
     private bool showSplash = false;
+
+    // Groups & preferences
+    private List<GroupData> groups = new();
+    private Dictionary<string, bool> selectedGroups = new();
     private List<GroupData> followedGroups = new();
+
+    // Events
     private bool isGroupEventsLoading = false;
     private Dictionary<string, List<CalendarEvent>> homeFilteredGroupEvents = new();
+    private Dictionary<string, string> groupDiagnostics = new();
+    private List<CalendarEvent> nextDayEvents = new();
+    private DateTime? nextDayLocalDate = null;
+
+    // Diagnostics / JS interop
+    private DotNetObjectReference<Home>? dotnetRef;
 
     private void HideSplash()
     {
         showSplash = false;
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        // Load all groups from groups.json
+        try
+        {
+            groups = await StaticJson.LoadAsync<List<GroupData>>("sample-data/groups.json") ?? new List<GroupData>();
+        }
+        catch
+        {
+            groups = new List<GroupData>();
+        }
+
+        // Load preferences and initialize followed groups + events
+        await LoadPreferencesAndGroupEventsAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                dotnetRef = DotNetObjectReference.Create(this);
+                await JS.InvokeVoidAsync("sfaRegisterGroupPrefsChanged", dotnetRef);
+            }
+            catch
+            {
+                // swallow - registration is best-effort
+            }
+        }
+    }
+
+    private async Task LoadPreferencesAndGroupEventsAsync()
+    {
+        try
+        {
+            var prefsJson = await JS.InvokeAsync<string>("localStorage.getItem", "groupPreferences");
+            // Debug: log the raw prefs JSON so we can inspect in browser console
+            try { await JS.InvokeVoidAsync("console.log", "Home: prefsJson", prefsJson ?? "(null)"); } catch { }
+            if (!string.IsNullOrWhiteSpace(prefsJson))
+            {
+                selectedGroups = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(prefsJson) ?? new
+Dictionary<string, bool>();
+                try
+                {
+                    await JS.InvokeVoidAsync("console.log", "Home: selectedGroups",
+System.Text.Json.JsonSerializer.Serialize(selectedGroups));
+                }
+                catch { }
+            }
+        }
+        catch
+        {
+            selectedGroups = new Dictionary<string, bool>();
+        }
+
+        // Ensure all groups have a preference entry
+        foreach (var g in groups)
+        {
+            if (!selectedGroups.ContainsKey(g.Name))
+                selectedGroups[g.Name] = false;
+        }
+
+        // Build followed groups
+        followedGroups = groups.Where(g => selectedGroups.TryGetValue(g.Name, out var v) && v).ToList();
+        try { await JS.InvokeVoidAsync("console.log", "Home: followedGroups", followedGroups.Select(g => g.Name).ToArray()); }
+        catch { }
+
+        await LoadHomeEventsAsync();
+    }
+
+    private async Task LoadHomeEventsAsync()
+    {
+        try
+        {
+            isGroupEventsLoading = true;
+            StateHasChanged();
+
+            var selected = followedGroups.Where(g => !string.IsNullOrWhiteSpace(g.CalendarUrl)).Select(g => (g.Name,
+g.CalendarUrl));
+            if (!selected.Any())
+            {
+                homeFilteredGroupEvents = new Dictionary<string, List<CalendarEvent>>();
+                groupDiagnostics = new Dictionary<string, string>();
+                return;
+            }
+
+            // Clear diagnostics
+            groupDiagnostics = new Dictionary<string, string>();
+
+            var events = await CalendarFeed.GetUpcomingWedSatForGroupsAsync(selected);
+            homeFilteredGroupEvents = events.GroupBy(e => e.GroupName).ToDictionary(g => g.Key, g => g.ToList());
+
+            // For followed groups without events, set a clear user-facing message
+            foreach (var grp in followedGroups)
+            {
+                if (!homeFilteredGroupEvents.ContainsKey(grp.Name) || homeFilteredGroupEvents[grp.Name].Count == 0)
+                {
+                    groupDiagnostics[grp.Name] = "No entry found on the calendar.";
+                }
+            }
+
+            // Compute next shared Wednesday or Saturday date across all filtered events
+            var allFiltered = homeFilteredGroupEvents.SelectMany(kv => kv.Value).ToList();
+            if (allFiltered.Any())
+            {
+                TimeZoneInfo ukZone;
+                try
+                {
+                    if (OperatingSystem.IsWindows()) ukZone = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+                    else ukZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
+                }
+                catch
+                {
+                    ukZone = TimeZoneInfo.Local;
+                }
+                var earliestUkDate = allFiltered.Min(ev => TimeZoneInfo.ConvertTimeFromUtc(ev.Start, ukZone).Date);
+                nextDayLocalDate = earliestUkDate;
+                nextDayEvents = allFiltered.Where(ev => TimeZoneInfo.ConvertTimeFromUtc(ev.Start, ukZone).Date ==
+earliestUkDate).OrderBy(ev => ev.Start).ToList();
+            }
+        }
+        catch
+        {
+            homeFilteredGroupEvents = new Dictionary<string, List<CalendarEvent>>();
+        }
+        finally
+        {
+            isGroupEventsLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    [JSInvokable]
+    public async Task NotifyGroupPreferencesChanged()
+    {
+        await LoadPreferencesAndGroupEventsAsync();
+    }
+
+    private string FormatEventDate(DateTime utc)
+    {
+        try
+        {
+            TimeZoneInfo ukZone;
+            if (OperatingSystem.IsWindows())
+                ukZone = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
+            else
+                ukZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/London");
+            var local = TimeZoneInfo.ConvertTimeFromUtc(utc.ToUniversalTime(), ukZone);
+            return local.ToString("yyyy-MM-dd ddd HH:mm");
+        }
+        catch
+        {
+            return utc.ToLocalTime().ToString("yyyy-MM-dd ddd HH:mm");
+        }
+    }
+
+    private string GetDisplayLocation(CalendarEvent ev)
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(ev.Location)) return ev.Location;
+            if (!string.IsNullOrWhiteSpace(ev.OriginalDescription))
+            {
+                var s = ev.OriginalDescription.Trim();
+                return s.Length > 200 ? s.Substring(0, 200) + "..." : s;
+            }
+            if (!string.IsNullOrWhiteSpace(ev.Summary)) return ev.Summary;
+        }
+        catch { }
+        return "(location not specified)";
+    }
+
     public void Dispose()
     {
-        // Dispose logic here if needed
+        try
+        {
+            // best-effort unregister; don't await inside Dispose
+            _ = JS.InvokeVoidAsync("sfaUnregisterGroupPrefsChanged", dotnetRef);
+        }
+        catch { }
+        try { dotnetRef?.Dispose(); } catch { }
     }
 }

@@ -44,11 +44,13 @@ window.openWeatherUrl = (webUrl) => {
             // Fallback to web URL after short delay if app doesn't open
             setTimeout(() => {
                 document.body.removeChild(iframe);
-                window.open(webUrl, '_blank');
+                // Use location.href so Universal Links/App Links can open the app instead of the browser
+                window.location.href = webUrl;
             }, 1500);
         } else {
-            // No location ID found, just open web URL
-            window.open(webUrl, '_blank');
+            // No numeric location ID found - use location.href so Universal Links/App Links
+            // (if configured by BBC) can open the native app. This improves mobile behaviour.
+            window.location.href = webUrl;
         }
     } else {
         // Desktop - just open web URL
