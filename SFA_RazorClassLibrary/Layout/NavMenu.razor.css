@@ -148,3 +148,10 @@
         overflow-y: auto;
     }
 }
+
+/* Adjust NavMenu width for larger screens */
+@media (max-width: 1680px) {
+    .nav-scrollable {
+        min-width: 250px; /* or a suitable width */
+    }
+}
