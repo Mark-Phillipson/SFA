@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using SFA_MauiApp.Services;
-using SFA_PWA;
-using SFA_PWA.Services;
+using SFA_RazorClassLibrary;
+using SFA_RazorClassLibrary.Services;
 using System.Text.Json;
 
 namespace SFA_MauiApp;
@@ -21,7 +21,7 @@ public static class MauiProgram
 		builder.Services.AddMauiBlazorWebView();
 
 		builder.Services.AddSingleton<ISfaHostCapabilities, MauiHostCapabilities>();
-		builder.Services.AddScoped<SFA_PWA.Services.IStaticJsonAssetLoader, MauiStaticJsonAssetLoader>();
+		builder.Services.AddScoped<SFA_RazorClassLibrary.Services.IStaticJsonAssetLoader, MauiStaticJsonAssetLoader>();
 
 		// Load the same wwwroot/appsettings.json shape as the PWA host.
 		var baseAddress = new Uri("https://0.0.0.0/");

@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SFA_PWA.Services;
+namespace SFA_RazorClassLibrary.Services;
 
 public interface IStaticJsonAssetLoader
 {

@@ -33,7 +33,7 @@
                         Description="@group.Description"
                         InfoUrl="@group.InfoUrl"
                         CalendarUrl="@group.CalendarUrl"
-                        Events="@(groupUpcomingEvents.ContainsKey(group.Name) ? groupUpcomingEvents[group.Name] : new List<SFA_PWA.Services.CalendarEvent>())"
+                        Events="@(groupUpcomingEvents.ContainsKey(group.Name) ? groupUpcomingEvents[group.Name] : new List<SFA_RazorClassLibrary.Services.CalendarEvent>())"
                         IsSelected="@IsSelected(group.Name)"
                         ShowCheckbox="true"
                         OnSelectionChanged="@(async (bool val) => await OnPreferenceChangedAndSave(group.Name, val))"
@@ -72,9 +72,9 @@
     [Inject]
     private IJSRuntime JS { get; set; } = default!;
     [Inject]
-    private SFA_PWA.Services.IStaticJsonAssetLoader StaticJson { get; set; } = default!;
+    private SFA_RazorClassLibrary.Services.IStaticJsonAssetLoader StaticJson { get; set; } = default!;
     [Inject]
-    private SFA_PWA.Services.CalendarFeedService CalendarFeed { get; set; } = default!;
+    private SFA_RazorClassLibrary.Services.CalendarFeedService CalendarFeed { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -155,7 +155,7 @@
     }
 
     // Upcoming events
-    private List<SFA_PWA.Services.CalendarEvent> upcomingEvents = new();
+    private List<SFA_RazorClassLibrary.Services.CalendarEvent> upcomingEvents = new();
     private bool isEventsLoading = false;
 
     private async Task RefreshUpcomingEventsAsync()
@@ -169,7 +169,7 @@
                                  .Select(g => (g.Name, g.CalendarUrl));
             if (!selected.Any())
             {
-                upcomingEvents = new List<SFA_PWA.Services.CalendarEvent>();
+                upcomingEvents = new List<SFA_RazorClassLibrary.Services.CalendarEvent>();
                 return;
             }
 
@@ -177,7 +177,7 @@
         }
         catch
         {
-            upcomingEvents = new List<SFA_PWA.Services.CalendarEvent>();
+            upcomingEvents = new List<SFA_RazorClassLibrary.Services.CalendarEvent>();
         }
         finally
         {
@@ -186,7 +186,7 @@
         }
     }
 
-    private Dictionary<string, List<SFA_PWA.Services.CalendarEvent>> groupUpcomingEvents = new();
+    private Dictionary<string, List<SFA_RazorClassLibrary.Services.CalendarEvent>> groupUpcomingEvents = new();
     private bool isGroupEventsLoading = false;
     private Dictionary<string, string> groupDiagnostics = new();
 
@@ -200,7 +200,7 @@
             var all = groups.Where(g => !string.IsNullOrWhiteSpace(g.CalendarUrl)).Select(g => (g.Name, g.CalendarUrl));
             if (!all.Any())
             {
-                groupUpcomingEvents = new Dictionary<string, List<SFA_PWA.Services.CalendarEvent>>();
+                groupUpcomingEvents = new Dictionary<string, List<SFA_RazorClassLibrary.Services.CalendarEvent>>();
                 return;
             }
 
@@ -222,7 +222,7 @@
         }
         catch
         {
-            groupUpcomingEvents = new Dictionary<string, List<SFA_PWA.Services.CalendarEvent>>();
+            groupUpcomingEvents = new Dictionary<string, List<SFA_RazorClassLibrary.Services.CalendarEvent>>();
         }
         finally
         {
@@ -249,7 +249,7 @@
         }
     }
 
-    private string GetDisplayLocation(SFA_PWA.Services.CalendarEvent ev)
+    private string GetDisplayLocation(SFA_RazorClassLibrary.Services.CalendarEvent ev)
     {
         try
         {

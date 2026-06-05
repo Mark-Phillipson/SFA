@@ -1,4 +1,4 @@
-namespace SFA_PWA.Models
+namespace SFA_RazorClassLibrary.Models
 {
     public class Cafe
     {

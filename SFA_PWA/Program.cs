@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using SFA_PWA;
+using SFA_RazorClassLibrary;
 using System.Text.Json;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -14,7 +14,7 @@ string botApiUrl = configDoc.RootElement.TryGetProperty("BotApiUrl", out var bot
     ? botApiUrlElement.GetString() ?? string.Empty
     : string.Empty;
 
-builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<SFA_PWA.App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // All app services now live in the Razor Class Library (shared with future MAUI host).

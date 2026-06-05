@@ -114,8 +114,8 @@ else
 }
 
 @code {
-    private List<SFA_PWA.Models.StartPoint>? StartPoints;
-    private SFA_PWA.Models.StartPoint? Editing;
+    private List<SFA_RazorClassLibrary.Models.StartPoint>? StartPoints;
+    private SFA_RazorClassLibrary.Models.StartPoint? Editing;
     private bool IsNew = false;
     private bool IsProcessing = false;
     private string? ProcessingId;
@@ -148,14 +148,14 @@ else
                 var contentType = resp.Content.Headers.ContentType?.MediaType ?? string.Empty;
                 if (contentType.Contains("json"))
                 {
-                    StartPoints = await resp.Content.ReadFromJsonAsync<List<SFA_PWA.Models.StartPoint>>();
+                    StartPoints = await resp.Content.ReadFromJsonAsync<List<SFA_RazorClassLibrary.Models.StartPoint>>();
                     Log($"Loaded {StartPoints?.Count ?? 0} items");
                 }
                 else
                 {
                     var txt = await resp.Content.ReadAsStringAsync();
                     ErrorMessage = $"Expected JSON but server returned {contentType}. Response snippet: {GetSnippet(txt)}";
-                    StartPoints = new List<SFA_PWA.Models.StartPoint>();
+                    StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
                     Log("Error: Expected JSON");
                 }
             }
@@ -164,7 +164,7 @@ else
                 var txt = await resp.Content.ReadAsStringAsync();
                 var fullUrl = BotApi.Client.BaseAddress + "api/StartPoints";
                 ErrorMessage = $"Request failed: {(int)resp.StatusCode} {resp.ReasonPhrase} at {fullUrl}. Response snippet: {GetSnippet(txt)}";
-                StartPoints = new List<SFA_PWA.Models.StartPoint>();
+                StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
                 Log($"Request failed: {resp.StatusCode}");
             }
         }
@@ -182,14 +182,14 @@ else
                     var contentType = resp.Content.Headers.ContentType?.MediaType ?? string.Empty;
                     if (contentType.Contains("json"))
                     {
-                        StartPoints = await resp.Content.ReadFromJsonAsync<List<SFA_PWA.Models.StartPoint>>();
+                        StartPoints = await resp.Content.ReadFromJsonAsync<List<SFA_RazorClassLibrary.Models.StartPoint>>();
                         Log($"Fallback loaded {StartPoints?.Count ?? 0} items");
                     }
                     else
                     {
                         var txt = await resp.Content.ReadAsStringAsync();
                         ErrorMessage = $"Fallback: expected JSON but server returned {contentType}. Response snippet: {GetSnippet(txt)}";
-                        StartPoints = new List<SFA_PWA.Models.StartPoint>();
+                        StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
                     }
                 }
                 else
@@ -197,14 +197,14 @@ else
                     var txt = await resp.Content.ReadAsStringAsync();
                     var fallbackUrl = NavigationManager.BaseUri + "api/StartPoints";
                     ErrorMessage = $"Fallback request failed: {(int)resp.StatusCode} {resp.ReasonPhrase} at {fallbackUrl}. Response snippet: {GetSnippet(txt)}";
-                    StartPoints = new List<SFA_PWA.Models.StartPoint>();
+                    StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
                     Log($"Fallback failed: {resp.StatusCode}");
                 }
             }
             catch (Exception ex2)
             {
                 ErrorMessage = $"Error contacting API: {ex.Message}; fallback error: {ex2.Message}";
-                StartPoints = new List<SFA_PWA.Models.StartPoint>();
+                StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
                 Log($"Fallback exception: {ex2.Message}");
             }
         }
@@ -235,7 +235,7 @@ else
         Log("NewStartPoint clicked");
         try
         {
-            Editing = new SFA_PWA.Models.StartPoint();
+            Editing = new SFA_RazorClassLibrary.Models.StartPoint();
             IsNew = true;
             StateHasChanged(); // Ensure UI updates
         }
@@ -245,12 +245,12 @@ else
         }
     }
 
-    private void EditStartPoint(SFA_PWA.Models.StartPoint sp)
+    private void EditStartPoint(SFA_RazorClassLibrary.Models.StartPoint sp)
     {
         Log($"EditStartPoint clicked for {sp.Id}");
         try
         {
-            Editing = new SFA_PWA.Models.StartPoint
+            Editing = new SFA_RazorClassLibrary.Models.StartPoint
             {
                 Id = sp.Id,
                 Name = sp.Name,
@@ -260,7 +260,7 @@ else
                 PlusCode = sp.PlusCode,
                 GoogleMaps = sp.GoogleMaps,
                 What3Words = sp.What3Words,
-                Coordinates = sp.Coordinates != null ? new SFA_PWA.Models.Coordinates { Lat = sp.Coordinates.Lat, Lng = sp.Coordinates.Lng } : null
+                Coordinates = sp.Coordinates != null ? new SFA_RazorClassLibrary.Models.Coordinates { Lat = sp.Coordinates.Lat, Lng = sp.Coordinates.Lng } : null
             };
             IsNew = false;
             StateHasChanged(); // Ensure UI updates
@@ -394,9 +394,9 @@ else
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
 
-    private IEnumerable<SFA_PWA.Models.StartPoint> FilteredStartPoints()
+    private IEnumerable<SFA_RazorClassLibrary.Models.StartPoint> FilteredStartPoints()
     {
-        if (StartPoints == null) return Enumerable.Empty<SFA_PWA.Models.StartPoint>();
+        if (StartPoints == null) return Enumerable.Empty<SFA_RazorClassLibrary.Models.StartPoint>();
         var q = StartPoints.AsEnumerable();
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {

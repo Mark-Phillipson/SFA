@@ -7,11 +7,11 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
-@inject SFA_PWA.Services.CafeDataCache CafeDataCache
-@inject SFA_PWA.Services.NetworkStatusService NetworkStatus
+@inject SFA_RazorClassLibrary.Services.CafeDataCache CafeDataCache
+@inject SFA_RazorClassLibrary.Services.NetworkStatusService NetworkStatus
 @implements IDisposable
 
-@using SFA_PWA.Models
+@using SFA_RazorClassLibrary.Models
 
 
 
@@ -519,5 +519,5 @@ else
 
     // Removed CSV loading logic; now using Google Sheets API
 
-    // Use shared Cafe model from SFA_PWA.Models
+    // Use shared Cafe model from SFA_RazorClassLibrary.Models
 }

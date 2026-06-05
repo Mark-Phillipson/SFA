@@ -2,9 +2,9 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text.Json;
-using SFA_PWA.Models;
+using SFA_RazorClassLibrary.Models;
 
-namespace SFA_PWA.Services
+namespace SFA_RazorClassLibrary.Services
 {
 	public class GoogleSheetCafeService
 	{

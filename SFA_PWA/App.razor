@@ -1,13 +1,26 @@
 @using Microsoft.AspNetCore.Components.Routing
-@using SFA_PWA.Layout
-<Router AppAssembly="@typeof(Program).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
+@using SFA_RazorClassLibrary.Layout
+@using SFA_RazorClassLibrary.Shared
+
+<SFA_PWA.Shared.ErrorBoundary>
+    <ChildContent>
+        <Router AppAssembly="@typeof(Program).Assembly" AdditionalAssemblies="@(new[] { typeof(SFA_RazorClassLibrary.Pages.Home).Assembly })">
+            <Found Context="routeData">
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            </Found>
+            <NotFound>
+                <LayoutView Layout="@typeof(MainLayout)">
+                    <p>Sorry, there's nothing at this address.</p>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </ChildContent>
+    <ErrorContent Context="ex">
         <LayoutView Layout="@typeof(MainLayout)">
-            <NotFound />
+            <h3 class="text-danger">An unhandled error occurred:</h3>
+            <p class="text-danger">@ex.Message</p>
+            <pre><code>@ex.StackTrace</code></pre>
         </LayoutView>
-    </NotFound>
-</Router>
+    </ErrorContent>
+</SFA_PWA.Shared.ErrorBoundary>

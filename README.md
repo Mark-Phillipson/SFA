@@ -11,7 +11,7 @@ To launch both the Blazor PWA (SFA_PWA) and the WebAPI backend (SFA_WebAPI) in d
 	```pwsh
 	dotnet run --project SFA_WebAPI/SFA_WebAPI.csproj
 	```
-4. Make sure your Blazor app’s API calls use the correct backend URL (http://localhost:5216/api/bot/chat).
+4. Make sure your Blazor app’s API calls use the correct backend URL (https://localhost:7289/api/bot/chat).
 
 You can copy and paste these commands directly into your VS Code terminals.
 
@@ -22,6 +22,7 @@ You can test your production Web API endpoint using curl. Replace the URL and en
 
 ```sh
 curl -X POST "https://sfawebapi-c9bgawf9evfkg6dp.westeurope-01.azurewebsites.net/api/Bot/chat" -H "accept: application/json" -H "Content-Type: application/json" -d '{"message": "How can I join the club?"}'
+curl -X POST "https://sfawebapi-c9bgawf9evfkg6dp.westeurope-01.azurewebsites.net/api/Bot/chat" -H "accept: application/json" -H "Content-Type: application/json" -d '{"message": "What model are you currently using?"}'
 ```
 adb logcat > cafes-log.txt
 

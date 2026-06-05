@@ -27,7 +27,6 @@
     <Compile Remove="Services\**\*.cs" />
 
     <!--<RazorComponent Remove="App.razor" />-->
-    <RazorComponent Remove="_Imports.razor" />
     <RazorComponent Remove="Layout\**\*.razor" />
     <!--<RazorComponent Remove="Pages\**\*.razor" />-->
     <RazorComponent Remove="Shared\**\*.razor" />

@@ -1,7 +1,7 @@
-@using SFA_PWA.Models
+@using SFA_RazorClassLibrary.Models
 @using System.Text.Json
 @inject IJSRuntime JS
-@inject SFA_PWA.Services.ISfaHostCapabilities HostCapabilities
+@inject SFA_RazorClassLibrary.Services.ISfaHostCapabilities HostCapabilities
 
 @if (!HostCapabilities.SupportsPwaInstall)
 {

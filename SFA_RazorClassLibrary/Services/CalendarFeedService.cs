@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace SFA_PWA.Services
+namespace SFA_RazorClassLibrary.Services
 {
     public class CalendarEvent
     {

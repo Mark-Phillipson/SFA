@@ -2,7 +2,7 @@ using Microsoft.JSInterop;
 using System;
 using System.Threading.Tasks;
 
-namespace SFA_PWA.Services
+namespace SFA_RazorClassLibrary.Services
 {
     /// <summary>
     /// Service to detect network connectivity status

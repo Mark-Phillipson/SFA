@@ -5,9 +5,9 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
-using SFA_PWA.Models;
+using SFA_RazorClassLibrary.Models;
 
-namespace SFA_PWA.Services
+namespace SFA_RazorClassLibrary.Services
 {
     /// <summary>
     /// Service that provides cafe data with offline fallback support.
@@ -15,12 +15,12 @@ namespace SFA_PWA.Services
     /// </summary>
     public class CafeDataCache
     {
-        private readonly SFA_PWA.Services.GoogleSheetCafeService _googleSheetService;
+        private readonly SFA_RazorClassLibrary.Services.GoogleSheetCafeService _googleSheetService;
         private readonly IJSRuntime _jsRuntime;
         private const string LocalStorageKey = "cachedCafes";
         private const string LastUpdateKey = "cafesLastUpdate";
 
-        public CafeDataCache(SFA_PWA.Services.GoogleSheetCafeService googleSheetService, IJSRuntime jsRuntime)
+        public CafeDataCache(SFA_RazorClassLibrary.Services.GoogleSheetCafeService googleSheetService, IJSRuntime jsRuntime)
         {
             _googleSheetService = googleSheetService;
             _jsRuntime = jsRuntime;

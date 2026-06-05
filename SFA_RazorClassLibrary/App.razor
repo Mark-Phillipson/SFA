@@ -1,12 +1,3 @@
-﻿@using SFA_PWA.Pages
-<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <NotFound />
+﻿        <LayoutView Layout="@typeof(MainLayout)">
+            <p>Sorry, there's nothing at this address from RCL.</p>
         </LayoutView>
-    </NotFound>
-</Router>

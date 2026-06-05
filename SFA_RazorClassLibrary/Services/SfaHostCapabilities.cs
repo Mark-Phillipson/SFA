@@ -1,13 +1,13 @@
-namespace SFA_PWA.Services;
+namespace SFA_RazorClassLibrary.Services;
 
 public interface ISfaHostCapabilities
 {
-	bool SupportsPwaInstall { get; }
-	bool SupportsBrowserNetworkEvents { get; }
+    bool SupportsPwaInstall { get; }
+    bool SupportsBrowserNetworkEvents { get; }
 }
 
 public sealed class BrowserHostCapabilities : ISfaHostCapabilities
 {
-	public bool SupportsPwaInstall => true;
-	public bool SupportsBrowserNetworkEvents => true;
+    public bool SupportsPwaInstall => true;
+    public bool SupportsBrowserNetworkEvents => true;
 }

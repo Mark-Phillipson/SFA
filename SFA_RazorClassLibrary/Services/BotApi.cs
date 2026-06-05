@@ -1,18 +1,19 @@
 using System.Net.Http;
 
-// Intentionally in the global namespace to avoid updating existing Razor @inject usages.
-
-public class BotApiHttpClient
+namespace SFA_RazorClassLibrary.Services
 {
-    public HttpClient Client { get; }
-
-    public BotApiHttpClient(HttpClient client)
+    public class BotApiHttpClient
     {
-        Client = client;
-    }
-}
+        public HttpClient Client { get; }
 
-public class BotApiConfig
-{
-    public string BotApiUrl { get; set; } = string.Empty;
+        public BotApiHttpClient(HttpClient client)
+        {
+            Client = client;
+        }
+    }
+
+    public class BotApiConfig
+    {
+        public string BotApiUrl { get; set; } = string.Empty;
+    }
 }

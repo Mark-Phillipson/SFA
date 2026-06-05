@@ -1,4 +1,4 @@
-namespace SFA_PWA
+namespace SFA_RazorClassLibrary.Models
 {
     public class GroupData
     {
