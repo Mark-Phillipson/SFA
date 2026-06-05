@@ -11,7 +11,7 @@ namespace SFA_WebAPI.Services
         public OpenAIBotService(IConfiguration configuration)
         {
             var apiKey = configuration["OpenAI:ApiKey"];
-            var model = "gpt-3.5-turbo";
+            var model = "gpt-4o-mini";
             _chatClient = new ChatClient(model, apiKey);
         }
 
