@@ -55,18 +55,57 @@
     <div class="col-md-4">
         <div class="card mb-3">
             <div class="card-body">
-                <h5 class="card-title">How to use</h5>
-                <p class="card-text">Follow the groups you want in <a href="/settings">Settings</a>. This homepage shows
-                    the next Wednesday or Saturday rides for the groups you follow.</p>
-                    <p class="card-text">Watch our tutorials on <a
-                        href="https://www.youtube.com/channel/UCagNNvjqAX003KNIANSkGXA" target="_blank">YouTube</a>.</p>
-                        <InstallPwaButton />
-                    </div>
+                    <h5 class="card-title">How to use the app</h5>
+                    <p class="card-text">
+                        This app is a club helper for San Fairy Ann Cycling Club. It brings together the rides and café stops
+                        from the club calendars so members can quickly see what is coming up without checking each group calendar manually.
+                    </p>
+                    <p class="card-text">
+                        <strong>What it does:</strong> this app is a Blazor-based PWA for San Fairy Ann Cycling Club. It reads the club's
+                        published Google Calendar feeds, filters them to upcoming Wednesday and Saturday rides, groups them by club section,
+                        and shows the next relevant events on the home page so members can quickly plan rides without checking each calendar manually.
+                    </p>
+                    <p class="card-text">
+                        <strong>How to install it:</strong> use the install button below to add the app to your phone or desktop.
+                        On mobile, this creates a home-screen app shortcut so it behaves like a lightweight app instead of a website.
+                        If the button is not available, open the site in a browser and choose <em>Add to Home Screen</em> or
+                        <em>Install app</em> from the browser menu.
+                    </p>
+                    <p class="card-text">
+                        <strong>How to use it:</strong> go to <a href="/settings">Settings</a>, choose the ride groups you want to follow,
+                        and save your preferences. Your choices are stored locally in the browser. The home page then shows the next rides for
+                        your selected groups, and you can view more detail on the relevant event pages.
+                    </p>
+                    <p class="card-text">
+                        <strong>Included features:</strong>
+                    </p>
+                    <ul class="card-text">
+                        <li><strong>Club Links:</strong> access club resources, WhatsApp channels (demo only), social media, and more from the <a href="/links">Links</a> page. Use the filter box to quickly find any link or resource.</li>
+                        <li><strong>My Custom Links:</strong> add your own custom links and resources on the <a href="/custom-links">My Custom Links</a> page.</li>
+                        <li><strong>Groups/Settings:</strong> select which ride groups you want to follow. Your preferences are saved locally.</li>
+                        <li><strong>Followed Calendars:</strong> view upcoming rides for your selected groups on the <a href="/followed-calendars">Followed Calendars</a> page. Choose which groups to follow in <a href="/settings">Settings</a>.</li>
+                        <li><strong>D Groups/Midweekers Start Points:</strong> view the saved start points used by D Groups and Midweekers rides, including addresses and notes.</li>
+                        <li><strong>Cafe List:</strong> browse recommended cafes for your rides.</li>
+                        <li><strong>Weather:</strong> access Kent weather links on the <a href="/weather">Weather</a> page. Select a location from the BBC Weather dropdown, or visit the Met Office. No specific day forecasts are shown, and the page is designed for quick access with weather icons.</li>
+                        <li><strong>WhatsApp Groups:</strong> see WhatsApp group information and channel names.</li>
+                        <li><strong>Chat Bot:</strong> ask the built-in chat bot for help or quick information about the club and groups.</li>
+                    </ul>
+                    <p class="card-text">
+                        <strong>App architecture (PWA only):</strong> the app is a lightweight Blazor WebAssembly front end hosted in Azure Static Web Apps. It pulls calendar and club data from public Google Calendar feeds and the club website, stores user preferences in browser local storage, and presents the results through a simple mobile-friendly interface.
+                    </p>
+                    <p class="card-text">
+                        <strong>Support:</strong> if you need help, have a question, or want to report an issue, email
+                        <a href="mailto:MPhillipson0@Gmail.com">MPhillipson0@Gmail.com</a>.
+                    </p>
+                    <p class="card-text">
+                        Watch our tutorial on <a href="https://www.youtube.com/channel/UCagNNvjqAX003KNIANSkGXA" target="_blank">YouTube</a>.
+                    </p>
+
+                    <InstallPwaButton />
                 </div>
             </div>
-
         </div>
-
+    </div>
 @code {
     private bool showSplash = false;
 
