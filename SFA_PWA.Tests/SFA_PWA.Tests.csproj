@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SFA_PWA\SFA_PWA.csproj" />
     <ProjectReference Include="..\SFA_RazorClassLibrary\SFA_RazorClassLibrary.csproj" />
+    <ProjectReference Include="..\SFA_WebAPI\SFA_WebAPI.csproj" />
   </ItemGroup>
 
 </Project>

@@ -16,6 +16,17 @@
                 </div>
             </div>
         }
+
+        @if (SampleQuestions.Count > 0 && Messages.Count == 0)
+        {
+            <div class="chat-question-suggestions">
+                @foreach (var question in SampleQuestions)
+                {
+                    <button type="button" class="chat-sample-question" @onclick="async () => await UseSampleQuestion(question)">@question</button>
+                }
+            </div>
+        }
+
         @foreach (var message in Messages)
         {
             <div class="chat-message @(message.IsUser ? "user" : "bot")">
@@ -49,11 +60,65 @@
     public string ApiUrl { get; set; } = "https://localhost:7289/api/Bot/chat";
 
     private List<ChatMessage> Messages = new();
+    private List<string> SampleQuestions = new();
     private string CurrentMessage = string.Empty;
     private ElementReference messagesContainer;
     private ElementReference chatInputRef;
     private int lastMessageCount = 0;
     private bool IsLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSampleQuestionsAsync();
+    }
+
+    private async Task LoadSampleQuestionsAsync()
+    {
+        try
+        {
+            var sampleQuestionsUrl = ApiUrl.Replace("/api/Bot/chat", "/api/Bot/sample-questions");
+            var response = await Http.GetFromJsonAsync<List<string>>(sampleQuestionsUrl);
+            if (response != null && response.Count > 0)
+            {
+                SampleQuestions = response.Take(6).ToList();
+            }
+            else
+            {
+                SampleQuestions = new List<string>
+                {
+                    "What is the club history?",
+                    "Where am I going on Saturday?",
+                    "Where is the next B ride from on Saturday?",
+                    "How much is membership?",
+                    "Do I need insurance to ride?",
+                    "What ride groups are there?"
+                };
+            }
+        }
+        catch
+        {
+            SampleQuestions = new List<string>
+            {
+                "What is the club history?",
+                "Where am I going on Saturday?",
+                "Where is the next B ride from on Saturday?",
+                "How much is membership?",
+                "Do I need insurance to ride?",
+                "What ride groups are there?"
+            };
+        }
+    }
+
+    private async Task UseSampleQuestion(string question)
+    {
+        if (string.IsNullOrWhiteSpace(question) || IsLoading)
+        {
+            return;
+        }
+
+        CurrentMessage = question;
+        await SendMessage();
+    }
 
     private string ConvertUrlsToLinks(string text)
     {

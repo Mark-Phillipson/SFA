@@ -15,6 +15,21 @@ namespace SFA_WebAPI.Controllers
             _botService = botService;
         }
 
+        [HttpGet("sample-questions")]
+        public async Task<ActionResult<List<string>>> GetSampleQuestions()
+        {
+            try
+            {
+                var questions = await _botService.GetSampleQuestionsAsync();
+                return Ok(questions);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error in BotController.GetSampleQuestions: {ex.Message}\n{ex.StackTrace}");
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
         [HttpPost("chat")]
         public async Task<ActionResult<ChatResponse>> Chat([FromBody] ChatRequest request)
         {

@@ -1,5 +1,22 @@
 San Fairy Ann Cycling Club (SFACC) is Kent’s largest and friendliest cycling club. Membership benefits include access to club rides, events, discounts, curated routes, and more.
 
+Sample question: What is the club history?
+Sample question: Where am I going on Saturday?
+Sample question: Where is the next B ride from on Saturday?
+Sample question: How much is membership?
+Sample question: What ride groups are there?
+Sample question: Do I need insurance to ride?
+Sample question: How do I try a club ride?
+Sample question: Where are the next club events?
+Sample question: How do I contact the club?
+Sample question: What is the latest club newsletter?
+
+Club history:
+San Fairy Ann Cycling Club is one of Kent’s longest-established and most welcoming cycling clubs, with a strong community culture built around social rides, club events, and helping riders of all levels enjoy cycling together. The club offers a wide range of groups from faster A rides through intermediate and social groups to easier rides and off-road options, with members regularly taking part in events, routes, and club activities across the season.
+
+ When you are asked questions about the club history provide a summary from this page:
+ https://www.sanfairyanncc.co.uk/club-history
+
 For Tandem Hire, visit the Club Shop page, which offers tandems for hire and other club merchandise:
 https://www.sanfairyanncc.co.uk/store
 
@@ -209,3 +226,5 @@ For more details, visit the [Group Rides page](https://www.sanfairyanncc.co.uk/g
 - Latest Routes On RideWithGPS: https://ridewithgps.com/routes
 - Routes On Garmin Connect: https://connect.garmin.com/modern/courses
 - October 2025 Club Newsletter: https://sway.cloud.microsoft/UjVBFy3cjnUz9ASc?ref=Link
+
+If asked about helmets please state that the club membership includes mandatory wearing of helmets at all times during club rides.

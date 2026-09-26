@@ -5,6 +5,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
+using SFA_RazorClassLibrary.Services;
+using SFA_WebAPI.Services;
 using Xunit;
 
 namespace SFA_PWA.Tests
@@ -52,7 +54,7 @@ namespace SFA_PWA.Tests
             });
 
             var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
-            var svc = new SFA_PWA.Services.CalendarFeedService(client, new BotApiConfig { BotApiUrl = string.Empty });
+            var svc = new CalendarFeedService(client, new BotApiConfig { BotApiUrl = string.Empty });
 
             var groups = new List<(string Name, string CalendarUrl)> { ("TestGroup", "https://calendar.google.com/calendar/embed?src=test@group.calendar.google.com&ctz=Europe%2FLondon") };
 
@@ -95,7 +97,7 @@ namespace SFA_PWA.Tests
             });
 
             var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
-            var svc = new SFA_PWA.Services.CalendarFeedService(client, new BotApiConfig { BotApiUrl = string.Empty });
+            var svc = new CalendarFeedService(client, new BotApiConfig { BotApiUrl = string.Empty });
 
             var groups = new List<(string Name, string CalendarUrl)> { ("TestGroupIcs", "https://example.com/calendar.ics") };
 
@@ -109,6 +111,17 @@ namespace SFA_PWA.Tests
             Assert.Equal("TestGroupIcs", ev.GroupName);
             Assert.False(string.IsNullOrWhiteSpace(ev.OriginalDescription));
             Assert.Contains("Meet at The Village Cafe", ev.OriginalDescription);
+        }
+
+        [Fact]
+        public void Sample_Questions_Include_Club_History_And_Saturday_Ride_Examples()
+        {
+            var questions = OpenAIBotService.GetDefaultSampleQuestions();
+
+            Assert.Contains(questions, q => q.Contains("club history", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(questions, q => q.Contains("Saturday", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(questions, q => q.Contains("B ride", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(questions, q => q.Contains("membership", StringComparison.OrdinalIgnoreCase));
         }
     }
 }
