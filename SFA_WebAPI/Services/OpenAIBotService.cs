@@ -1,21 +1,28 @@
 using Microsoft.Extensions.Configuration;
 using OpenAI.Chat;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 
 namespace SFA_WebAPI.Services
 {
     public class OpenAIBotService
     {
         private readonly ChatClient _chatClient;
+        private readonly HttpClient _httpClient;
 
-        public OpenAIBotService(IConfiguration configuration)
+        public OpenAIBotService(IConfiguration configuration, HttpClient httpClient)
         {
             var apiKey = configuration["OpenAI:ApiKey"];
             var model = "gpt-5.6-terra";
             // var model = "gpt-4o-mini";
             _chatClient = new ChatClient(model, apiKey);
+            _httpClient = httpClient;
+            _httpClient.Timeout = TimeSpan.FromSeconds(10);
         }
 
         public static List<string> GetDefaultSampleQuestions()
@@ -66,6 +73,62 @@ namespace SFA_WebAPI.Services
             return questions.Take(10).ToList();
         }
 
+        /// <summary>
+        /// Fetches and extracts clean text content from a webpage URL.
+        /// Removes HTML tags, scripts, styles, and returns readable text.
+        /// </summary>
+        private async Task<string> FetchWebpageAsync(string url)
+        {
+            try
+            {
+                // Validate and normalize URL
+                if (!url.StartsWith("http://") && !url.StartsWith("https://"))
+                {
+                    url = "https://" + url;
+                }
+
+                var response = await _httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+
+                var htmlContent = await response.Content.ReadAsStringAsync();
+                var doc = new HtmlDocument();
+                doc.LoadHtml(htmlContent);
+
+                // Remove script and style tags
+                foreach (var node in doc.DocumentNode.SelectNodes("//script | //style")?.ToList() ?? new List<HtmlNode>())
+                {
+                    node.Remove();
+                }
+
+                // Get all text and normalize whitespace
+                var text = doc.DocumentNode.InnerText;
+                text = Regex.Replace(text, @"\s+", " ");
+                text = Regex.Replace(text, @"^\s+|\s+$", "");
+
+                // Limit to first 2000 characters to avoid token overflow
+                if (text.Length > 2000)
+                {
+                    text = text.Substring(0, 2000) + "\n[... content truncated ...]";
+                }
+
+                return text;
+            }
+            catch (Exception ex)
+            {
+                return $"Could not fetch webpage: {ex.Message}";
+            }
+        }
+
+        /// <summary>
+        /// Extracts URLs from user message using regex.
+        /// </summary>
+        private List<string> ExtractUrlsFromMessage(string message)
+        {
+            var urlPattern = @"https?://[^\s]+";
+            var matches = Regex.Matches(message, urlPattern);
+            return matches.Cast<Match>().Select(m => m.Value).ToList();
+        }
+
         public async Task<string> GetBotReplyAsync(string message)
         {
             // Read knowledge base from external file
@@ -80,13 +143,25 @@ namespace SFA_WebAPI.Services
                 knowledgeBase = "Knowledge base file not found.";
             }
 
+            // Extract URLs from message and fetch content if any are present
+            var urls = ExtractUrlsFromMessage(message);
+            string fetchedContent = "";
+            if (urls.Count > 0)
+            {
+                foreach (var url in urls.Take(2)) // Limit to first 2 URLs to save tokens
+                {
+                    var content = await FetchWebpageAsync(url);
+                    fetchedContent += $"\n\nContent from {url}:\n{content}";
+                }
+            }
+
             // Compose the full prompt (no welcome message)
-            var prompt = $"{knowledgeBase}\n\nUser: {message}";
+            var prompt = $"{knowledgeBase}{fetchedContent}\n\nUser: {message}";
             var completion = await _chatClient.CompleteChatAsync(prompt);
             var reply = completion.Value.Content[0].Text;
 
             // Remove trailing punctuation from URLs (e.g., ., ,, ;, !, ?)
-            reply = System.Text.RegularExpressions.Regex.Replace(
+            reply = Regex.Replace(
                 reply,
                 @"(https?://[\w\-./?%&=+#]+)([.,;!?])(?=\s|$)",
                 "$1"
@@ -94,5 +169,16 @@ namespace SFA_WebAPI.Services
 
             return reply;
         }
+
+            // Test helper methods - expose private methods for unit testing
+            public async Task<string> FetchWebpageAsyncPublic(string url)
+            {
+                return await FetchWebpageAsync(url);
+            }
+
+            public List<string> ExtractUrlsFromMessagePublic(string message)
+            {
+                return ExtractUrlsFromMessage(message);
+            }
     }
 }

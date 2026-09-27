@@ -1,0 +1,240 @@
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Moq;
+using Moq.Protected;
+using Xunit;
+using SFA_WebAPI.Services;
+
+namespace SFA_PWA.Tests;
+
+public class OpenAIBotServiceTests
+{
+    private readonly Mock<IConfiguration> _mockConfig;
+    private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler;
+    private readonly HttpClient _httpClient;
+
+    public OpenAIBotServiceTests()
+    {
+        _mockConfig = new Mock<IConfiguration>();
+        _mockConfig.Setup(x => x["OpenAI:ApiKey"]).Returns("test-api-key");
+        
+        _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+        _httpClient = new HttpClient(_mockHttpMessageHandler.Object);
+    }
+
+    [Fact]
+    public void ExtractUrlsFromMessage_WithSingleUrl_ReturnsUrl()
+    {
+        // Arrange
+        var message = "Can you tell me about https://www.sanfairyanncc.co.uk/club-history";
+        var service = new OpenAIBotService(_mockConfig.Object, _httpClient);
+
+        // Act
+        var urls = service.ExtractUrlsFromMessagePublic(message);
+
+        // Assert
+        Assert.Single(urls);
+        Assert.Contains("https://www.sanfairyanncc.co.uk/club-history", urls);
+    }
+
+    [Fact]
+    public void ExtractUrlsFromMessage_WithMultipleUrls_ReturnsAllUrls()
+    {
+        // Arrange
+        var message = "Check https://www.example.com and also http://www.example.org please";
+        var service = new OpenAIBotService(_mockConfig.Object, _httpClient);
+
+        // Act
+        var urls = service.ExtractUrlsFromMessagePublic(message);
+
+        // Assert
+        Assert.Equal(2, urls.Count);
+        Assert.Contains("https://www.example.com", urls);
+        Assert.Contains("http://www.example.org", urls);
+    }
+
+    [Fact]
+    public void ExtractUrlsFromMessage_WithNoUrl_ReturnsEmptyList()
+    {
+        // Arrange
+        var message = "Can you tell me about the club history?";
+        var service = new OpenAIBotService(_mockConfig.Object, _httpClient);
+
+        // Act
+        var urls = service.ExtractUrlsFromMessagePublic(message);
+
+        // Assert
+        Assert.Empty(urls);
+    }
+
+    [Fact]
+    public void ExtractUrlsFromMessage_WithUrlWithoutProtocol_DoesNotMatch()
+    {
+        // Arrange
+        var message = "Visit www.example.com for more info";
+        var service = new OpenAIBotService(_mockConfig.Object, _httpClient);
+
+        // Act
+        var urls = service.ExtractUrlsFromMessagePublic(message);
+
+        // Assert
+        Assert.Empty(urls);
+    }
+
+    [Fact]
+    public void ExtractUrlsFromMessage_WithHttpsUrl_ReturnsUrl()
+    {
+        // Arrange
+        var message = "Please visit https://example.com/page?param=value&other=123";
+        var service = new OpenAIBotService(_mockConfig.Object, _httpClient);
+
+        // Act
+        var urls = service.ExtractUrlsFromMessagePublic(message);
+
+        // Assert
+        Assert.Single(urls);
+        Assert.Contains("https://example.com/page?param=value&other=123", urls);
+    }
+
+    [Fact]
+    public async Task FetchWebpageAsync_WithValidUrl_ReturnsTruncatedContent()
+    {
+        // Arrange
+        var htmlContent = @"
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Test Page</title>
+                <script>alert('This should be removed');</script>
+            </head>
+            <body>
+                <h1>Welcome to Test Page</h1>
+                <p>This is some important content that should be extracted.</p>
+                <style>.hidden { display: none; }</style>
+                <p>More content here.</p>
+            </body>
+            </html>";
+
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(htmlContent)
+        };
+
+        _mockHttpMessageHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(response);
+
+        var service = new OpenAIBotService(_mockConfig.Object, _httpClient);
+
+        // Act
+        var content = await service.FetchWebpageAsyncPublic("https://example.com");
+
+        // Assert
+        Assert.NotNull(content);
+        Assert.NotEmpty(content);
+        Assert.DoesNotContain("script", content, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("style", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Welcome to Test Page", content);
+        Assert.Contains("important content", content);
+    }
+
+    [Fact]
+    public async Task FetchWebpageAsync_WithInvalidUrl_ReturnsErrorMessage()
+    {
+        // Arrange
+        _mockHttpMessageHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ThrowsAsync(new HttpRequestException("Connection failed"));
+
+        var service = new OpenAIBotService(_mockConfig.Object, _httpClient);
+
+        // Act
+        var content = await service.FetchWebpageAsyncPublic("https://invalid-domain-12345.com");
+
+        // Assert
+        Assert.NotNull(content);
+            Assert.Contains("Could not fetch webpage", content);
+    }
+
+    [Fact]
+    public async Task FetchWebpageAsync_WithLongContent_TruncatesTo2000Characters()
+    {
+        // Arrange
+        var longContent = new string('A', 5000);
+        var htmlContent = $"<html><body>{longContent}</body></html>";
+
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(htmlContent)
+        };
+
+        _mockHttpMessageHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(response);
+
+        var service = new OpenAIBotService(_mockConfig.Object, _httpClient);
+
+        // Act
+        var content = await service.FetchWebpageAsyncPublic("https://example.com");
+
+        // Assert
+        Assert.NotNull(content);
+        Assert.True(content.Length <= 2100, $"Content length {content.Length} exceeds 2100 chars (with truncation marker)");
+    }
+
+    [Fact]
+    public async Task FetchWebpageAsync_NormalizesWhitespace()
+    {
+        // Arrange
+        var htmlContent = @"
+            <html>
+            <body>
+                <p>This    has     multiple     spaces</p>
+                <p>And
+                    line
+                    breaks</p>
+            </body>
+            </html>";
+
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(htmlContent)
+        };
+
+        _mockHttpMessageHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(response);
+
+        var service = new OpenAIBotService(_mockConfig.Object, _httpClient);
+
+        // Act
+        var content = await service.FetchWebpageAsyncPublic("https://example.com");
+
+        // Assert
+        Assert.NotNull(content);
+        Assert.DoesNotContain("    ", content); // Multiple spaces should be normalized
+        Assert.Contains("This has multiple spaces", content);
+        Assert.Contains("And line breaks", content);
+    }
+}
