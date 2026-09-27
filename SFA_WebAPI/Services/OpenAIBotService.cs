@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 
@@ -14,6 +16,24 @@ namespace SFA_WebAPI.Services
     {
         private readonly ChatClient _chatClient;
         private readonly HttpClient _httpClient;
+        private static readonly SemaphoreSlim WebsiteSnapshotLock = new(1, 1);
+        private static string? _websiteSnapshot;
+        private static DateTimeOffset _websiteSnapshotFetchedAtUtc;
+
+        private const bool AlwaysRefreshWebsiteSnapshot = true;
+        private static readonly TimeSpan WebsiteSnapshotTtl = TimeSpan.FromMinutes(30);
+        private const int DefaultFetchCharLimit = 2000;
+        private const int DeterministicSectionCharLimit = 3000;
+
+        private static readonly (string Topic, string Url)[] DeterministicClubSources =
+        {
+            ("Club History", "https://www.sanfairyanncc.co.uk/club-history"),
+            ("Records and Achievements", "https://www.sanfairyanncc.co.uk/club-records"),
+            ("Past Magazine and Newsletters", "https://www.sanfairyanncc.co.uk/magazine"),
+            ("Minutes", "https://www.sanfairyanncc.co.uk/memberspage"),
+            ("Articles and Constitution", "https://www.sanfairyanncc.co.uk/memberspage"),
+            ("Ride Etiquette and Rules", "https://www.sanfairyanncc.co.uk/grouprides")
+        };
 
         public OpenAIBotService(IConfiguration configuration, HttpClient httpClient)
         {
@@ -77,7 +97,7 @@ namespace SFA_WebAPI.Services
         /// Fetches and extracts clean text content from a webpage URL.
         /// Removes HTML tags, scripts, styles, and returns readable text.
         /// </summary>
-        private async Task<string> FetchWebpageAsync(string url)
+        private async Task<string> FetchWebpageAsync(string url, int maxChars = DefaultFetchCharLimit)
         {
             try
             {
@@ -106,9 +126,9 @@ namespace SFA_WebAPI.Services
                 text = Regex.Replace(text, @"^\s+|\s+$", "");
 
                 // Limit to first 2000 characters to avoid token overflow
-                if (text.Length > 2000)
+                if (text.Length > maxChars)
                 {
-                    text = text.Substring(0, 2000) + "\n[... content truncated ...]";
+                    text = text.Substring(0, maxChars) + "\n[... content truncated ...]";
                 }
 
                 return text;
@@ -129,6 +149,69 @@ namespace SFA_WebAPI.Services
             return matches.Cast<Match>().Select(m => m.Value).ToList();
         }
 
+        private async Task<string> GetDeterministicWebsiteSnapshotAsync()
+        {
+            var now = DateTimeOffset.UtcNow;
+            if (!AlwaysRefreshWebsiteSnapshot &&
+                !string.IsNullOrWhiteSpace(_websiteSnapshot) &&
+                now - _websiteSnapshotFetchedAtUtc <= WebsiteSnapshotTtl)
+            {
+                return _websiteSnapshot;
+            }
+
+            await WebsiteSnapshotLock.WaitAsync();
+            try
+            {
+                now = DateTimeOffset.UtcNow;
+                if (!AlwaysRefreshWebsiteSnapshot &&
+                    !string.IsNullOrWhiteSpace(_websiteSnapshot) &&
+                    now - _websiteSnapshotFetchedAtUtc <= WebsiteSnapshotTtl)
+                {
+                    return _websiteSnapshot;
+                }
+
+                var builder = new StringBuilder();
+                builder.AppendLine("Deterministic SFACC website snapshot (authoritative source content):");
+                var successfulFetchCount = 0;
+
+                foreach (var source in DeterministicClubSources)
+                {
+                    var content = await FetchWebpageAsync(source.Url, DeterministicSectionCharLimit);
+                    var isError = content.StartsWith("Could not fetch webpage:", StringComparison.OrdinalIgnoreCase);
+
+                    builder.AppendLine();
+                    builder.AppendLine($"[{source.Topic}]");
+                    builder.AppendLine($"Source: {source.Url}");
+                    if (isError)
+                    {
+                        builder.AppendLine($"Status: unavailable ({content})");
+                    }
+                    else
+                    {
+                        successfulFetchCount++;
+                        builder.AppendLine("Status: fresh");
+                        builder.AppendLine(content);
+                    }
+                }
+
+                builder.AppendLine();
+                builder.AppendLine($"SnapshotFetchedAtUtc: {DateTimeOffset.UtcNow:O}");
+
+                if (successfulFetchCount == 0 && !string.IsNullOrWhiteSpace(_websiteSnapshot))
+                {
+                    return _websiteSnapshot + $"\nSnapshotStatus: stale-fallback-used at {DateTimeOffset.UtcNow:O}";
+                }
+
+                _websiteSnapshot = builder.ToString();
+                _websiteSnapshotFetchedAtUtc = DateTimeOffset.UtcNow;
+                return _websiteSnapshot;
+            }
+            finally
+            {
+                WebsiteSnapshotLock.Release();
+            }
+        }
+
         public async Task<string> GetBotReplyAsync(string message)
         {
             // Read knowledge base from external file
@@ -143,6 +226,8 @@ namespace SFA_WebAPI.Services
                 knowledgeBase = "Knowledge base file not found.";
             }
 
+            var deterministicSnapshot = await GetDeterministicWebsiteSnapshotAsync();
+
             // Extract URLs from message and fetch content if any are present
             var urls = ExtractUrlsFromMessage(message);
             string fetchedContent = "";
@@ -156,7 +241,7 @@ namespace SFA_WebAPI.Services
             }
 
             // Compose the full prompt (no welcome message)
-            var prompt = $"{knowledgeBase}{fetchedContent}\n\nUser: {message}";
+            var prompt = $"{knowledgeBase}\n\n{deterministicSnapshot}{fetchedContent}\n\nUser: {message}";
             var completion = await _chatClient.CompleteChatAsync(prompt);
             var reply = completion.Value.Content[0].Text;
 
