@@ -24,13 +24,15 @@ namespace SFA_WebAPI.Services
         private static readonly TimeSpan WebsiteSnapshotTtl = TimeSpan.FromMinutes(30);
         private const int DefaultFetchCharLimit = 2000;
         private const int DeterministicSectionCharLimit = 3000;
-
         private static readonly (string Topic, string Url)[] DeterministicClubSources =
         {
             ("Club History", "https://www.sanfairyanncc.co.uk/club-history"),
-            ("Past Magazine and Newsletters", "https://www.sanfairyanncc.co.uk/magazine"),
+            ("Past Magazines", "https://www.sanfairyanncc.co.uk/magazine"),
+            ("Racing", "https://www.sanfairyanncc.co.uk/sanfairyannracing"),
             ("Minutes", "https://www.sanfairyanncc.co.uk/club-updates/agm-report-2024?rq=minutes"),
-            ("Ride Etiquette and Rules", "https://www.sanfairyanncc.co.uk/group-rules-etiquette")
+            ("Ride Etiquette and Rules", "https://www.sanfairyanncc.co.uk/group-rules-etiquette"),
+            
+
         };
 // I need to figure out where these are located maybe Duncan can help
 // ("Records and Achievements", "https://www.sanfairyanncc.co.uk/club-records"),
@@ -188,6 +190,11 @@ namespace SFA_WebAPI.Services
                 {
                     var content = await FetchWebpageAsync(source.Url, DeterministicSectionCharLimit);
                     var isError = content.StartsWith("Could not fetch webpage:", StringComparison.OrdinalIgnoreCase);
+
+                    if (!isError)
+                    {
+                        isError= content.StartsWith("Sway requires JavaScript", StringComparison.OrdinalIgnoreCase);
+                    }
 
                     builder.AppendLine();
                     builder.AppendLine($"[{source.Topic}]");

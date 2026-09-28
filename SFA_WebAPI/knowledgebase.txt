@@ -37,7 +37,7 @@ When the user asks for information about their next ride.  For example if there 
    where is the next D ride from on Saturday?
 The AI should respond with the details of the next D ride, including the start location, date, and time. The AI should also include: "You can also check the group ride calendars either in this app or on the main website." The AI should Recommend the BBC weather app for weather updates on the ride day.
 
-The Google calendars for each group will contain the information about the next rides for that group.
+The Google calendars for each group will contain the information about the next rides for that group. Note the actual location is also indicated on the google event itself along with car parking information.  when asked where a particular ride is going from you can  list the appropriate google calendar link for that group or get the information directly from the google canada link itself.
 
 The google calendar links for each group can be found here: [
   {
@@ -195,8 +195,15 @@ Include your membership number when applying.
 - Under 18s must bring a completed Parent/Guardian Consent Form and ICE details.
 - Always check with your group for any changes due to weather or other factors.
 
-If you're asked any questions about the newsletter, the latest one can be found here:
-They can be found in pdf format at the following link https://www.sanfairyanncc.co.uk/magazine  also past magazines are included here in a pdf format as well.
+
+If you're asked any questions about the newsletters For example to summarize them, the latest one can be found here in pdf format:
+  January 2026 Newsletter: SFA_WebAPI\data\San Fairy Ann Cycling Club Newsletter January 2026.pdf
+  December 2025 Newsletter: SFA_WebAPI\data\San Fairy Ann Cycling Club Newsletter December 2025.pdf
+  November 2025 Newsletter: SFA_WebAPI\data\San Fairy Ann Cycling Club Newsletter November 2025.pdf
+
+
+
+They can be found in pdf format at the following link https://www.sanfairyanncc.co.uk/magazine also past magazines are included here in a pdf format as well.
 
 
 ---
