@@ -28,13 +28,14 @@ namespace SFA_WebAPI.Services
         private static readonly (string Topic, string Url)[] DeterministicClubSources =
         {
             ("Club History", "https://www.sanfairyanncc.co.uk/club-history"),
-            ("Records and Achievements", "https://www.sanfairyanncc.co.uk/club-records"),
             ("Past Magazine and Newsletters", "https://www.sanfairyanncc.co.uk/magazine"),
-            ("Minutes", "https://www.sanfairyanncc.co.uk/memberspage"),
-            ("Articles and Constitution", "https://www.sanfairyanncc.co.uk/memberspage"),
-            ("Ride Etiquette and Rules", "https://www.sanfairyanncc.co.uk/grouprides")
+            ("Minutes", "https://www.sanfairyanncc.co.uk/club-updates/agm-report-2024?rq=minutes"),
+            ("Ride Etiquette and Rules", "https://www.sanfairyanncc.co.uk/group-rules-etiquette")
         };
-
+// I need to figure out where these are located maybe Duncan can help
+// ("Records and Achievements", "https://www.sanfairyanncc.co.uk/club-records"),
+// ("Articles and Constitution", "https://www.sanfairyanncc.co.uk/memberspage"),
+// Note the magazine is just links to pdf need to figure out how to get this working
         public OpenAIBotService(IConfiguration configuration, HttpClient httpClient)
         {
             var apiKey = configuration["OpenAI:ApiKey"];
@@ -107,8 +108,17 @@ namespace SFA_WebAPI.Services
                     url = "https://" + url;
                 }
 
-                var response = await _httpClient.GetAsync(url);
-                response.EnsureSuccessStatusCode();
+                using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0");
+                request.Headers.Accept.ParseAdd("text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
+                request.Headers.AcceptLanguage.ParseAdd("en-GB,en;q=0.9");
+                request.Headers.Referrer = new Uri("https://www.sanfairyanncc.co.uk/");
+
+                var response = await _httpClient.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return $"Could not fetch webpage: {(int)response.StatusCode} {response.ReasonPhrase}";
+                }
 
                 var htmlContent = await response.Content.ReadAsStringAsync();
                 var doc = new HtmlDocument();

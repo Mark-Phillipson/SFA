@@ -6,7 +6,11 @@ using System.Text.Json;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 var httpClient = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
-var configResponse = await httpClient.GetAsync("appsettings.json");
+var configFile = builder.HostEnvironment.IsDevelopment()
+    ? "appsettings.Development.json"
+    : "appsettings.json";
+
+var configResponse = await httpClient.GetAsync(configFile);
 string configJson = await configResponse.Content.ReadAsStringAsync();
 var configDoc = JsonDocument.Parse(configJson);
 
