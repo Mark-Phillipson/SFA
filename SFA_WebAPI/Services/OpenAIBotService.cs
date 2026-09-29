@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using OpenAI.Chat;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -9,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
+using UglyToad.PdfPig;
 
 namespace SFA_WebAPI.Services
 {
@@ -24,6 +26,12 @@ namespace SFA_WebAPI.Services
         private static readonly TimeSpan WebsiteSnapshotTtl = TimeSpan.FromMinutes(30);
         private const int DefaultFetchCharLimit = 2000;
         private const int DeterministicSectionCharLimit = 3000;
+        private const int PdfTextCharLimit = 8000;
+        private static readonly string[] MonthNames =
+        {
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        };
         private static readonly (string Topic, string Url)[] DeterministicClubSources =
         {
             ("Club History", "https://www.sanfairyanncc.co.uk/club-history"),
@@ -229,6 +237,157 @@ namespace SFA_WebAPI.Services
             }
         }
 
+        private static string? ExtractMonthFromMessage(string message)
+        {
+            var match = Regex.Match(message, @"\b(January|February|March|April|May|June|July|August|September|October|November|December)\b(?:\s*(\d{4}))?", RegexOptions.IgnoreCase);
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            return System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(match.Groups[1].Value.ToLowerInvariant());
+        }
+
+        private static string? ExtractYearFromMessage(string message)
+        {
+            var match = Regex.Match(message, @"\b(January|February|March|April|May|June|July|August|September|October|November|December)\b\s*(\d{4})?", RegexOptions.IgnoreCase);
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            var yearGroup = match.Groups[2];
+            return yearGroup.Success ? yearGroup.Value : null;
+        }
+
+        private static IEnumerable<string> GetDocumentSearchRoots()
+        {
+            var roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                Directory.GetCurrentDirectory(),
+                AppContext.BaseDirectory
+            };
+
+            var currentDir = Directory.GetCurrentDirectory();
+            var alternateRoots = new[]
+            {
+                Path.Combine(currentDir, "SFA_WebAPI"),
+                Path.Combine(currentDir, "SFA_WebAPI", "data"),
+                Path.Combine(AppContext.BaseDirectory, "data"),
+                Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "SFA_WebAPI", "data")
+            };
+
+            foreach (var root in alternateRoots)
+            {
+                try
+                {
+                    roots.Add(Path.GetFullPath(root));
+                }
+                catch
+                {
+                    // Ignore invalid paths.
+                }
+            }
+
+            return roots;
+        }
+
+        private static IEnumerable<string> FindNewsletterPdfPaths(string? monthName = null, string? year = null)
+        {
+            var candidates = new List<string>();
+            foreach (var root in GetDocumentSearchRoots())
+            {
+                if (!Directory.Exists(root))
+                {
+                    continue;
+                }
+
+                foreach (var file in Directory.EnumerateFiles(root, "*.pdf", SearchOption.AllDirectories))
+                {
+                    var fileName = Path.GetFileNameWithoutExtension(file);
+                    var lower = fileName.ToLowerInvariant();
+
+                    var monthMatches = string.IsNullOrWhiteSpace(monthName)
+                        || lower.Contains(monthName.ToLowerInvariant());
+                    var yearMatches = string.IsNullOrWhiteSpace(year)
+                        || lower.Contains(year);
+
+                    if (monthMatches && yearMatches)
+                    {
+                        candidates.Add(file);
+                    }
+                }
+            }
+
+            return candidates.Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderByDescending(f => File.GetLastWriteTimeUtc(f));
+        }
+
+        private async Task<string> GetRelevantDocumentContentAsync(string message)
+        {
+            var requestedMonth = ExtractMonthFromMessage(message);
+            var requestedYear = ExtractYearFromMessage(message);
+
+            var newsletterFiles = FindNewsletterPdfPaths(requestedMonth, requestedYear).ToList();
+
+            if (newsletterFiles.Count == 0 && Regex.IsMatch(message, "newsletter|magazine", RegexOptions.IgnoreCase))
+            {
+                newsletterFiles = FindNewsletterPdfPaths().ToList();
+            }
+
+            if (newsletterFiles.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var relevantContent = new List<string>();
+            foreach (var pdfPath in newsletterFiles.Take(3))
+            {
+                var extractedText = await ExtractTextFromPdfAsync(pdfPath);
+                if (!string.IsNullOrWhiteSpace(extractedText))
+                {
+                    relevantContent.Add($"Document: {Path.GetFileName(pdfPath)}\n{extractedText}");
+                }
+            }
+
+            return string.Join("\n\n---\n\n", relevantContent);
+        }
+
+        private static async Task<string> ExtractTextFromPdfAsync(string pdfPath)
+        {
+            if (!File.Exists(pdfPath))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                using var document = PdfDocument.Open(pdfPath);
+                var builder = new StringBuilder();
+
+                foreach (var page in document.GetPages())
+                {
+                    var pageText = page.Text;
+                    if (!string.IsNullOrWhiteSpace(pageText))
+                    {
+                        builder.AppendLine(pageText);
+                    }
+                }
+
+                var text = Regex.Replace(builder.ToString(), @"\s+", " ").Trim();
+                if (text.Length > PdfTextCharLimit)
+                {
+                    text = text.Substring(0, PdfTextCharLimit) + "\n[... PDF content truncated ...]";
+                }
+
+                return text;
+            }
+            catch (Exception ex)
+            {
+                return $"Could not extract text from PDF: {ex.Message}";
+            }
+        }
+
         public async Task<string> GetBotReplyAsync(string message)
         {
             // Read knowledge base from external file
@@ -244,6 +403,7 @@ namespace SFA_WebAPI.Services
             }
 
             var deterministicSnapshot = await GetDeterministicWebsiteSnapshotAsync();
+            var relevantDocumentContent = await GetRelevantDocumentContentAsync(message);
 
             // Extract URLs from message and fetch content if any are present
             var urls = ExtractUrlsFromMessage(message);
@@ -258,7 +418,7 @@ namespace SFA_WebAPI.Services
             }
 
             // Compose the full prompt (no welcome message)
-            var prompt = $"{knowledgeBase}\n\n{deterministicSnapshot}{fetchedContent}\n\nUser: {message}";
+            var prompt = $"{knowledgeBase}\n\n{relevantDocumentContent}\n\n{deterministicSnapshot}{fetchedContent}\n\nUser: {message}";
             var completion = await _chatClient.CompleteChatAsync(prompt);
             var reply = completion.Value.Content[0].Text;
 
@@ -281,6 +441,11 @@ namespace SFA_WebAPI.Services
             public List<string> ExtractUrlsFromMessagePublic(string message)
             {
                 return ExtractUrlsFromMessage(message);
+            }
+
+            public async Task<string> GetRelevantDocumentContentForMessagePublic(string message)
+            {
+                return await GetRelevantDocumentContentAsync(message);
             }
     }
 }

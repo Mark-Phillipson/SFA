@@ -237,4 +237,19 @@ public class OpenAIBotServiceTests
         Assert.Contains("This has multiple spaces", content);
         Assert.Contains("And line breaks", content);
     }
+
+    [Fact]
+    public async Task GetRelevantDocumentContentForMessage_WithNewsletterMonth_ReturnsPdfText()
+    {
+        // Arrange
+        var service = new OpenAIBotService(_mockConfig.Object, _httpClient);
+
+        // Act
+        var content = await service.GetRelevantDocumentContentForMessagePublic("Can you summarise the December 2025 newsletter?");
+
+        // Assert
+        Assert.NotNull(content);
+        Assert.Contains("December 2025", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("San Fairy Ann", content, StringComparison.OrdinalIgnoreCase);
+    }
 }
