@@ -200,7 +200,7 @@ If you're asked any questions about the newsletters For example to summarize the
   December 2025 Newsletter: SFA_WebAPI\data\San Fairy Ann Cycling Club Newsletter December 2025.pdf
   November 2025 Newsletter: SFA_WebAPI\data\San Fairy Ann Cycling Club Newsletter November 2025.pdf
 
-The actual links using the Sway website can be found in the link JSON file, along with lots of other links, located on the client at SFA_PWA\wwwroot\sample-data\links.json
+The canonical links catalog (including Sway newsletter links and other club links) is provided by the Web API endpoint at /api/links.
 
 They can be found in pdf format at the following link https://www.sanfairyanncc.co.uk/magazine also past print magazines are included here in a pdf format as well.
 
@@ -238,4 +238,3 @@ For more details, visit the [Group Rides page](https://www.sanfairyanncc.co.uk/g
 - Routes On Garmin Connect: https://connect.garmin.com/modern/courses
 - Strava Routes: https://www.strava.com/athlete/routes
 - Strava SFA Club: https://www.strava.com/clubs/4606
-

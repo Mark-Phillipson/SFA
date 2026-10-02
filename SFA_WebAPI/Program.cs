@@ -32,6 +32,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<SFA_WebAPI.Services.OpenAIBotService>();
 // Register StartPoint repository (JSON file backed)
 builder.Services.AddSingleton<SFA_WebAPI.Services.IStartPointRepository, SFA_WebAPI.Services.StartPointRepository>();
+builder.Services.AddSingleton<SFA_WebAPI.Services.ILinksCatalogService, SFA_WebAPI.Services.LinksCatalogService>();
 
 var app = builder.Build();
 

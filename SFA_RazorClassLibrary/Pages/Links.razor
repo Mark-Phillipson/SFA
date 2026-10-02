@@ -1,7 +1,9 @@
 
 @page "/links"
-@inject SFA_RazorClassLibrary.Services.IStaticJsonAssetLoader StaticJson
+@using System.Net.Http.Json
 @using Microsoft.AspNetCore.Components.Web
+@inject SFA_RazorClassLibrary.Services.BotApiHttpClient BotApiHttp
+@inject Microsoft.JSInterop.IJSRuntime JS
 <PageTitle>Club Links</PageTitle>
 
 <h1 style="color: #003366;">Cycling & Club Links</h1>
@@ -41,6 +43,12 @@
     </div>
 </div>
 
+@if (!string.IsNullOrWhiteSpace(linksDataStatusMessage))
+{
+    <div class="alert @(isUsingCachedLinks ? "alert-warning" : "alert-info")" style="margin-top: 1rem;">
+        @linksDataStatusMessage
+    </div>
+}
 
 @if (links == null)
 {
@@ -113,6 +121,8 @@ else
 
 
 @code {
+    private const string LinksCacheStorageKey = "linksCacheData";
+    private const string LinksCacheUpdatedStorageKey = "linksCacheUpdatedAtUtc";
 
     private List<LinkItem>? links;
     private string filterText = string.Empty;
@@ -121,28 +131,14 @@ else
     private ElementReference filterInputRef;
     private bool _hasSetFocus = false;
     private bool showHelperText = true;
+    private bool isUsingCachedLinks;
+    private string? linksDataStatusMessage;
 
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            links = await StaticJson.LoadAsync<List<LinkItem>>("sample-data/links.json");
-            if (links != null)
-            {
-                categories = links
-                    .Select(l => l.category)
-                    .Where(c => !string.IsNullOrWhiteSpace(c))
-                    .Select(c => c!)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .OrderBy(c => c)
-                    .ToList();
-            }
-        }
-        catch
-        {
-            links = new List<LinkItem>();
-        }
+        links = await LoadLinksAsync();
+        UpdateCategories();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -163,13 +159,128 @@ else
         await filterInputRef.FocusAsync();
     }
 
+    private async Task<List<LinkItem>> LoadLinksAsync()
+    {
+        var freshLinks = await TryLoadLinksFromApiAsync();
+        if (freshLinks.Count > 0)
+        {
+            isUsingCachedLinks = false;
+            linksDataStatusMessage = null;
+            await TryCacheLinksAsync(freshLinks);
+            return freshLinks;
+        }
+
+        var cachedResult = await TryLoadLinksFromCacheAsync();
+        if (cachedResult.Links.Count > 0)
+        {
+            isUsingCachedLinks = true;
+            linksDataStatusMessage = string.IsNullOrWhiteSpace(cachedResult.LastUpdatedUtc)
+                ? "Showing cached links because live data is currently unavailable."
+                : $"Showing cached links from {cachedResult.LastUpdatedUtc} because live data is currently unavailable.";
+            return cachedResult.Links;
+        }
+
+        isUsingCachedLinks = false;
+        linksDataStatusMessage = "Unable to load links right now.";
+        return new List<LinkItem>();
+    }
+
+    private async Task<List<LinkItem>> TryLoadLinksFromApiAsync()
+    {
+        try
+        {
+            var apiLinks = await BotApiHttp.Client.GetFromJsonAsync<List<LinkItem>>("api/links");
+            return apiLinks ?? new List<LinkItem>();
+        }
+        catch (HttpRequestException)
+        {
+            return new List<LinkItem>();
+        }
+        catch (NotSupportedException)
+        {
+            return new List<LinkItem>();
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return new List<LinkItem>();
+        }
+        catch (TaskCanceledException)
+        {
+            return new List<LinkItem>();
+        }
+    }
+
+    private async Task TryCacheLinksAsync(List<LinkItem> linkItems)
+    {
+        try
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(linkItems);
+            await JS.InvokeVoidAsync("localStorage.setItem", LinksCacheStorageKey, json);
+            await JS.InvokeVoidAsync(
+                "localStorage.setItem",
+                LinksCacheUpdatedStorageKey,
+                DateTimeOffset.UtcNow.ToString("u", System.Globalization.CultureInfo.InvariantCulture));
+        }
+        catch (Microsoft.JSInterop.JSException)
+        {
+            // Ignore cache write failures.
+        }
+        catch (InvalidOperationException)
+        {
+            // Ignore cache write failures when JS runtime is unavailable.
+        }
+    }
+
+    private async Task<(List<LinkItem> Links, string? LastUpdatedUtc)> TryLoadLinksFromCacheAsync()
+    {
+        try
+        {
+            var json = await JS.InvokeAsync<string?>("localStorage.getItem", LinksCacheStorageKey);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return (new List<LinkItem>(), null);
+            }
+
+            var cached = System.Text.Json.JsonSerializer.Deserialize<List<LinkItem>>(json);
+            if (cached is null || cached.Count == 0)
+            {
+                return (new List<LinkItem>(), null);
+            }
+
+            var lastUpdatedUtc = await JS.InvokeAsync<string?>("localStorage.getItem", LinksCacheUpdatedStorageKey);
+            return (cached, lastUpdatedUtc);
+        }
+        catch (Microsoft.JSInterop.JSException)
+        {
+            return (new List<LinkItem>(), null);
+        }
+        catch (InvalidOperationException)
+        {
+            return (new List<LinkItem>(), null);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return (new List<LinkItem>(), null);
+        }
+    }
+
+    private void UpdateCategories()
+    {
+        categories = links?
+            .Select(l => l.category)
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .Select(c => c!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(c => c)
+            .ToList() ?? new List<string>();
+    }
+
     public class LinkItem
     {
-    public string? description { get; set; }
-    public string? url { get; set; }
-    public string? emoji { get; set; }
-    public string? category { get; set; }
+        public string? description { get; set; }
+        public string? url { get; set; }
+        public string? emoji { get; set; }
+        public string? category { get; set; }
     }
 }
-
 

@@ -18,6 +18,8 @@ namespace SFA_WebAPI.Services
     {
         private readonly ChatClient _chatClient;
         private readonly HttpClient _httpClient;
+        private readonly ILinksCatalogService _linksCatalogService;
+        private readonly ILogger<OpenAIBotService> _logger;
         private static readonly SemaphoreSlim WebsiteSnapshotLock = new(1, 1);
         private static string? _websiteSnapshot;
         private static DateTimeOffset _websiteSnapshotFetchedAtUtc;
@@ -46,13 +48,19 @@ namespace SFA_WebAPI.Services
 // ("Records and Achievements", "https://www.sanfairyanncc.co.uk/club-records"),
 // ("Articles and Constitution", "https://www.sanfairyanncc.co.uk/memberspage"),
 // Note the magazine is just links to pdf need to figure out how to get this working
-        public OpenAIBotService(IConfiguration configuration, HttpClient httpClient)
+        public OpenAIBotService(
+            IConfiguration configuration,
+            HttpClient httpClient,
+            ILinksCatalogService linksCatalogService,
+            ILogger<OpenAIBotService> logger)
         {
             var apiKey = configuration["OpenAI:ApiKey"];
             var model = "gpt-5.6-terra";
             // var model = "gpt-4o-mini";
             _chatClient = new ChatClient(model, apiKey);
             _httpClient = httpClient;
+            _linksCatalogService = linksCatalogService;
+            _logger = logger;
             _httpClient.Timeout = TimeSpan.FromSeconds(10);
         }
 
@@ -62,14 +70,14 @@ namespace SFA_WebAPI.Services
             {
                 "What is the club history?",
                 "Where am I going on Saturday?",
-                "Where is the next B ride from on Saturday?",
+                "Where is the next D ride from on Saturday?",
                 "How much is membership?",
                 "What ride groups are there?",
                 "Do I need insurance to ride?",
                 "How do I try a club ride?",
                 "Where are the next club events?",
                 "How do I contact the club?",
-                "What is the latest club newsletter?"
+                "What is in the latest club newsletter?"
             };
         }
 
@@ -388,6 +396,44 @@ namespace SFA_WebAPI.Services
             }
         }
 
+        private async Task<string> BuildLinksContextAsync()
+        {
+            try
+            {
+                var snapshot = await _linksCatalogService.GetSnapshotAsync();
+                if (snapshot.Links.Count == 0)
+                {
+                    return "Links catalog status: no links found.";
+                }
+
+                var grouped = snapshot.Links
+                    .GroupBy(link => string.IsNullOrWhiteSpace(link.Category) ? "Uncategorized" : link.Category!.Trim())
+                    .OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase);
+
+                var builder = new StringBuilder();
+                builder.AppendLine("Canonical club links catalog:");
+                builder.AppendLine($"Source freshness: {snapshot.LastModifiedUtc:O}");
+
+                foreach (var categoryGroup in grouped)
+                {
+                    builder.AppendLine($"[{categoryGroup.Key}]");
+                    foreach (var link in categoryGroup)
+                    {
+                        var description = string.IsNullOrWhiteSpace(link.Description) ? "(no description)" : link.Description.Trim();
+                        var url = string.IsNullOrWhiteSpace(link.Url) ? "(no url)" : link.Url.Trim();
+                        builder.AppendLine($"- {description}: {url}");
+                    }
+                }
+
+                return builder.ToString();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unable to load canonical links catalog for chatbot prompt.");
+                return $"Links catalog status: unavailable ({ex.Message})";
+            }
+        }
+
         public async Task<string> GetBotReplyAsync(string message)
         {
             // Read knowledge base from external file
@@ -404,6 +450,7 @@ namespace SFA_WebAPI.Services
 
             var deterministicSnapshot = await GetDeterministicWebsiteSnapshotAsync();
             var relevantDocumentContent = await GetRelevantDocumentContentAsync(message);
+            var linksContext = await BuildLinksContextAsync();
 
             // Extract URLs from message and fetch content if any are present
             var urls = ExtractUrlsFromMessage(message);
@@ -418,7 +465,7 @@ namespace SFA_WebAPI.Services
             }
 
             // Compose the full prompt (no welcome message)
-            var prompt = $"{knowledgeBase}\n\n{relevantDocumentContent}\n\n{deterministicSnapshot}{fetchedContent}\n\nUser: {message}";
+            var prompt = $"{knowledgeBase}\n\n{relevantDocumentContent}\n\n{linksContext}\n\n{deterministicSnapshot}{fetchedContent}\n\nUser: {message}";
             var completion = await _chatClient.CompleteChatAsync(prompt);
             var reply = completion.Value.Content[0].Text;
 

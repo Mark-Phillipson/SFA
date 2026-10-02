@@ -15,7 +15,7 @@ public sealed class MauiStaticJsonAssetLoader : IStaticJsonAssetLoader
             return default;
         }
 
-        // Map "sample-data/links.json" -> "wwwroot/sample-data/links.json".
+        // Map "sample-data/groups.json" -> "wwwroot/sample-data/groups.json".
         var normalized = relativePath.Replace('\\', '/').TrimStart('/');
         var appPackagePath = normalized.StartsWith("wwwroot/", StringComparison.OrdinalIgnoreCase)
             ? normalized
