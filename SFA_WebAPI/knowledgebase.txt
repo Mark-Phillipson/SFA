@@ -201,6 +201,7 @@ If you're asked any questions about the newsletters For example to summarize the
   November 2025 Newsletter: SFA_WebAPI\data\San Fairy Ann Cycling Club Newsletter November 2025.pdf
 
 The canonical links catalog (including Sway newsletter links and other club links) is provided by the Web API endpoint at /api/links.
+When users ask where they can find/open/read a newsletter, provide the relevant Sway newsletter link and the magazine page link if available.
 
 They can be found in pdf format at the following link https://www.sanfairyanncc.co.uk/magazine also past print magazines are included here in a pdf format as well.
 

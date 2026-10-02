@@ -11,6 +11,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using UglyToad.PdfPig;
+using SFA_WebAPI.Controllers;
+using SFA_WebAPI.Models;
 
 namespace SFA_WebAPI.Services
 {
@@ -314,6 +316,10 @@ namespace SFA_WebAPI.Services
                 {
                     var fileName = Path.GetFileNameWithoutExtension(file);
                     var lower = fileName.ToLowerInvariant();
+                    if (!lower.Contains("newsletter") && !lower.Contains("magazine"))
+                    {
+                        continue;
+                    }
 
                     var monthMatches = string.IsNullOrWhiteSpace(monthName)
                         || lower.Contains(monthName.ToLowerInvariant());
@@ -358,7 +364,13 @@ namespace SFA_WebAPI.Services
                 }
             }
 
-            return string.Join("\n\n---\n\n", relevantContent);
+            if (relevantContent.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var guidance = "Newsletter guidance: Use only the provided document text below when summarising newsletter content. If links disagree with document recency, prefer the document text for summary details.";
+            return $"{guidance}\n\n{string.Join("\n\n---\n\n", relevantContent)}";
         }
 
         private static async Task<string> ExtractTextFromPdfAsync(string pdfPath)
@@ -405,7 +417,6 @@ namespace SFA_WebAPI.Services
                 {
                     return "Links catalog status: no links found.";
                 }
-
                 var grouped = snapshot.Links
                     .GroupBy(link => string.IsNullOrWhiteSpace(link.Category) ? "Uncategorized" : link.Category!.Trim())
                     .OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase);
@@ -413,6 +424,7 @@ namespace SFA_WebAPI.Services
                 var builder = new StringBuilder();
                 builder.AppendLine("Canonical club links catalog:");
                 builder.AppendLine($"Source freshness: {snapshot.LastModifiedUtc:O}");
+                builder.AppendLine("Newsletter guidance: for newsletter summaries, prioritize extracted local PDF text; when users ask where to find/open/read a newsletter, provide the relevant Newsletter link(s) from this catalog.");
 
                 foreach (var categoryGroup in grouped)
                 {
@@ -434,8 +446,257 @@ namespace SFA_WebAPI.Services
             }
         }
 
-        public async Task<string> GetBotReplyAsync(string message)
+        private static string BuildConversationContext(IReadOnlyList<ChatHistoryItem>? history)
         {
+            if (history is null || history.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var normalizedHistory = history
+                .Where(item => !string.IsNullOrWhiteSpace(item?.Text))
+                .Select(item =>
+                {
+                    var role = string.Equals(item.Role, "assistant", StringComparison.OrdinalIgnoreCase) ? "Assistant" : "User";
+                    return $"{role}: {item.Text.Trim()}";
+                })
+                .ToList();
+
+            if (normalizedHistory.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return $"Recent conversation context:\n{string.Join("\n", normalizedHistory)}\n";
+        }
+
+        private static bool MessageHasAnyToken(string message, params string[] tokens)
+        {
+            foreach (var token in tokens)
+            {
+                if (message.Contains(token, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static string BuildHistoryText(IReadOnlyList<ChatHistoryItem>? history)
+        {
+            if (history is null || history.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return string.Join(" ", history
+                .Where(item => !string.IsNullOrWhiteSpace(item.Text))
+                .Select(item => item.Text));
+        }
+
+        private static bool IsNewsletterLinkFollowUpRequest(string message, IReadOnlyList<ChatHistoryItem>? history)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return false;
+            }
+
+            var asksForLocation = MessageHasAnyToken(
+                message,
+                "where",
+                "find",
+                "link",
+                "open",
+                "read",
+                "url");
+
+            if (!asksForLocation)
+            {
+                return false;
+            }
+
+            var mentionsNewsletterDirectly = MessageHasAnyToken(message, "newsletter", "magazine", "sway");
+            if (mentionsNewsletterDirectly)
+            {
+                return true;
+            }
+
+            var referencesPriorSubject = MessageHasAnyToken(message, "it", "that", "latest", "edition");
+            if (!referencesPriorSubject)
+            {
+                return false;
+            }
+
+            var historyText = BuildHistoryText(history);
+            return MessageHasAnyToken(historyText, "newsletter", "magazine", "sway");
+        }
+
+        private static bool IsNewsletterLink(LinkItem link)
+        {
+            var category = link.Category ?? string.Empty;
+            var description = link.Description ?? string.Empty;
+            var url = link.Url ?? string.Empty;
+
+            return string.Equals(category, "Newsletter", StringComparison.OrdinalIgnoreCase)
+                || MessageHasAnyToken(description, "newsletter", "magazine", "sway")
+                || MessageHasAnyToken(url, "sway.cloud.microsoft", "/magazine");
+        }
+
+        private static DateTime? TryParseNewsletterDateFromDescription(string? description)
+        {
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                return null;
+            }
+
+            var match = Regex.Match(description, @"\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})\b", RegexOptions.IgnoreCase);
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            var month = match.Groups[1].Value;
+            var year = match.Groups[2].Value;
+
+            if (!DateTime.TryParse($"{month} 1 {year}", out var parsed))
+            {
+                return null;
+            }
+
+            return parsed;
+        }
+
+        private static string? ExtractMonthFromHistory(IReadOnlyList<ChatHistoryItem>? history)
+        {
+            if (history is null)
+            {
+                return null;
+            }
+
+            for (var i = history.Count - 1; i >= 0; i--)
+            {
+                var text = history[i].Text;
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    continue;
+                }
+
+                var month = ExtractMonthFromMessage(text);
+                if (!string.IsNullOrWhiteSpace(month))
+                {
+                    return month;
+                }
+            }
+
+            return null;
+        }
+
+        private static string? ExtractYearFromHistory(IReadOnlyList<ChatHistoryItem>? history)
+        {
+            if (history is null)
+            {
+                return null;
+            }
+
+            for (var i = history.Count - 1; i >= 0; i--)
+            {
+                var text = history[i].Text;
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    continue;
+                }
+
+                var year = ExtractYearFromMessage(text);
+                if (!string.IsNullOrWhiteSpace(year))
+                {
+                    return year;
+                }
+            }
+
+            return null;
+        }
+
+        private static IEnumerable<LinkItem> OrderNewsletterLinks(IEnumerable<LinkItem> links)
+        {
+            return links
+                .OrderByDescending(link => TryParseNewsletterDateFromDescription(link.Description) ?? DateTime.MinValue)
+                .ThenBy(link => link.Description, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private async Task<string?> TryGetDeterministicNewsletterLinkReplyAsync(string message, IReadOnlyList<ChatHistoryItem>? history)
+        {
+            if (!IsNewsletterLinkFollowUpRequest(message, history))
+            {
+                return null;
+            }
+
+            var snapshot = await _linksCatalogService.GetSnapshotAsync();
+            var newsletterLinks = snapshot.Links
+                .Where(IsNewsletterLink)
+                .Where(link => !string.IsNullOrWhiteSpace(link.Url))
+                .ToList();
+
+            if (newsletterLinks.Count == 0)
+            {
+                return null;
+            }
+
+            var requestedMonth = ExtractMonthFromMessage(message) ?? ExtractMonthFromHistory(history);
+            var requestedYear = ExtractYearFromMessage(message) ?? ExtractYearFromHistory(history);
+
+            var matchingLinks = newsletterLinks.Where(link =>
+            {
+                var description = link.Description ?? string.Empty;
+                var monthMatches = string.IsNullOrWhiteSpace(requestedMonth) || description.Contains(requestedMonth, StringComparison.OrdinalIgnoreCase);
+                var yearMatches = string.IsNullOrWhiteSpace(requestedYear) || description.Contains(requestedYear, StringComparison.OrdinalIgnoreCase);
+                return monthMatches && yearMatches;
+            }).ToList();
+
+            var primaryLink = OrderNewsletterLinks(matchingLinks.Count > 0 ? matchingLinks : newsletterLinks).FirstOrDefault();
+            if (primaryLink is null || string.IsNullOrWhiteSpace(primaryLink.Url))
+            {
+                return null;
+            }
+
+            var magazineLink = snapshot.Links.FirstOrDefault(link =>
+                !string.IsNullOrWhiteSpace(link.Url) &&
+                string.Equals(link.Description, "Magazine / Newsletter", StringComparison.OrdinalIgnoreCase));
+
+            var builder = new StringBuilder();
+            builder.AppendLine($"You can read it here: {primaryLink.Url}");
+
+            if (matchingLinks.Count > 1)
+            {
+                builder.AppendLine("Related newsletter links:");
+                foreach (var link in OrderNewsletterLinks(matchingLinks).Take(3))
+                {
+                    if (string.IsNullOrWhiteSpace(link.Url))
+                    {
+                        continue;
+                    }
+
+                    var description = string.IsNullOrWhiteSpace(link.Description) ? "Newsletter" : link.Description;
+                    builder.AppendLine($"- {description}: {link.Url}");
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(magazineLink?.Url))
+            {
+                builder.AppendLine($"Magazine archive: {magazineLink.Url}");
+            }
+
+            return builder.ToString().Trim();
+        }
+
+        public async Task<string> GetBotReplyAsync(string message, IReadOnlyList<ChatHistoryItem>? history = null)
+        {
+            var deterministicNewsletterReply = await TryGetDeterministicNewsletterLinkReplyAsync(message, history);
+            if (!string.IsNullOrWhiteSpace(deterministicNewsletterReply))
+            {
+                return deterministicNewsletterReply;
+            }
+
             // Read knowledge base from external file
             var knowledgeBasePath = "knowledgebase.txt";
             string knowledgeBase;
@@ -465,7 +726,8 @@ namespace SFA_WebAPI.Services
             }
 
             // Compose the full prompt (no welcome message)
-            var prompt = $"{knowledgeBase}\n\n{relevantDocumentContent}\n\n{linksContext}\n\n{deterministicSnapshot}{fetchedContent}\n\nUser: {message}";
+            var conversationContext = BuildConversationContext(history);
+            var prompt = $"{knowledgeBase}\n\n{relevantDocumentContent}\n\n{linksContext}\n\n{deterministicSnapshot}{fetchedContent}\n\n{conversationContext}User: {message}";
             var completion = await _chatClient.CompleteChatAsync(prompt);
             var reply = completion.Value.Content[0].Text;
 
@@ -493,6 +755,11 @@ namespace SFA_WebAPI.Services
             public async Task<string> GetRelevantDocumentContentForMessagePublic(string message)
             {
                 return await GetRelevantDocumentContentAsync(message);
+            }
+
+            public async Task<string?> TryGetDeterministicNewsletterLinkReplyPublic(string message, IReadOnlyList<ChatHistoryItem>? history = null)
+            {
+                return await TryGetDeterministicNewsletterLinkReplyAsync(message, history);
             }
     }
 }

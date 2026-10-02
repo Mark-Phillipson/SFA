@@ -35,7 +35,7 @@ namespace SFA_WebAPI.Controllers
         {
             try
             {
-                var reply = await _botService.GetBotReplyAsync(request.Message);
+                var reply = await _botService.GetBotReplyAsync(request.Message, request.History);
                 return Ok(new ChatResponse { Reply = reply });
             }
             catch (Exception ex)
@@ -50,6 +50,13 @@ namespace SFA_WebAPI.Controllers
     public class ChatRequest
     {
         public string Message { get; set; } = string.Empty;
+        public List<ChatHistoryItem>? History { get; set; }
+    }
+
+    public class ChatHistoryItem
+    {
+        public string Role { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
     }
 
     public class ChatResponse

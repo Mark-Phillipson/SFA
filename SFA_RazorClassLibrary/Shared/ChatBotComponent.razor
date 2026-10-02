@@ -148,7 +148,11 @@
 
             try
             {
-                var request = new ChatRequest { Message = userMessage };
+                var request = new ChatRequest
+                {
+                    Message = userMessage,
+                    History = BuildHistoryPayload()
+                };
                 var response = await Http.PostAsJsonAsync(ApiUrl, request);
                 if (response.IsSuccessStatusCode)
                 {
@@ -225,10 +229,31 @@
     private class ChatRequest
     {
         public string Message { get; set; } = string.Empty;
+        public List<ChatHistoryItem> History { get; set; } = new();
     }
 
     private class ChatResponse
     {
         public string Reply { get; set; } = string.Empty;
+    }
+
+    private class ChatHistoryItem
+    {
+        public string Role { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+    }
+
+    private List<ChatHistoryItem> BuildHistoryPayload()
+    {
+        // Keep payload bounded: send the most recent 12 turns.
+        return Messages
+            .TakeLast(12)
+            .Where(message => !string.IsNullOrWhiteSpace(message.Text))
+            .Select(message => new ChatHistoryItem
+            {
+                Role = message.IsUser ? "user" : "assistant",
+                Text = message.Text ?? string.Empty
+            })
+            .ToList();
     }
 }
