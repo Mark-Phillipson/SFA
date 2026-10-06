@@ -6,5 +6,9 @@ namespace SFA_RazorClassLibrary.Models
         public string Description { get; set; } = string.Empty;
         public string InfoUrl { get; set; } = string.Empty;
         public string CalendarUrl { get; set; } = string.Empty;
+        public string MeetingPlace { get; set; } = string.Empty;
+        public string MeetingTime { get; set; } = string.Empty;
+        public string Speed { get; set; } = string.Empty;
+        public string Distance { get; set; } = string.Empty;
     }
 }

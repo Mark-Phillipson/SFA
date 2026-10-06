@@ -2,7 +2,104 @@
 @using Microsoft.JSInterop
 @using Microsoft.AspNetCore.Components.Web
 @using System.Collections.Generic
+@using System.Text.RegularExpressions
 <PageTitle>Groups/Settings</PageTitle>
+
+<style>
+    .view-toggle {
+        display: inline-flex;
+        gap: 0.5rem;
+        background: #eef3f8;
+        border-radius: 0.75rem;
+        padding: 0.3rem;
+        flex-wrap: wrap;
+    }
+
+    .view-toggle button {
+        border: none;
+        border-radius: 0.6rem;
+        padding: 0.5rem 1rem;
+        background: transparent;
+        font-weight: 600;
+        color: #274b66;
+    }
+
+    .view-toggle button.active {
+        background: #0d6efd;
+        color: #fff;
+    }
+
+    .group-table-wrapper {
+        overflow-x: auto;
+        margin-top: 1rem;
+    }
+
+    .group-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+
+    .group-table th,
+    .group-table td {
+        padding: 0.75rem 0.7rem;
+        border-bottom: 1px solid #edf0f2;
+        vertical-align: top;
+        text-align: left;
+    }
+
+    .group-table th {
+        background: #f4f7fb;
+        color: #1b2a3d;
+        font-size: 0.9rem;
+    }
+
+    .group-table a.btn {
+        display: inline-block;
+        margin-right: 0.35rem;
+        margin-bottom: 0.2rem;
+    }
+
+    @@media (max-width: 767px) {
+        .group-table,
+        .group-table thead,
+        .group-table tbody,
+        .group-table th,
+        .group-table td,
+        .group-table tr {
+            display: block;
+            width: 100%;
+        }
+
+        .group-table thead {
+            display: none;
+        }
+
+        .group-table tr {
+            background: #fff;
+            margin-bottom: 0.85rem;
+            border: 1px solid #e7edf3;
+            border-radius: 0.85rem;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .group-table td {
+            border: none;
+            padding: 0.45rem 0;
+        }
+
+        .group-table td::before {
+            content: attr(data-label);
+            display: block;
+            font-weight: 700;
+            color: #44566a;
+            margin-bottom: 0.2rem;
+        }
+    }
+</style>
 
 <h1>Ride Group Preferences</h1>
 <p>Select which San Fairy Ann ride groups you want to follow:</p>
@@ -17,35 +114,103 @@
     </select>
 </div>
 
-
-
 <h2>Available Groups</h2>
+<div style="margin-bottom: 1em; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1rem;">
+    <div class="view-toggle" aria-label="Group view selector">
+        <button type="button" class="@(groupViewMode == "cards" ? "active" : string.Empty)" @onclick='() => groupViewMode = "cards"'>Cards</button>
+        <button type="button" class="@(groupViewMode == "table" ? "active" : string.Empty)" @onclick='() => groupViewMode = "table"'>Table</button>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:0.5rem;">
+        <label for="sortGroups" style="font-size: 1.05em; margin:0;">Sort by:</label>
+        <select id="sortGroups" @bind="sortBy" style="font-size: 1.05em; padding: 0.35rem 0.75rem;">
+            <option value="time">Time</option>
+            <option value="speed">Speed</option>
+            <option value="distance">Distance</option>
+        </select>
+    </div>
+</div>
+
 <div style="margin-bottom: 1em;">
-    <label style="font-size: 1.1em;">
-        <input type="checkbox" style="width: 1.3em; height: 1.3em; accent-color: #007bff; margin-right: 0.5em;"
+    <label style="display: flex; align-items: center; font-size: 1.1em; gap: 0.5em;">
+        <input type="checkbox" style="width: 1.3em; height: 1.3em; accent-color: #007bff; margin: 0;"
                @bind="showOnlyFollowed" />
-        Show only followed groups
+        <span>Show only followed groups</span>
     </label>
 </div>
-<div style="display: flex; flex-wrap: wrap; gap: 1.5rem;">
-    @foreach (var group in FilteredGroups)
-    {
-        <GroupEventCard Name="@group.Name" Description="@group.Description" InfoUrl="@group.InfoUrl"
-                        CalendarUrl="@group.CalendarUrl"
-                        Events="@(groupUpcomingEvents.ContainsKey(group.Name) ? groupUpcomingEvents[group.Name] : new List<SFA_RazorClassLibrary.Services.CalendarEvent>())"
-                        IsSelected="@IsSelected(group.Name)" ShowCheckbox="true"
-                        OnSelectionChanged="@(async (bool val) => await OnPreferenceChangedAndSave(group.Name, val))"
-                        Diagnostics="@(groupDiagnostics.TryGetValue(group.Name, out var d) ? d : null)"
-                        IsLoading="@isGroupEventsLoading" />
-    }
-</div>
 
-
+@if (groupViewMode == "cards")
+{
+    <div style="display: flex; flex-wrap: wrap; gap: 1.5rem;">
+        @foreach (var group in SortedGroups)
+        {
+            <GroupEventCard Name="@group.Name" Description="@group.Description" InfoUrl="@group.InfoUrl"
+                            CalendarUrl="@group.CalendarUrl"
+                            MeetingPlace="@group.MeetingPlace"
+                            MeetingTime="@group.MeetingTime"
+                            Speed="@group.Speed"
+                            Distance="@group.Distance"
+                            Events="@(groupUpcomingEvents.ContainsKey(group.Name) ? groupUpcomingEvents[group.Name] : new List<SFA_RazorClassLibrary.Services.CalendarEvent>())"
+                            IsSelected="@IsSelected(group.Name)" ShowCheckbox="true"
+                            OnSelectionChanged="@(async (bool val) => await OnPreferenceChangedAndSave(group.Name, val))"
+                            Diagnostics="@(groupDiagnostics.TryGetValue(group.Name, out var d) ? d : null)"
+                            IsLoading="@isGroupEventsLoading" />
+        }
+    </div>
+}
+else
+{
+    <div class="group-table-wrapper">
+        <table class="group-table">
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Description</th>
+                    <th>Meeting Place</th>
+                    <th>Time</th>
+                    <th>Speed</th>
+                    <th>Distance</th>
+                    <th>Follow</th>
+                    <th>Links</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var group in SortedGroups)
+                {
+                    <tr>
+                        <td data-label="Group"><strong>@group.Name</strong></td>
+                        <td data-label="Description">@group.Description</td>
+                        <td data-label="Meeting Place">@group.MeetingPlace</td>
+                        <td data-label="Time">@group.MeetingTime</td>
+                        <td data-label="Speed">@group.Speed</td>
+                        <td data-label="Distance">@group.Distance</td>
+                        <td data-label="Follow">
+                            <input type="checkbox" checked="@IsSelected(group.Name)" @onchange="@(async (ChangeEventArgs e) => await OnPreferenceChangedAndSave(group.Name, e.Value))"
+                                   style="width: 1.5em; height: 1.5em; accent-color: #007bff;" />
+                        </td>
+                        <td data-label="Links">
+                            @if (!string.IsNullOrWhiteSpace(group.InfoUrl))
+                            {
+                                <a href="@group.InfoUrl" target="_blank" class="btn btn-sm btn-info">Info</a>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(group.CalendarUrl))
+                            {
+                                <a href="@group.CalendarUrl" target="_blank" class="btn btn-sm btn-success">Calendar</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
 
 @code {
     private Dictionary<string, bool> selectedGroups = new();
     private List<GroupData> groups = new();
     private bool showOnlyFollowed = false;
+    private string groupViewMode = "cards";
+    private string sortBy = "time";
 
     private string _calendarView = "MONTH";
     private string calendarView
@@ -64,6 +229,8 @@
     private IEnumerable<GroupData> FilteredGroups => showOnlyFollowed
         ? groups.Where(g => IsSelected(g.Name))
         : groups;
+
+    private IEnumerable<GroupData> SortedGroups => ApplySorting(FilteredGroups);
 
     [Inject]
     private HttpClient Http { get; set; } = default!;
@@ -90,8 +257,7 @@
         var prefsJson = await JS.InvokeAsync<string>("localStorage.getItem", "groupPreferences");
         if (!string.IsNullOrWhiteSpace(prefsJson))
         {
-            selectedGroups = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(prefsJson) ?? new
-Dictionary<string, bool>();
+            selectedGroups = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(prefsJson) ?? new Dictionary<string, bool>();
         }
         // Ensure all groups have a preference entry
         foreach (var group in groups)
@@ -113,11 +279,57 @@ Dictionary<string, bool>();
         await LoadGroupEventsAsync();
     }
 
+    private IEnumerable<GroupData> ApplySorting(IEnumerable<GroupData> items)
+    {
+        return sortBy switch
+        {
+            "speed" => items.OrderBy(g => GetComparableMetric(g.Speed)).ThenBy(g => g.Name),
+            "distance" => items.OrderBy(g => GetComparableMetric(g.Distance)).ThenBy(g => g.Name),
+            _ => items.OrderBy(g => GetComparableTime(g.MeetingTime)).ThenBy(g => g.Name),
+        };
+    }
+
+    private static double GetComparableTime(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return double.MaxValue;
+
+        var match = Regex.Match(value, @"(\d{1,2}):(\d{2})\s*(AM|PM)", RegexOptions.IgnoreCase);
+        if (!match.Success) return double.MaxValue;
+
+        if (!int.TryParse(match.Groups[1].Value, out var hours) ||
+            !int.TryParse(match.Groups[2].Value, out var minutes))
+        {
+            return double.MaxValue;
+        }
+
+        var isPm = match.Groups[3].Value.Equals("PM", StringComparison.OrdinalIgnoreCase);
+        if (isPm && hours < 12) hours += 12;
+        if (!isPm && hours == 12) hours = 0;
+
+        return (hours * 60d) + minutes;
+    }
+
+    private static double GetComparableMetric(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return double.MaxValue;
+
+        var normalized = value.Trim();
+        if (normalized.Contains("Varies", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Contains("Various", StringComparison.OrdinalIgnoreCase))
+        {
+            return double.MaxValue;
+        }
+
+        var numbers = Regex.Matches(normalized, @"\d+(?:\.\d+)?").Select(match => double.Parse(match.Value)).ToList();
+        if (numbers.Count == 0) return double.MaxValue;
+
+        return numbers.Average();
+    }
 
     private async Task SavePreferences()
     {
         await JS.InvokeVoidAsync("localStorage.setItem", "groupPreferences",
-System.Text.Json.JsonSerializer.Serialize(selectedGroups));
+            System.Text.Json.JsonSerializer.Serialize(selectedGroups));
         await JS.InvokeVoidAsync("localStorage.setItem", "calendarViewPreference", calendarView);
         try { await JS.InvokeVoidAsync("sfaNotifyGroupPrefsChanged"); } catch { }
     }
