@@ -5,17 +5,17 @@
 @inject SFA_RazorClassLibrary.Services.NetworkStatusService NetworkStatus
 @implements IDisposable
 
-<SeoHeader 
-    Title="Weather Forecast - FairiesLittleHelper" 
-    Description="Check the weather forecast for your cycling rides in Kent." 
-    Url="https://polite-sand-0eb4b4703.3.azurestaticapps.net/weather" />
+<SeoHeader Title="Weather Forecast - FairiesLittleHelper"
+           Description="Check the weather forecast for your cycling rides in Kent."
+           Url="https://polite-sand-0eb4b4703.3.azurestaticapps.net/weather" />
 
 <h1>Kent Weather Links</h1>
 
 @if (!isOnline)
 {
     <div class="alert alert-warning">
-        <strong>📴 Offline</strong> - Weather links are not available while offline. Connect to the internet to access weather forecasts.
+        <strong>📴 Offline</strong> - Weather links are not available while offline. Connect to the internet to access
+        weather forecasts or just look out of the window.
     </div>
 }
 else
@@ -24,11 +24,6 @@ else
 
     <h2>Major UK Weather Sites</h2>
     <div class="weather-sites">
-
-        <button class="weather-btn" onclick="window.open('https://www.metoffice.gov.uk/', '_blank')"
-            aria-label="Open Met Office Weather">
-            <span style="font-size:1.2em;vertical-align:middle;margin-right:0.3em;">🌤️</span> Met Office
-        </button>
 
         <div style="margin-top:1em;">
             <label for="bbcLocation" style="font-weight:bold;">BBC Weather for:</label>
@@ -42,6 +37,13 @@ else
                 <span style="font-size:1.2em;vertical-align:middle;margin-right:0.3em;">☁️</span> Open BBC Weather
             </button>
         </div>
+        
+    </div>
+    <div style="margin-top:1em;">
+        <button class="weather-btn" onclick="window.open('https://www.metoffice.gov.uk/', '_blank')"
+                aria-label="Open Met Office Weather">
+            <span style="font-size:1.2em;vertical-align:middle;margin-right:0.3em;">🌤️</span> Met Office
+        </button>
     </div>
 }
 

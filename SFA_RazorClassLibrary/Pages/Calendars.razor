@@ -12,60 +12,60 @@
 @if (showCalendarInstructions)
 {
     <div class="calendar-instructions" style="margin-bottom:1.5em;position:relative;">
-        <button type="button" class="btn-close" style="position:absolute;right:10px;top:10px;background:transparent;border:0;font-size:1.25rem;line-height:1;color:#333;cursor:pointer;padding:0;" aria-label="Close" @onclick="CloseInstructions"><span aria-hidden="true">×</span></button>
+        <button type="button" class="btn-close"
+                style="position:absolute;right:10px;top:10px;background:transparent;border:0;font-size:1.25rem;line-height:1;color:#333;cursor:pointer;padding:0;"
+                aria-label="Close" @onclick="CloseInstructions"><span aria-hidden="true">×</span></button>
         <h2>Calendar Usage Tips</h2>
         <ul>
-            <li><b>Change View:</b> You can set your preferred default view (Month, Week, or Schedule) in <b>Settings</b>. On mobile, the calendar always shows the Schedule view for easier navigation.</li>
-            <li><b>Drill Down for Routes:</b> Click on a ride event in the calendar to view more details. If a route link is available, it will be shown in the event details popup. Use this to access route maps and information for your selected rides.</li>
-        </ul>
-    </div>
-}
-
-@if (!isOnline)
-{
-    <div class="alert alert-warning">
-        <strong>📴 Offline</strong> - Calendars are not available while offline. Connect to the internet to view ride calendars.
-    </div>
-}
-else
-{
-    @if (isCalendarsLoading)
-    {
-        <div style="position:fixed;top:80px;left:0;width:100%;z-index:1000;pointer-events:none;">
-            <div class="d-flex justify-content-center align-items-center" style="height:60px;background:rgba(255,255,255,0.95);border-bottom:1px solid #eee;">
-                <p style="margin:0;font-weight:bold;">Calendars are loading...</p>
-            </div>
-        </div>
-    }
-
-    var selected = groups.Where(g => IsSelected(g.Name) && !string.IsNullOrWhiteSpace(g.CalendarUrl)).ToList();
-    if (groups.Count == 0)
-    {
-        <div class="d-flex justify-content-center align-items-center" style="height:200px;">
-            <p>Loading calendars...</p>
-        </div>
-    }
-    else if (selected.Count == 0)
-    {
-        <p>No calendars selected. Go to Settings to choose which groups to follow.</p>
-    }
-    else
-    {
-        foreach (var group in selected)
-        {
-            <h2>@group.Name</h2>
-            <div style="width:100%;max-width:800px;margin:auto;min-height:600px;">
-                <iframe 
-                    id="calendar-@group.Name"
-                    src="@GetCalendarUrl(group)"
-                    style="border:0;width:100%;height:600px;display:block;"
-                    frameborder="0"
-                    scrolling="yes">
-                </iframe>
+            <li><b>Change View:</b> You can set your preferred default view (Month, Week, or Schedule) in <b>Settings</b>.
+                On mobile, the calendar always shows the Schedule view for easier navigation.</li>
+                <li><b>Drill Down for Routes:</b> Click on a ride event in the calendar to view more details. If a route link is
+                    available, it will be shown in the event details popup. Use this to access route maps and information for
+                    your selected rides.</li>
+                </ul>
             </div>
         }
-    }
-}
+
+        @if (!isOnline)
+        {
+            <div class="alert alert-warning">
+                <strong>📴 Offline</strong> - Calendars are not available while offline. Connect to the internet to view ride
+                calendars.
+            </div>
+        }
+        else
+        {
+            var selected = groups.Where(g => IsSelected(g.Name) && !string.IsNullOrWhiteSpace(g.CalendarUrl)).ToList();
+            if (groups.Count == 0)
+            {
+                <div class="loading-wheel">
+                    <div class="bike-wheel">
+                        <div class="spoke"></div>
+                        <div class="spoke spoke-2"></div>
+                        <div class="spoke spoke-3"></div>
+                        <div class="spoke spoke-4"></div>
+                    </div>
+
+                    <span>Loading Google Calendars...</span>
+                </div>
+            }
+            else if (selected.Count == 0)
+            {
+                <p>No calendars selected. Go to Settings to choose which groups to follow.</p>
+            }
+            else
+            {
+                foreach (var group in selected)
+                {
+                    <h2>@group.Name</h2>
+                    <div style="width:100%;max-width:800px;margin:auto;min-height:600px;">
+                        <iframe id="calendar-@group.Name" src="@GetCalendarUrl(group)"
+                                style="border:0;width:100%;height:600px;display:block;" frameborder="0" scrolling="yes">
+                        </iframe>
+                    </div>
+                }
+            }
+        }
 
 @code {
     private Dictionary<string, bool> selectedGroups = new();
@@ -105,7 +105,8 @@ else
         var prefsJson = await JS.InvokeAsync<string>("localStorage.getItem", "groupPreferences");
         if (!string.IsNullOrWhiteSpace(prefsJson))
         {
-            selectedGroups = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(prefsJson) ?? new Dictionary<string, bool>();
+            selectedGroups = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(prefsJson) ?? new
+Dictionary<string, bool>();
         }
 
         // Detect if mobile screen
@@ -118,15 +119,11 @@ else
             calendarView = viewPref;
         }
 
-        // Load hide instructions preference
-        var hidePref = await JS.InvokeAsync<string>("localStorage.getItem", "hideCalendarInstructions");
-        if (!string.IsNullOrWhiteSpace(hidePref) && hidePref == "true")
-        {
-            showCalendarInstructions = false;
-        }
+        showCalendarInstructions = true;
 
         // Show loading message for 7 seconds
-        await Task.Run(async () => {
+        await Task.Run(async () =>
+        {
             await Task.Delay(7000);
             isCalendarsLoading = false;
             await InvokeAsync(StateHasChanged);

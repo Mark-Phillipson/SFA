@@ -1,27 +1,40 @@
 @using SFA_RazorClassLibrary.Services
 @using Microsoft.AspNetCore.Components
 
-<div style="background: #f8f9fa; border-radius: 1em; box-shadow: 0 1px 4px rgba(0,0,0,0.04); padding: 1.2em; min-width: 280px; display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 0.5em;">
+<div
+    style="background: #f8f9fa; border-radius: 1em; box-shadow: 0 1px 4px rgba(0,0,0,0.04); padding: 1.2em; min-width: 280px; display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 0.5em;">
     <label style="display: flex; align-items: center; gap: 1em; font-size: 1.3em; width:100%;">
         @if (ShowCheckbox)
         {
-            <input type="checkbox" checked="@IsSelected" @onchange="OnCheckboxChanged" style="width: 2.2em; height: 2.2em; accent-color: #007bff;" />
+            <input type="checkbox" checked="@IsSelected" @onchange="OnCheckboxChanged"
+                   style="width: 2.2em; height: 2.2em; accent-color: #007bff;" />
         }
         <span style="font-weight: bold;">@Name</span>
     </label>
     <span style="margin: 0.5em 0 1em 0; font-size: 1.1em; color: #333; width:100%;">@Description</span>
 
     <div style="display: flex; gap: 1em; margin-bottom:0.6em; width:100%;">
-        <a href="@InfoUrl" target="_blank" class="btn btn-info btn-lg" style="font-size: 1.1em; padding: 0.6em 1.2em; border-radius: 0.7em;">@Name Info</a>
+        <a href="@InfoUrl" target="_blank" class="btn btn-info btn-lg"
+           style="font-size: 1.1em; padding: 0.6em 1.2em; border-radius: 0.7em;">@Name Info</a>
         @if (!string.IsNullOrWhiteSpace(CalendarUrl))
         {
-            <a href="@CalendarUrl" target="_blank" class="btn btn-success btn-lg" style="font-size: 1.1em; padding: 0.6em 1.2em; border-radius: 0.7em;">@Name Calendar</a>
+            <a href="@CalendarUrl" target="_blank" class="btn btn-success btn-lg"
+               style="font-size: 1.1em; padding: 0.6em 1.2em; border-radius: 0.7em;">@Name Calendar</a>
         }
     </div>
 
     @if (IsLoading)
     {
-        <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">Loading events...</div>
+        <div class="loading-wheel">
+            <div class="bike-wheel">
+                <div class="spoke"></div>
+                <div class="spoke spoke-2"></div>
+                <div class="spoke spoke-3"></div>
+                <div class="spoke spoke-4"></div>
+            </div>
+
+            <span>Loading Next Event...</span>
+        </div>
     }
     else if (Events != null && Events.Any())
     {
@@ -35,26 +48,27 @@
                         <div style="color:#444;">@GetDisplayLocation(ev)</div>
                         @if (ev.RouteLinks?.Count > 0)
                         {
-                            <div style="margin-top:0.2em;font-size:0.85em;color:#007bff;"><a href="@ev.RouteLinks[0]" target="_blank" rel="noopener noreferrer">Route link</a></div>
-                        }
-                    </div>
-                }
+                            <div style="margin-top:0.2em;font-size:0.85em;color:#007bff;"><a href="@ev.RouteLinks[0]"
+                                                                                                 target="_blank" rel="noopener noreferrer">Route link</a></div>
+                            }
+                        </div>
+                    }
+                </div>
             </div>
-        </div>
-    }
+        }
     else
-    {
-        if (!string.IsNullOrWhiteSpace(Diagnostics))
         {
-            <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">@Diagnostics</div>
+            if (!string.IsNullOrWhiteSpace(Diagnostics))
+            {
+                <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">@Diagnostics</div>
+            }
+            else
+            {
+                <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">No upcoming Wednesday or Saturday rides found.</div>
+            }
         }
-        else
-        {
-            <div style="font-size:0.95em;color:#666;margin-bottom:0.6em;">No upcoming Wednesday or Saturday rides found.</div>
-        }
-    }
 
-</div>
+    </div>
 
 @code {
     [Parameter]

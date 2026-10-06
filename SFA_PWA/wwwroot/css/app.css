@@ -141,3 +141,77 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+.loading-wheel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.wheel {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #ddd;
+    border-top-color: #6f42c1;
+    border-radius: 50%;
+    animation: wheel-spin 0.8s linear infinite;
+}
+
+@keyframes wheel-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-wheel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bike-wheel {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border: 3px solid #6f42c1;
+    border-radius: 50%;
+    animation: wheel-spin 1s linear infinite;
+}
+
+.bike-wheel::after {
+    content: "";
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #6f42c1;
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.spoke {
+    position: absolute;
+    width: 1px;
+    height: 100%;
+    background: #aaa;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.spoke-2 {
+    transform: translateX(-50%) rotate(45deg);
+}
+
+.spoke-3 {
+    transform: translateX(-50%) rotate(90deg);
+}
+
+.spoke-4 {
+    transform: translateX(-50%) rotate(135deg);
+}
+
+@keyframes wheel-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

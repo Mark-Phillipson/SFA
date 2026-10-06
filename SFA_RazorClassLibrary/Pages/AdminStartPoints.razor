@@ -51,7 +51,10 @@
         </div>
         <div>
             <button class="btn btn-primary me-2" @onclick="Save" disabled="@IsProcessing">
-                @if (IsProcessing) { <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> }
+                @if (IsProcessing)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                }
                 💾 Save
             </button>
             <button class="btn btn-secondary" @onclick="Cancel" disabled="@IsProcessing">✖ Cancel</button>
@@ -63,52 +66,74 @@
 
 <div class="mb-2">
     <label class="visually-hidden" for="startPointSearch">Search start points</label>
-    <input id="startPointSearch" placeholder="Search name, location or postcode..." @bind="searchTerm" @bind:event="oninput" class="form-control" />
+    <input id="startPointSearch" placeholder="Search name, location or postcode..." @bind="searchTerm"
+           @bind:event="oninput" class="form-control" />
 </div>
 
 @if (StartPoints == null)
 {
-    <p>Loading...</p>
+    <div class="loading-wheel">
+        <div class="wheel"></div>
+        <span>Loading Start Points...</span>
+    </div>
 }
 else
 {
     <table class="table">
         <thead>
-            <tr><th>Name</th><th>Location</th><th>Postcode</th><th>Google Maps</th><th>what3words</th><th>Actions</th></tr>
+            <tr>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Postcode</th>
+                <th>Google Maps</th>
+                <th>what3words</th>
+                <th>Actions</th>
+            </tr>
         </thead>
         <tbody>
-        @foreach (var sp in FilteredStartPoints())
-        {
-            <tr>
-                <td>@sp.Name</td>
-                <td>@sp.Location</td>
-                <td>@sp.Postcode</td>
-                <td>
-                    @if (!string.IsNullOrWhiteSpace(sp.GoogleMaps))
-                    {
-                        var mapsHref = sp.GoogleMaps.StartsWith("http", StringComparison.OrdinalIgnoreCase)
-                            ? sp.GoogleMaps
-                            : $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString(sp.GoogleMaps)}";
-                        <a href="@mapsHref" target="_blank" rel="noopener noreferrer">@sp.GoogleMaps</a>
-                    }
-                </td>
-                <td>
-                    @if (!string.IsNullOrWhiteSpace(sp.What3Words))
-                    {
-                        var parts = sp.What3Words.Split(new[] { ' ', '.' }, StringSplitOptions.RemoveEmptyEntries).Select(w => Uri.EscapeDataString(w));
-                        var w3Href = $"https://what3words.com/{string.Join('.', parts)}";
-                        <a href="@w3Href" target="_blank" rel="noopener noreferrer">@sp.What3Words</a>
-                    }
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-primary me-1 action-btn" @onclick="() => EditStartPoint(sp)" disabled="@IsProcessing">✏️ Edit</button>
-                    <button class="btn btn-sm btn-danger action-btn" @onclick="() => DeleteStartPoint(sp.Id)" disabled="@IsProcessing">
-                        @if (IsProcessing && ProcessingId == sp.Id) { <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> }
-                        🗑️ Delete
-                    </button>
-                </td>
-            </tr>
-        }
+            @foreach (var sp in FilteredStartPoints())
+            {
+                <tr>
+                    <td>@sp.Name</td>
+                    <td>@sp.Location</td>
+                    <td>@sp.Postcode</td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(sp.GoogleMaps))
+                        {
+                            var mapsHref = sp.GoogleMaps.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                                ? sp.GoogleMaps
+                                : $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString(sp.GoogleMaps)}";
+                            <a href="@mapsHref" target="_blank" rel="noopener noreferrer">@sp.GoogleMaps</a>
+                        }
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(sp.What3Words))
+                        {
+                            var parts = sp.What3Words.Split(new[] { ' ', '.' }, StringSplitOptions.RemoveEmptyEntries).Select(w =>
+                    Uri.EscapeDataString(w));
+                            var w3Href = $"https://what3words.com/{string.Join('.', parts)}";
+                            <a href="@w3Href" target="_blank" rel="noopener noreferrer">@sp.What3Words</a>
+                        }
+                    </td>
+                    <td>
+                        <div class="button-groups my-2">
+                            <button class="btn btn-sm btn-primary mb-1 action-btn" @onclick="() => EditStartPoint(sp)"
+                                    disabled="@IsProcessing">✏️ Edit</button>
+                            <button class="btn btn-sm btn-danger  action-btn" @onclick="() => DeleteStartPoint(sp.Id)"
+                                    disabled="@IsProcessing">
+                                @if (IsProcessing && ProcessingId == sp.Id)
+                                {
+                                    <div class="loading-wheel">
+                                        <div class="wheel"></div>
+                                        <span>Processing Start Points...</span>
+                                    </div>
+                                }
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 }
@@ -260,7 +285,12 @@ else
                 PlusCode = sp.PlusCode,
                 GoogleMaps = sp.GoogleMaps,
                 What3Words = sp.What3Words,
-                Coordinates = sp.Coordinates != null ? new SFA_RazorClassLibrary.Models.Coordinates { Lat = sp.Coordinates.Lat, Lng = sp.Coordinates.Lng } : null
+                Coordinates = sp.Coordinates != null ? new SFA_RazorClassLibrary.Models.Coordinates
+                {
+                    Lat = sp.Coordinates.Lat,
+                    Lng =
+sp.Coordinates.Lng
+                } : null
             };
             IsNew = false;
             StateHasChanged(); // Ensure UI updates
@@ -293,11 +323,11 @@ else
                 };
                 if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
                 var res = await BotApi.Client.SendAsync(req);
-                if (res.IsSuccessStatusCode) 
-                { 
+                if (res.IsSuccessStatusCode)
+                {
                     Log("Create success");
-                    await Refresh(); 
-                    Editing = null; 
+                    await Refresh();
+                    Editing = null;
                 }
                 else
                 {
@@ -315,11 +345,11 @@ else
                 };
                 if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
                 var res = await BotApi.Client.SendAsync(req);
-                if (res.IsSuccessStatusCode) 
-                { 
+                if (res.IsSuccessStatusCode)
+                {
                     Log("Update success");
-                    await Refresh(); 
-                    Editing = null; 
+                    await Refresh();
+                    Editing = null;
                 }
                 else
                 {
@@ -345,7 +375,7 @@ else
     private async Task DeleteStartPoint(string? id)
     {
         Log($"DeleteStartPoint clicked for {id}");
-        if (string.IsNullOrEmpty(id)) 
+        if (string.IsNullOrEmpty(id))
         {
             Log("Delete aborted: ID is null or empty");
             return;
@@ -365,7 +395,7 @@ else
             var req = new HttpRequestMessage(HttpMethod.Delete, $"api/StartPoints/{id}");
             if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
             var res = await BotApi.Client.SendAsync(req);
-            if (res.IsSuccessStatusCode) 
+            if (res.IsSuccessStatusCode)
             {
                 Log("Delete success");
                 await Refresh();

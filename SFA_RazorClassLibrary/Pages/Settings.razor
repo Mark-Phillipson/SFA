@@ -22,20 +22,18 @@
 <h2>Available Groups</h2>
 <div style="margin-bottom: 1em;">
     <label style="font-size: 1.1em;">
-        <input type="checkbox" style="width: 1.3em; height: 1.3em; accent-color: #007bff; margin-right: 0.5em;" @bind="showOnlyFollowed" />
+        <input type="checkbox" style="width: 1.3em; height: 1.3em; accent-color: #007bff; margin-right: 0.5em;"
+               @bind="showOnlyFollowed" />
         Show only followed groups
     </label>
 </div>
 <div style="display: flex; flex-wrap: wrap; gap: 1.5rem;">
     @foreach (var group in FilteredGroups)
     {
-        <GroupEventCard Name="@group.Name"
-                        Description="@group.Description"
-                        InfoUrl="@group.InfoUrl"
+        <GroupEventCard Name="@group.Name" Description="@group.Description" InfoUrl="@group.InfoUrl"
                         CalendarUrl="@group.CalendarUrl"
                         Events="@(groupUpcomingEvents.ContainsKey(group.Name) ? groupUpcomingEvents[group.Name] : new List<SFA_RazorClassLibrary.Services.CalendarEvent>())"
-                        IsSelected="@IsSelected(group.Name)"
-                        ShowCheckbox="true"
+                        IsSelected="@IsSelected(group.Name)" ShowCheckbox="true"
                         OnSelectionChanged="@(async (bool val) => await OnPreferenceChangedAndSave(group.Name, val))"
                         Diagnostics="@(groupDiagnostics.TryGetValue(group.Name, out var d) ? d : null)"
                         IsLoading="@isGroupEventsLoading" />
@@ -92,7 +90,8 @@
         var prefsJson = await JS.InvokeAsync<string>("localStorage.getItem", "groupPreferences");
         if (!string.IsNullOrWhiteSpace(prefsJson))
         {
-            selectedGroups = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(prefsJson) ?? new Dictionary<string, bool>();
+            selectedGroups = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, bool>>(prefsJson) ?? new
+Dictionary<string, bool>();
         }
         // Ensure all groups have a preference entry
         foreach (var group in groups)
@@ -104,12 +103,12 @@
         // Set filter default: show only followed if any are followed
         showOnlyFollowed = selectedGroups.Values.Any(v => v);
 
-            // Load calendar view preference
-            var viewPref = await JS.InvokeAsync<string>("localStorage.getItem", "calendarViewPreference");
-            if (!string.IsNullOrWhiteSpace(viewPref))
-            {
-                calendarView = viewPref;
-            }
+        // Load calendar view preference
+        var viewPref = await JS.InvokeAsync<string>("localStorage.getItem", "calendarViewPreference");
+        if (!string.IsNullOrWhiteSpace(viewPref))
+        {
+            calendarView = viewPref;
+        }
         // Load latest events for all groups on page load
         await LoadGroupEventsAsync();
     }
@@ -117,8 +116,9 @@
 
     private async Task SavePreferences()
     {
-        await JS.InvokeVoidAsync("localStorage.setItem", "groupPreferences", System.Text.Json.JsonSerializer.Serialize(selectedGroups));
-            await JS.InvokeVoidAsync("localStorage.setItem", "calendarViewPreference", calendarView);
+        await JS.InvokeVoidAsync("localStorage.setItem", "groupPreferences",
+System.Text.Json.JsonSerializer.Serialize(selectedGroups));
+        await JS.InvokeVoidAsync("localStorage.setItem", "calendarViewPreference", calendarView);
         try { await JS.InvokeVoidAsync("sfaNotifyGroupPrefsChanged"); } catch { }
     }
 
@@ -165,7 +165,8 @@
             isEventsLoading = true;
             StateHasChanged();
 
-            var selected = groups.Where(g => selectedGroups.ContainsKey(g.Name) && selectedGroups[g.Name] && !string.IsNullOrWhiteSpace(g.CalendarUrl))
+            var selected = groups.Where(g => selectedGroups.ContainsKey(g.Name) && selectedGroups[g.Name] &&
+!string.IsNullOrWhiteSpace(g.CalendarUrl))
                                  .Select(g => (g.Name, g.CalendarUrl));
             if (!selected.Any())
             {
