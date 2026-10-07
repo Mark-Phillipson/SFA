@@ -206,3 +206,15 @@ main {
     outline: 2px solid var(--sfa-club-purple);
     outline-offset: 2px;
 }
+.cycling-emojis {
+    font-size: 2.2rem;
+    line-height: 1;
+    vertical-align: middle;
+    text-align: center;
+}
+
+@media (max-width: 576px) and (orientation: portrait) {
+    .cycling-emojis {
+        font-size: 1.2rem;
+    }
+}
