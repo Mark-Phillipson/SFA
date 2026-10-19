@@ -161,8 +161,9 @@ main {
         position: absolute;
         top: calc(100% + 0.5rem);
         right: 0; /* align to right of the button */
-        min-width: 260px;
-        max-width: 420px;
+        width: min(640px, calc(100vw - 2rem));
+        min-width: 320px;
+        max-width: 640px;
         z-index: 1050; /* above top-row */
         box-shadow: 0 8px 20px rgba(0,0,0,0.12);
     }
