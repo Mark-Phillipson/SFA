@@ -25,6 +25,21 @@
 
 <h1>Welcome to the San Fairy Ann Cycling Club App!</h1>
 
+<div class="col-md-8 mt-3">
+    <div class="card border-info shadow-sm">
+        <div class="card-body py-2">
+            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                <strong>Latest refresh</strong>
+                <span>@FormatBuildDate(buildInfo.BuildDate)</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mt-1">
+                <strong>Latest release</strong>
+                <span>@buildInfo.ReleaseVersion</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="col-md-8">
     <div style="background:#e9f7ef;border:1px solid #d4edda;padding:1em;border-radius:0.5em;margin-bottom:0.5rem;">
         @if (nextDayLocalDate.HasValue && nextDayEvents.Any())
@@ -155,6 +170,37 @@
 
     // Diagnostics / JS interop
     private DotNetObjectReference<Home>? dotnetRef;
+    private BuildInfoData buildInfo = new();
+
+    private class BuildInfoData
+    {
+        public string ReleaseVersion { get; set; } = "Unknown";
+        public string BuildDate { get; set; } = "Unknown";
+        public string DotNetVersion { get; set; } = "Unknown";
+    }
+
+    private async Task LoadBuildInfoAsync()
+    {
+        try
+        {
+            buildInfo = await JS.InvokeAsync<BuildInfoData>("fetchBuildInfo") ?? new BuildInfoData();
+        }
+        catch
+        {
+            buildInfo = new BuildInfoData();
+        }
+    }
+
+    private string FormatBuildDate(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value == "Unknown")
+            return "Unknown";
+
+        if (DateTimeOffset.TryParse(value, out var parsed))
+            return parsed.ToLocalTime().ToString("dd MMM yyyy HH:mm");
+
+        return value;
+    }
 
     private void HideSplash()
     {
@@ -181,6 +227,7 @@
     {
         if (firstRender)
         {
+            await LoadBuildInfoAsync();
             try
             {
                 dotnetRef = DotNetObjectReference.Create(this);
@@ -190,6 +237,7 @@
             {
                 // swallow - registration is best-effort
             }
+            StateHasChanged();
         }
     }
 

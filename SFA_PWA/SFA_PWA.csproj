@@ -49,8 +49,11 @@
 
     <!-- Cross-platform MSBuild WriteLinesToFile task to update buildinfo.json before publish -->
     <PropertyGroup>
+      <ReleaseVersion Condition="'$(RELEASE_VERSION)' != ''">$(RELEASE_VERSION)</ReleaseVersion>
+      <ReleaseVersion Condition="'$(ReleaseVersion)' == '' and '$(GITHUB_REF_NAME)' != ''">$(GITHUB_REF_NAME)</ReleaseVersion>
+      <ReleaseVersion Condition="'$(ReleaseVersion)' == ''">dev</ReleaseVersion>
       <BuildDate>$([System.DateTime]::UtcNow.ToString("o"))</BuildDate>
-      <BuildInfoJson>{"DotNetVersion": "$(TargetFramework)", "BuildDate": "$(BuildDate)"}</BuildInfoJson>
+      <BuildInfoJson>{"ReleaseVersion": "$(ReleaseVersion)", "DotNetVersion": "$(TargetFramework)", "BuildDate": "$(BuildDate)"}</BuildInfoJson>
     </PropertyGroup>
     <Target Name="GenerateBuildInfo" BeforeTargets="Build">
       <WriteLinesToFile File="wwwroot/buildinfo.json" Lines="$(BuildInfoJson)" Overwrite="true" />
