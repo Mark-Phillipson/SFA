@@ -1,55 +1,320 @@
 [
-  { "description": "San Fairy Ann Main Website", "url": "https://www.sanfairyanncc.co.uk/", "emoji": "🚴", "category": "Club Info" },
-  { "description": "Club Shop", "url": "https://www.sanfairyanncc.co.uk/store", "emoji": "🛒", "category": "Club Info" },
-  { "description": "Membership Benefits", "url": "https://www.sanfairyanncc.co.uk/membership-benefits", "emoji": "🎟️", "category": "Club Info" },
-  { "description": "Events", "url": "https://www.sanfairyanncc.co.uk/events", "emoji": "📅", "category": "Events" },
-  { "description": "Club History", "url": "https://www.sanfairyanncc.co.uk/club-history", "emoji": "📖", "category": "Club Info" },
-  { "description": "Magazine / Newsletter", "url": "https://www.sanfairyanncc.co.uk/magazine", "emoji": "📰", "category": "Club Info" },
-  { "description": "September 2026 Newsletter", "url": "https://sway.cloud.microsoft/DTfqBDKRKqCzaBAs?ref=Link", "emoji": "📰", "category": "Newsletter" },
-  { "description": "August 2026 Newsletter", "url": "https://sway.cloud.microsoft/iGCWDGj0pby5OU53?ref=Link", "emoji": "📰", "category": "Newsletter" },
-  { "description": "July 2026 Newsletter", "url": "https://sway.cloud.microsoft/AAers9AaPcxBlhdY?ref=Link&loc=play", "emoji": "📰", "category": "Newsletter" },
-  { "description": "June 2026 Newsletter", "url": "https://sway.cloud.microsoft/jnnGWviOBdZDOhP3?ref=Link", "emoji": "📰", "category": "Newsletter" },
-  { "description": "May 2026 Newsletter", "url": "https://sway.cloud.microsoft/7KZrxaiY0lOLUE5D?ref=Link", "emoji": "📰", "category": "Newsletter" },
-  { "description": "December 2025 Newsletter", "url": "https://sway.cloud.microsoft/bH0eqAMUxtzP3yGW?ref=Link", "emoji": "📰", "category": "Newsletter" },
-  { "description": "November 2025 Newsletter", "url": "https://sway.cloud.microsoft/9FLDVRK5idPyjNpA?ref=Link", "emoji": "📰", "category": "Newsletter" },
-  { "description": "October 2025 Newsletter", "url": "https://sway.cloud.microsoft/UjVBFy3cjnUz9ASc?ref=Link", "emoji": "📰", "category": "Newsletter" },
-  { "description": "August 2025 Newsletter", "url": "https://sway.cloud.microsoft/8k8oBM43cGMj06d1?ref=Link", "emoji": "📰", "category": "Newsletter" },
-  { "description": "Coaching", "url": "https://www.sanfairyanncc.co.uk/coaching", "emoji": "🎓", "category": "Training" },
-  { "description": "Road Safety Training", "url": "https://www.sanfairyanncc.co.uk/cycle-training", "emoji": "🚦", "category": "Training" },
-  { "description": "Safeguarding", "url": "https://www.sanfairyanncc.co.uk/safeguarding", "emoji": "🛡️", "category": "Club Info" },
-  { "description": "Campaigning", "url": "https://www.sanfairyanncc.co.uk/campaigning", "emoji": "📢", "category": "Club Info" },
-  { "description": "Trophy Cabinet", "url": "https://www.sanfairyanncc.co.uk/the-trophy-cabinet", "emoji": "🏆", "category": "Club Info" },
-  { "description": "Club Updates", "url": "https://www.sanfairyanncc.co.uk/club-updates", "emoji": "🔔", "category": "Club Info" },
-  { "description": "Try It Out Rides", "url": "https://www.sanfairyanncc.co.uk/tryitout", "emoji": "🚴‍♂️", "category": "Events" },
-  { "description": "Contact Us / Who We Are", "url": "https://www.sanfairyanncc.co.uk/whoweare", "emoji": "👥", "category": "Club Info" },
-  { "description": "Ride With Us", "url": "https://www.sanfairyanncc.co.uk/ridewithus", "emoji": "🤝", "category": "Events" },
-  { "description": "Curated Routes", "url": "https://www.sanfairyanncc.co.uk/curated-routes", "emoji": "🗺️", "category": "Routes" },
-  { "description": "Audax & Sportive", "url": "https://www.sanfairyanncc.co.uk/audax-sportive", "emoji": "🚵", "category": "Events" },
-  { "description": "Racing Home Page", "url": "https://www.sanfairyanncc.co.uk/racing", "emoji": "🏁", "category": "Racing" },
-  { "description": "Time Trials", "url": "https://www.sanfairyanncc.co.uk/time-trials", "emoji": "⏱️", "category": "Racing" },
-  { "description": "Track Racing", "url": "https://www.sanfairyanncc.co.uk/track-racing", "emoji": "🏟️", "category": "Racing" },
-  { "description": "Member Discounts", "url": "https://www.sanfairyanncc.co.uk/discounts", "emoji": "💸", "category": "Club Info" },
-  { "description": "FAQs", "url": "https://www.sanfairyanncc.co.uk/faqs", "emoji": "❓", "category": "Club Info" },
-  { "description": "Data Privacy Policy", "url": "https://www.sanfairyanncc.co.uk/data-privacy-policy", "emoji": "🔒", "category": "Club Info" },
-  { "description": "Facebook", "url": "https://www.facebook.com/sanfairyanncc", "emoji": "📘", "category": "Social" },
-  { "description": "X", "url": "https://twitter.com/sanfairyanncc", "emoji": "❌", "category": "Social" },
-  { "description": "Instagram", "url": "https://www.instagram.com/sanfairyanncc/", "emoji": "📸", "category": "Social" },
-  { "description": "BBC Weather (Maidstone)", "url": "https://www.bbc.co.uk/weather/2642965", "emoji": "🌦️", "category": "Weather" },
-  { "description": "Strava", "url": "https://www.strava.com/", "emoji": "📈", "category": "Apps & Tools" },
-  { "description": "Ride With GPS", "url": "https://ridewithgps.com/organizations/633-san-fairy-ann-cycling-club", "emoji": "🧭", "category": "Apps & Tools" },
-  { "description": "Ride with GPS Routes (Latest club routes uploaded)", "url": "https://ridewithgps.com/routes", "emoji": "🗺️", "category": "Routes" },
-  { "description": "Garmin Connect", "url": "https://connect.garmin.com/", "emoji": "📲", "category": "Apps & Tools" },
-  { "description": "Garmin Connect Routes (Latest club routes uploaded)", "url": "https://connect.garmin.com/modern/courses", "emoji": "🗺️", "category": "Routes" },
-  { "description": "Strava Routes (Popular and latest public routes)", "url": "https://www.strava.com/routes", "emoji": "🗺️", "category": "Routes" },
-  { "description": "Strava Clubs (including San Fairy Ann)", "url": "https://www.strava.com/clubs/4606", "emoji": "📈", "category": "Apps & Tools" },
-  { "description": "GitHub Issues (Technical Feedback)", "url": "https://github.com/Mark-Phillipson/SFA/issues", "emoji": "🐙", "category": "Technical Feedback" },
-  { "description": "Main WhatsApp Channel", "url": "https://chat.whatsapp.com/", "emoji": "💬", "category": "Social" },
-  { "description": "RideWithGPS Milestone Article (How to use RideWithGPS in the club)", "url": "https://static1.squarespace.com/static/619ccd95b4eba4641fcd16f8/t/62d53fc2f1e9ae0eaf6849e2/1658142705415/RideWithGPS-MilestoneArticle.pdf", "emoji": "📄", "category": "Guides" },
-  { "description": "RideWithGPS Guide by John Blakeley", "url": "https://drive.google.com/file/d/17XkzSbQHQ2Ux6QgDLllNbPFkDqV2DVXx/view", "emoji": "📘", "category": "Guides" },
-  { "description": "Join SFA Club on RideWithGPS (Direct Link)", "url": "https://ridewithgps.com/auto_approve?code=yj7ygURopGyWN0Hh&id=633&q=joined&type=Club", "emoji": "🔗", "category": "Apps & Tools" },
-  { "description": "Evans Cycles Maidstone, 44-48 Lower Stone St, Maidstone ME15 6NA", "url": "https://www.evanscycles.com/tools-maintenance", "emoji": "🛠️", "category": "Cycle Repair Shops" },
-  { "description": "Halfords Maidstone, St Peter's St, Maidstone ME16 0SR", "url": "https://www.halfords.com/locations/maidstone-store/", "emoji": "🛠️", "category": "Cycle Repair Shops" },
-  { "description": "Ken's Bikes, 2-4 Union St, Maidstone ME14 1DY", "url": "https://www.kensbikes.co.uk/", "emoji": "🛠️", "category": "Cycle Repair Shops" },
-  { "description": "Decathlon Chatham, St Peter's Wharf, Chatham ME4 4LL", "url": "https://www.decathlon.co.uk/", "emoji": "🛠️", "category": "Cycle Repair Shops" },
-  { "description": "Senacre Cycles, 9 Senacre Square, Maidstone ME15 8QF, TEL: 01622 752695, EMAIL: support@senacrecycles.co.uk", "url": "https://senacrecycles.co.uk/pages/service-workshop", "emoji": "🛠️", "category": "Cycle Repair Shops" }
+  {
+    "description": "San Fairy Ann Main Website",
+    "url": "https://www.sanfairyanncc.co.uk/",
+    "emoji": "\uD83D\uDEB4",
+    "category": "Club Info"
+  },
+  {
+    "description": "Club Shop",
+    "url": "https://www.sanfairyanncc.co.uk/store",
+    "emoji": "\uD83D\uDED2",
+    "category": "Club Info"
+  },
+  {
+    "description": "Membership Benefits",
+    "url": "https://www.sanfairyanncc.co.uk/membership-benefits",
+    "emoji": "\uD83C\uDF9F\uFE0F",
+    "category": "Club Info"
+  },
+  {
+    "description": "Events",
+    "url": "https://www.sanfairyanncc.co.uk/events",
+    "emoji": "\uD83D\uDCC5",
+    "category": "Events"
+  },
+  {
+    "description": "Club History",
+    "url": "https://www.sanfairyanncc.co.uk/club-history",
+    "emoji": "\uD83D\uDCD6",
+    "category": "Club Info"
+  },
+  {
+    "description": "Magazine / Newsletter",
+    "url": "https://www.sanfairyanncc.co.uk/magazine",
+    "emoji": "\uD83D\uDCF0",
+    "category": "Club Info"
+  },
+  {
+    "description": "September 2026 Newsletter",
+    "url": "https://sway.cloud.microsoft/DTfqBDKRKqCzaBAs?ref=Link",
+    "emoji": "\uD83D\uDCF0",
+    "category": "Newsletter"
+  },
+  {
+    "description": "August 2026 Newsletter",
+    "url": "https://sway.cloud.microsoft/iGCWDGj0pby5OU53?ref=Link",
+    "emoji": "\uD83D\uDCF0",
+    "category": "Newsletter"
+  },
+  {
+    "description": "July 2026 Newsletter",
+    "url": "https://sway.cloud.microsoft/AAers9AaPcxBlhdY?ref=Link\u0026loc=play",
+    "emoji": "\uD83D\uDCF0",
+    "category": "Newsletter"
+  },
+  {
+    "description": "June 2026 Newsletter",
+    "url": "https://sway.cloud.microsoft/jnnGWviOBdZDOhP3?ref=Link",
+    "emoji": "\uD83D\uDCF0",
+    "category": "Newsletter"
+  },
+  {
+    "description": "May 2026 Newsletter",
+    "url": "https://sway.cloud.microsoft/7KZrxaiY0lOLUE5D?ref=Link",
+    "emoji": "\uD83D\uDCF0",
+    "category": "Newsletter"
+  },
+  {
+    "description": "December 2025 Newsletter",
+    "url": "https://sway.cloud.microsoft/bH0eqAMUxtzP3yGW?ref=Link",
+    "emoji": "\uD83D\uDCF0",
+    "category": "Newsletter"
+  },
+  {
+    "description": "November 2025 Newsletter",
+    "url": "https://sway.cloud.microsoft/9FLDVRK5idPyjNpA?ref=Link",
+    "emoji": "\uD83D\uDCF0",
+    "category": "Newsletter"
+  },
+  {
+    "description": "October 2025 Newsletter",
+    "url": "https://sway.cloud.microsoft/UjVBFy3cjnUz9ASc?ref=Link",
+    "emoji": "\uD83D\uDCF0",
+    "category": "Newsletter"
+  },
+  {
+    "description": "August 2025 Newsletter",
+    "url": "https://sway.cloud.microsoft/8k8oBM43cGMj06d1?ref=Link",
+    "emoji": "\uD83D\uDCF0",
+    "category": "Newsletter"
+  },
+  {
+    "description": "Coaching",
+    "url": "https://www.sanfairyanncc.co.uk/coaching",
+    "emoji": "\uD83C\uDF93",
+    "category": "Training"
+  },
+  {
+    "description": "Road Safety Training",
+    "url": "https://www.sanfairyanncc.co.uk/cycle-training",
+    "emoji": "\uD83D\uDEA6",
+    "category": "Training"
+  },
+  {
+    "description": "Safeguarding",
+    "url": "https://www.sanfairyanncc.co.uk/safeguarding",
+    "emoji": "\uD83D\uDEE1\uFE0F",
+    "category": "Club Info"
+  },
+  {
+    "description": "Campaigning",
+    "url": "https://www.sanfairyanncc.co.uk/campaigning",
+    "emoji": "\uD83D\uDCE2",
+    "category": "Club Info"
+  },
+  {
+    "description": "Trophy Cabinet",
+    "url": "https://www.sanfairyanncc.co.uk/the-trophy-cabinet",
+    "emoji": "\uD83C\uDFC6",
+    "category": "Club Info"
+  },
+  {
+    "description": "Club Updates",
+    "url": "https://www.sanfairyanncc.co.uk/club-updates",
+    "emoji": "\uD83D\uDD14",
+    "category": "Club Info"
+  },
+  {
+    "description": "Try It Out Rides",
+    "url": "https://www.sanfairyanncc.co.uk/tryitout",
+    "emoji": "\uD83D\uDEB4\u200D\u2642\uFE0F",
+    "category": "Events"
+  },
+  {
+    "description": "Contact Us / Who We Are",
+    "url": "https://www.sanfairyanncc.co.uk/whoweare",
+    "emoji": "\uD83D\uDC65",
+    "category": "Club Info"
+  },
+  {
+    "description": "Ride With Us",
+    "url": "https://www.sanfairyanncc.co.uk/ridewithus",
+    "emoji": "\uD83E\uDD1D",
+    "category": "Events"
+  },
+  {
+    "description": "Curated Routes",
+    "url": "https://www.sanfairyanncc.co.uk/curated-routes",
+    "emoji": "\uD83D\uDDFA\uFE0F",
+    "category": "Routes"
+  },
+  {
+    "description": "Audax \u0026 Sportive",
+    "url": "https://www.sanfairyanncc.co.uk/audax-sportive",
+    "emoji": "\uD83D\uDEB5",
+    "category": "Events"
+  },
+  {
+    "description": "Racing Home Page",
+    "url": "https://www.sanfairyanncc.co.uk/racing",
+    "emoji": "\uD83C\uDFC1",
+    "category": "Racing"
+  },
+  {
+    "description": "Time Trials",
+    "url": "https://www.sanfairyanncc.co.uk/time-trials",
+    "emoji": "\u23F1\uFE0F",
+    "category": "Racing"
+  },
+  {
+    "description": "Track Racing",
+    "url": "https://www.sanfairyanncc.co.uk/track-racing",
+    "emoji": "\uD83C\uDFDF\uFE0F",
+    "category": "Racing"
+  },
+  {
+    "description": "Member Discounts",
+    "url": "https://www.sanfairyanncc.co.uk/discounts",
+    "emoji": "\uD83D\uDCB8",
+    "category": "Club Info"
+  },
+  {
+    "description": "FAQs",
+    "url": "https://www.sanfairyanncc.co.uk/faqs",
+    "emoji": "\u2753",
+    "category": "Club Info"
+  },
+  {
+    "description": "Data Privacy Policy",
+    "url": "https://www.sanfairyanncc.co.uk/data-privacy-policy",
+    "emoji": "\uD83D\uDD12",
+    "category": "Club Info"
+  },
+  {
+    "description": "Facebook",
+    "url": "https://www.facebook.com/sanfairyanncc",
+    "emoji": "\uD83D\uDCD8",
+    "category": "Social"
+  },
+  {
+    "description": "X",
+    "url": "https://twitter.com/sanfairyanncc",
+    "emoji": "\u274C",
+    "category": "Social"
+  },
+  {
+    "description": "Instagram",
+    "url": "https://www.instagram.com/sanfairyanncc/",
+    "emoji": "\uD83D\uDCF8",
+    "category": "Social"
+  },
+  {
+    "description": "BBC Weather (Maidstone)",
+    "url": "https://www.bbc.co.uk/weather/2642965",
+    "emoji": "\uD83C\uDF26\uFE0F",
+    "category": "Weather"
+  },
+  {
+    "description": "Strava",
+    "url": "https://www.strava.com/",
+    "emoji": "\uD83D\uDCC8",
+    "category": "Apps \u0026 Tools"
+  },
+  {
+    "description": "Ride With GPS",
+    "url": "https://ridewithgps.com/organizations/633-san-fairy-ann-cycling-club",
+    "emoji": "\uD83E\uDDED",
+    "category": "Apps \u0026 Tools"
+  },
+  {
+    "description": "Ride with GPS Routes (Latest club routes uploaded)",
+    "url": "https://ridewithgps.com/routes",
+    "emoji": "\uD83D\uDDFA\uFE0F",
+    "category": "Routes"
+  },
+  {
+    "description": "Garmin Connect",
+    "url": "https://connect.garmin.com/",
+    "emoji": "\uD83D\uDCF2",
+    "category": "Apps \u0026 Tools"
+  },
+  {
+    "description": "Garmin Connect Routes (Latest club routes uploaded)",
+    "url": "https://connect.garmin.com/modern/courses",
+    "emoji": "\uD83D\uDDFA\uFE0F",
+    "category": "Routes"
+  },
+  {
+    "description": "Strava Routes (Popular and latest public routes)",
+    "url": "https://www.strava.com/routes",
+    "emoji": "\uD83D\uDDFA\uFE0F",
+    "category": "Routes"
+  },
+  {
+    "description": "Strava Clubs (including San Fairy Ann)",
+    "url": "https://www.strava.com/clubs/4606",
+    "emoji": "\uD83D\uDCC8",
+    "category": "Apps \u0026 Tools"
+  },
+  {
+    "description": "GitHub Issues (Technical Feedback)",
+    "url": "https://github.com/Mark-Phillipson/SFA/issues",
+    "emoji": "\uD83D\uDC19",
+    "category": "Technical Feedback"
+  },
+  {
+    "description": "Main WhatsApp Channel",
+    "url": "https://chat.whatsapp.com/",
+    "emoji": "\uD83D\uDCAC",
+    "category": "Social"
+  },
+  {
+    "description": "RideWithGPS Milestone Article (How to use RideWithGPS in the club)",
+    "url": "https://static1.squarespace.com/static/619ccd95b4eba4641fcd16f8/t/62d53fc2f1e9ae0eaf6849e2/1658142705415/RideWithGPS-MilestoneArticle.pdf",
+    "emoji": "\uD83D\uDCC4",
+    "category": "Guides"
+  },
+  {
+    "description": "RideWithGPS Guide by John Blakeley",
+    "url": "https://drive.google.com/file/d/17XkzSbQHQ2Ux6QgDLllNbPFkDqV2DVXx/view",
+    "emoji": "\uD83D\uDCD8",
+    "category": "Guides"
+  },
+  {
+    "description": "Join SFA Club on RideWithGPS (Direct Link)",
+    "url": "https://ridewithgps.com/auto_approve?code=yj7ygURopGyWN0Hh\u0026id=633\u0026q=joined\u0026type=Club",
+    "emoji": "\uD83D\uDD17",
+    "category": "Apps \u0026 Tools"
+  },
+  {
+    "description": "Evans Cycles Maidstone, 44-48 Lower Stone St, Maidstone ME15 6NA",
+    "url": "https://www.evanscycles.com/tools-maintenance",
+    "emoji": "\uD83D\uDEE0\uFE0F",
+    "category": "Cycle Repair Shops"
+  },
+  {
+    "description": "Halfords Maidstone, St Peter\u0027s St, Maidstone ME16 0SR",
+    "url": "https://www.halfords.com/locations/maidstone-store/",
+    "emoji": "\uD83D\uDEE0\uFE0F",
+    "category": "Cycle Repair Shops"
+  },
+  {
+    "description": "Ken\u0027s Bikes, 2-4 Union St, Maidstone ME14 1DY",
+    "url": "https://www.kensbikes.co.uk/",
+    "emoji": "\uD83D\uDEE0\uFE0F",
+    "category": "Cycle Repair Shops"
+  },
+  {
+    "description": "Decathlon Chatham, St Peter\u0027s Wharf, Chatham ME4 4LL",
+    "url": "https://www.decathlon.co.uk/",
+    "emoji": "\uD83D\uDEE0\uFE0F",
+    "category": "Cycle Repair Shops"
+  },
+  {
+    "description": "Senacre Cycles, 9 Senacre Square, Maidstone ME15 8QF, TEL: 01622 752695, EMAIL: support@senacrecycles.co.uk",
+    "url": "https://senacrecycles.co.uk/pages/service-workshop",
+    "emoji": "\uD83D\uDEE0\uFE0F",
+    "category": "Cycle Repair Shops"
+  }
 ]

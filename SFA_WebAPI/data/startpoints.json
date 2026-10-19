@@ -393,17 +393,6 @@
       "googleMaps": "https://goo.gl/maps/RerJ8zyHFvs",
       "what3words": "moral scars mixed",
       "notes": "Free parking in station car park. If car park full can park in Hampstead Lane."
-    },
-    {
-      "id": "501aa3a6-528e-41e2-9514-9894dd84c1d7",
-      "name": "AATimestamp",
-      "location": "9279",
-      "postcode": "5881",
-      "coordinates": null,
-      "plusCode": null,
-      "googleMaps": " testing location on google maps",
-      "what3words": "Testing three little words",
-      "notes": "6488"
     }
   ]
 }

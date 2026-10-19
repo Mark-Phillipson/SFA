@@ -3,237 +3,349 @@
 @inject IJSRuntime JS
 @inject BotApiHttpClient BotApi
 
-<h3>Admin: D-Group Start Points</h3>
+<h3>Admin: D-Group/Midweekers Start Points and Club Links</h3>
 
 <div class="mb-3">
     <label for="apiKeyInput">Admin API Key</label>
     <input id="apiKeyInput" type="password" @bind="ApiKey" class="form-control" placeholder="Enter API key" />
-    <div class="mt-2">
-        <button class="btn btn-primary me-2" @onclick="SaveApiKey">🔒 Save Key</button>
-        <button class="btn btn-secondary" @onclick="ClearApiKey">🗑️ Clear Key</button>
+    <div class="mt-2 key-actions">
+        <button class="btn btn-primary me-2" @onclick="SaveApiKey" disabled="@IsValidatingKey">
+            @if (IsValidatingKey)
+            {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            }
+            🔒 Save Key
+        </button>
+        <button class="btn btn-secondary" @onclick="ClearApiKey" disabled="@IsValidatingKey">🗑️ Clear Key</button>
     </div>
 </div>
+
+@if (!string.IsNullOrEmpty(KeyStatusMessage))
+{
+    <div class="alert @(IsAdminKeyValid ? "alert-success" : "alert-warning")" role="alert">@KeyStatusMessage</div>
+}
 
 @if (!string.IsNullOrEmpty(ErrorMessage))
 {
     <div class="alert alert-danger" role="alert">@ErrorMessage</div>
 }
 
-@* Debug logs removed from UI *@
-
-@if (Editing != null)
+@if (IsAdminKeyValid)
 {
-    <div class="card p-3 mb-3 border-primary">
-        <h5 class="card-title">@(IsNew ? "Add New Start Point" : $"Edit: {Editing.Name}")</h5>
-        <div class="mb-2">
-            <label for="editingName">Name</label>
-            <input id="editingName" class="form-control" @bind="Editing.Name" />
-        </div>
-        <div class="mb-2">
-            <label for="editingLocation">Location</label>
-            <input id="editingLocation" class="form-control" @bind="Editing.Location" />
-        </div>
-        <div class="mb-2">
-            <label for="editingPostcode">Postcode</label>
-            <input id="editingPostcode" class="form-control" @bind="Editing.Postcode" />
-        </div>
-        <div class="mb-2">
-            <label for="editingNotes">Notes</label>
-            <textarea id="editingNotes" class="form-control" @bind="Editing.Notes"></textarea>
-        </div>
-        <div class="mb-2">
-            <label for="editingGoogleMaps">Location on Google Maps</label>
-            <input id="editingGoogleMaps" class="form-control" @bind="Editing.GoogleMaps" />
-        </div>
-        <div class="mb-2">
-            <label for="editingWhat3Words">what3words address</label>
-            <input id="editingWhat3Words" class="form-control" @bind="Editing.What3Words" />
-        </div>
-        <div>
-            <button class="btn btn-primary me-2" @onclick="Save" disabled="@IsProcessing">
-                @if (IsProcessing)
-                {
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                }
-                💾 Save
+    <div class="admin-toolbar mb-3">
+        <div class="btn-group admin-toggle-group" role="group" aria-label="Admin editor toggles">
+            <button class="btn @(CurrentView == AdminView.StartPoints ? "btn-primary" : "btn-outline-primary")"
+                    @onclick="ShowStartPointsView">
+                Start Points Editor
             </button>
-            <button class="btn btn-secondary" @onclick="Cancel" disabled="@IsProcessing">✖ Cancel</button>
+            <button class="btn @(CurrentView == AdminView.Links ? "btn-primary" : "btn-outline-primary")"
+                    @onclick="ShowLinksView">
+                Links Editor
+            </button>
+            <button class="btn btn-outline-secondary" @onclick="HideEditors">Hide Editors</button>
         </div>
+
+        @if (CurrentView == AdminView.Links)
+        {
+            <div class="section-action-bar">
+                <button class="btn btn-success" @onclick="NewLink" disabled="@IsProcessingLinks">➕ Add New Link</button>
+                <button class="btn btn-outline-secondary" @onclick="RefreshLinks" disabled="@IsProcessingLinks">↻ Refresh Links</button>
+            </div>
+        }
     </div>
-}
 
-<button class="btn btn-success mb-3" @onclick="NewStartPoint" disabled="@IsProcessing">➕ Add New Start Point</button>
-
-<div class="mb-2">
-    <label class="visually-hidden" for="startPointSearch">Search start points</label>
-    <input id="startPointSearch" placeholder="Search name, location or postcode..." @bind="searchTerm"
-           @bind:event="oninput" class="form-control" />
-</div>
-
-@if (StartPoints == null)
-{
-    <div class="loading-wheel">
-        <div class="wheel"></div>
-        <span>Loading Start Points...</span>
-    </div>
+    @if (CurrentView == AdminView.None)
+    {
+        <div class="alert alert-info">Choose an editor using the toggle buttons above.</div>
+    }
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Location</th>
-                <th>Postcode</th>
-                <th>Google Maps</th>
-                <th>what3words</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var sp in FilteredStartPoints())
-            {
+    <div class="alert alert-secondary">Enter a valid admin API key to unlock admin editor toggles.</div>
+}
+
+@if (CurrentView == AdminView.StartPoints)
+{
+    @if (Editing != null)
+    {
+        <div class="card p-3 mb-3 border-primary">
+            <h5 class="card-title">@(IsNew ? "Add New Start Point" : $"Edit: {Editing.Name}")</h5>
+            <div class="mb-2">
+                <label for="editingName">Name</label>
+                <input id="editingName" class="form-control" @bind="Editing.Name" />
+            </div>
+            <div class="mb-2">
+                <label for="editingLocation">Location</label>
+                <input id="editingLocation" class="form-control" @bind="Editing.Location" />
+            </div>
+            <div class="mb-2">
+                <label for="editingPostcode">Postcode</label>
+                <input id="editingPostcode" class="form-control" @bind="Editing.Postcode" />
+            </div>
+            <div class="mb-2">
+                <label for="editingNotes">Notes</label>
+                <textarea id="editingNotes" class="form-control" @bind="Editing.Notes"></textarea>
+            </div>
+            <div class="mb-2">
+                <label for="editingGoogleMaps">Location on Google Maps</label>
+                <input id="editingGoogleMaps" class="form-control" @bind="Editing.GoogleMaps" />
+            </div>
+            <div class="mb-2">
+                <label for="editingWhat3Words">what3words address</label>
+                <input id="editingWhat3Words" class="form-control" @bind="Editing.What3Words" />
+            </div>
+            <div>
+                <button class="btn btn-primary me-2" @onclick="Save" disabled="@IsProcessingStartPoints">
+                    @if (IsProcessingStartPoints)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    }
+                    💾 Save
+                </button>
+                <button class="btn btn-secondary" @onclick="Cancel" disabled="@IsProcessingStartPoints">✖ Cancel</button>
+            </div>
+        </div>
+    }
+
+    <div class="section-action-bar mb-3">
+        <button class="btn btn-success" @onclick="NewStartPoint" disabled="@IsProcessingStartPoints">➕ Add New Start Point</button>
+    </div>
+
+    <div class="mb-2">
+        <label class="visually-hidden" for="startPointSearch">Search start points</label>
+        <input id="startPointSearch" placeholder="Search name, location or postcode..." @bind="searchTerm"
+               @bind:event="oninput" class="form-control" />
+    </div>
+
+    @if (StartPoints == null)
+    {
+        <div class="loading-wheel">
+            <div class="wheel"></div>
+            <span>Loading Start Points...</span>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive admin-table-wrap">
+        <table class="table table-sm align-middle admin-table">
+            <thead>
                 <tr>
-                    <td>@sp.Name</td>
-                    <td>@sp.Location</td>
-                    <td>@sp.Postcode</td>
-                    <td>
-                        @if (!string.IsNullOrWhiteSpace(sp.GoogleMaps))
-                        {
-                            var mapsHref = sp.GoogleMaps.StartsWith("http", StringComparison.OrdinalIgnoreCase)
-                                ? sp.GoogleMaps
-                                : $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString(sp.GoogleMaps)}";
-                            <a href="@mapsHref" target="_blank" rel="noopener noreferrer">@sp.GoogleMaps</a>
-                        }
-                    </td>
-                    <td>
-                        @if (!string.IsNullOrWhiteSpace(sp.What3Words))
-                        {
-                            var parts = sp.What3Words.Split(new[] { ' ', '.' }, StringSplitOptions.RemoveEmptyEntries).Select(w =>
-                    Uri.EscapeDataString(w));
-                            var w3Href = $"https://what3words.com/{string.Join('.', parts)}";
-                            <a href="@w3Href" target="_blank" rel="noopener noreferrer">@sp.What3Words</a>
-                        }
-                    </td>
-                    <td>
-                        <div class="button-groups my-2">
-                            <button class="btn btn-sm btn-primary mb-1 action-btn" @onclick="() => EditStartPoint(sp)"
-                                    disabled="@IsProcessing">✏️ Edit</button>
-                            <button class="btn btn-sm btn-danger  action-btn" @onclick="() => DeleteStartPoint(sp.Id)"
-                                    disabled="@IsProcessing">
-                                @if (IsProcessing && ProcessingId == sp.Id)
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>Postcode</th>
+                    <th>Google Maps</th>
+                    <th>what3words</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var sp in FilteredStartPoints())
+                {
+                    <tr>
+                        <td>@sp.Name</td>
+                        <td>@sp.Location</td>
+                        <td>@sp.Postcode</td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(sp.GoogleMaps))
+                            {
+                                var mapsHref = sp.GoogleMaps.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                                    ? sp.GoogleMaps
+                                    : $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString(sp.GoogleMaps)}";
+                                <a href="@mapsHref" target="_blank" rel="noopener noreferrer">@sp.GoogleMaps</a>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(sp.What3Words))
+                            {
+                                var parts = sp.What3Words.Split(new[] { ' ', '.' }, StringSplitOptions.RemoveEmptyEntries).Select(w =>
+                                    Uri.EscapeDataString(w));
+                                var w3Href = $"https://what3words.com/{string.Join('.', parts)}";
+                                <a href="@w3Href" target="_blank" rel="noopener noreferrer">@sp.What3Words</a>
+                            }
+                        </td>
+                        <td class="actions-cell">
+                            <div class="row-actions">
+                                <button class="btn btn-sm btn-primary action-btn" @onclick="() => EditStartPoint(sp)"
+                                        disabled="@IsProcessingStartPoints">✏️ Edit</button>
+                                <button class="btn btn-sm btn-danger action-btn" @onclick="() => DeleteStartPoint(sp.Id)"
+                                        disabled="@IsProcessingStartPoints">
+                                    @if (IsProcessingStartPoints && StartPointProcessingId == sp.Id)
+                                    {
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    }
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        </div>
+    }
+}
+
+@if (CurrentView == AdminView.Links)
+{
+    @if (EditingLink != null)
+    {
+        <div class="card p-3 mb-3 border-primary">
+            <h5 class="card-title">@(IsNewLink ? "Add New Link" : "Edit Link")</h5>
+            <div class="mb-2">
+                <label for="editingLinkDescription">Description</label>
+                <input id="editingLinkDescription" class="form-control" @bind="EditingLink.Description" @ref="editingLinkDescriptionRef" />
+            </div>
+            <div class="mb-2">
+                <label for="editingLinkUrl">URL</label>
+                <input id="editingLinkUrl" class="form-control" @bind="EditingLink.Url" placeholder="https://..." />
+            </div>
+            <div class="mb-2">
+                <label for="editingLinkEmoji">Emoji</label>
+                <input id="editingLinkEmoji" class="form-control" @bind="EditingLink.Emoji" />
+            </div>
+            <div class="mb-2">
+                <label for="editingLinkCategory">Category</label>
+                <input id="editingLinkCategory" class="form-control" @bind="EditingLink.Category" />
+            </div>
+            <div>
+                <button class="btn btn-primary me-2" @onclick="SaveLink" disabled="@IsProcessingLinks">
+                    @if (IsProcessingLinks)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    }
+                    💾 Save
+                </button>
+                <button class="btn btn-secondary me-2" @onclick="CancelLinkEdit" disabled="@IsProcessingLinks">✖ Cancel</button>
+                <button class="btn btn-outline-info" @onclick="TestEditingLink" disabled="@string.IsNullOrWhiteSpace(EditingLink.Url)">🔗 Test Link</button>
+            </div>
+        </div>
+    }
+
+    @if (LinksLastRefreshedAt.HasValue)
+    {
+        <div class="text-muted small mb-2">Last refreshed: @LinksLastRefreshedAt.Value.ToString("dd MMM yyyy HH:mm:ss")</div>
+    }
+
+    <div class="mb-2">
+        <label class="visually-hidden" for="linksSearch">Search links</label>
+        <input id="linksSearch" placeholder="Search description, URL or category..." @bind="linkSearchTerm"
+               @bind:event="oninput" class="form-control" />
+    </div>
+
+    @if (Links == null)
+    {
+        <div class="loading-wheel">
+            <div class="wheel"></div>
+            <span>Loading Links...</span>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive admin-table-wrap">
+        <table class="table table-sm align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th class="link-url-col">URL</th>
+                    <th>Emoji</th>
+                    <th>Category</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in FilteredLinks())
+                {
+                    <tr>
+                        <td>@row.Link.Description</td>
+                        <td class="link-url-cell">
+                            @if (!string.IsNullOrWhiteSpace(row.Link.Url))
+                            {
+                                <a class="link-url-anchor" href="@NormalizeUrl(row.Link.Url)" target="_blank" rel="noopener noreferrer" title="@row.Link.Url">@row.Link.Url</a>
+                            }
+                        </td>
+                        <td>@row.Link.Emoji</td>
+                        <td>@row.Link.Category</td>
+                        <td class="actions-cell">
+                            <div class="row-actions">
+                            <button class="btn btn-sm btn-outline-info action-btn" @onclick="() => TestLink(row.Link.Url)">🔗 Test</button>
+                            <button class="btn btn-sm btn-primary action-btn" @onclick="() => EditLink(row.Index)">✏️ Edit</button>
+                            <button class="btn btn-sm btn-danger action-btn" @onclick="() => DeleteLink(row.Index)" disabled="@IsProcessingLinks">
+                                @if (IsProcessingLinks && LinkProcessingIndex == row.Index)
                                 {
-                                    <div class="loading-wheel">
-                                        <div class="wheel"></div>
-                                        <span>Processing Start Points...</span>
-                                    </div>
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                 }
                                 🗑️ Delete
                             </button>
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        </div>
+    }
 }
 
 @code {
+    private enum AdminView
+    {
+        None,
+        StartPoints,
+        Links
+    }
+
     private List<SFA_RazorClassLibrary.Models.StartPoint>? StartPoints;
     private SFA_RazorClassLibrary.Models.StartPoint? Editing;
-    private bool IsNew = false;
-    private bool IsProcessing = false;
-    private string? ProcessingId;
+    private bool IsNew;
+    private bool IsProcessingStartPoints;
+    private string? StartPointProcessingId;
+
+    private List<LinkItem>? Links;
+    private LinkItem? EditingLink;
+    private bool IsNewLink;
+    private int? EditingLinkIndex;
+    private bool IsProcessingLinks;
+    private int? LinkProcessingIndex;
+
     private string ApiKey = string.Empty;
+    private bool IsAdminKeyValid;
+    private bool IsValidatingKey;
+    private string? KeyStatusMessage;
+
     private string? ErrorMessage;
     private string searchTerm = string.Empty;
+    private string linkSearchTerm = string.Empty;
+    private AdminView CurrentView = AdminView.None;
+    private DateTimeOffset? LinksLastRefreshedAt;
+    private ElementReference editingLinkDescriptionRef;
+    private bool focusLinkDescriptionOnNextRender;
 
-    private void Log(string message)
-    {
-        // Debug logging disabled in UI; keep method as no-op to avoid breaking calls.
-    }
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        Log("OnInitializedAsync started");
         await LoadApiKey();
-        await Refresh();
+        if (!string.IsNullOrWhiteSpace(ApiKey))
+        {
+            await ValidateApiKeyAsync(showSuccessMessage: false);
+        }
     }
 
-    private async Task Refresh()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        ErrorMessage = null;
-        try
+        if (focusLinkDescriptionOnNextRender && CurrentView == AdminView.Links && EditingLink != null)
         {
-            Log($"Refreshing list from {BotApi.Client.BaseAddress}");
-            // Prefer configured backend client
-            var resp = await BotApi.Client.GetAsync("api/StartPoints");
-            if (resp.IsSuccessStatusCode)
-            {
-                var contentType = resp.Content.Headers.ContentType?.MediaType ?? string.Empty;
-                if (contentType.Contains("json"))
-                {
-                    StartPoints = await resp.Content.ReadFromJsonAsync<List<SFA_RazorClassLibrary.Models.StartPoint>>();
-                    Log($"Loaded {StartPoints?.Count ?? 0} items");
-                }
-                else
-                {
-                    var txt = await resp.Content.ReadAsStringAsync();
-                    ErrorMessage = $"Expected JSON but server returned {contentType}. Response snippet: {GetSnippet(txt)}";
-                    StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
-                    Log("Error: Expected JSON");
-                }
-            }
-            else
-            {
-                var txt = await resp.Content.ReadAsStringAsync();
-                var fullUrl = BotApi.Client.BaseAddress + "api/StartPoints";
-                ErrorMessage = $"Request failed: {(int)resp.StatusCode} {resp.ReasonPhrase} at {fullUrl}. Response snippet: {GetSnippet(txt)}";
-                StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
-                Log($"Request failed: {resp.StatusCode}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Log($"Exception: {ex.Message}");
-            // Fallback to same-origin (useful for static/local dev)
+            focusLinkDescriptionOnNextRender = false;
             try
             {
-                Log($"Attempting fallback to {NavigationManager.BaseUri}");
-                var fb = new HttpClient { BaseAddress = new Uri(NavigationManager.BaseUri) };
-                var resp = await fb.GetAsync("api/StartPoints");
-                if (resp.IsSuccessStatusCode)
-                {
-                    var contentType = resp.Content.Headers.ContentType?.MediaType ?? string.Empty;
-                    if (contentType.Contains("json"))
-                    {
-                        StartPoints = await resp.Content.ReadFromJsonAsync<List<SFA_RazorClassLibrary.Models.StartPoint>>();
-                        Log($"Fallback loaded {StartPoints?.Count ?? 0} items");
-                    }
-                    else
-                    {
-                        var txt = await resp.Content.ReadAsStringAsync();
-                        ErrorMessage = $"Fallback: expected JSON but server returned {contentType}. Response snippet: {GetSnippet(txt)}";
-                        StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
-                    }
-                }
-                else
-                {
-                    var txt = await resp.Content.ReadAsStringAsync();
-                    var fallbackUrl = NavigationManager.BaseUri + "api/StartPoints";
-                    ErrorMessage = $"Fallback request failed: {(int)resp.StatusCode} {resp.ReasonPhrase} at {fallbackUrl}. Response snippet: {GetSnippet(txt)}";
-                    StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
-                    Log($"Fallback failed: {resp.StatusCode}");
-                }
+                await editingLinkDescriptionRef.FocusAsync();
             }
-            catch (Exception ex2)
+            catch (InvalidOperationException)
             {
-                ErrorMessage = $"Error contacting API: {ex.Message}; fallback error: {ex2.Message}";
-                StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
-                Log($"Fallback exception: {ex2.Message}");
+                // Ignore focus failures during rapid rerenders.
             }
         }
-        StateHasChanged();
     }
 
     private async Task LoadApiKey()
@@ -245,74 +357,223 @@ else
     private async Task SaveApiKey()
     {
         await JS.InvokeVoidAsync("localStorage.setItem", "adminApiKey", ApiKey ?? string.Empty);
-        Log("API Key saved");
+        await ValidateApiKeyAsync(showSuccessMessage: true);
     }
 
     private async Task ClearApiKey()
     {
         ApiKey = string.Empty;
+        IsAdminKeyValid = false;
+        KeyStatusMessage = "Admin API key cleared.";
+        CurrentView = AdminView.None;
         await JS.InvokeVoidAsync("localStorage.removeItem", "adminApiKey");
-        Log("API Key cleared");
+    }
+
+    private async Task ValidateApiKeyAsync(bool showSuccessMessage)
+    {
+        ErrorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(ApiKey))
+        {
+            IsAdminKeyValid = false;
+            KeyStatusMessage = "Enter an admin API key.";
+            return;
+        }
+
+        IsValidatingKey = true;
+        try
+        {
+            var req = new HttpRequestMessage(HttpMethod.Get, "api/StartPoints/validate-admin");
+            req.Headers.Add("X-API-KEY", ApiKey);
+            var res = await BotApi.Client.SendAsync(req);
+
+            if (res.IsSuccessStatusCode)
+            {
+                IsAdminKeyValid = true;
+                KeyStatusMessage = showSuccessMessage ? "Admin key verified." : null;
+            }
+            else
+            {
+                IsAdminKeyValid = false;
+                CurrentView = AdminView.None;
+                KeyStatusMessage = "Admin key is invalid.";
+            }
+        }
+        catch (Exception ex)
+        {
+            IsAdminKeyValid = false;
+            CurrentView = AdminView.None;
+            KeyStatusMessage = "Could not validate admin key right now.";
+            ErrorMessage = $"Validation error: {ex.Message}";
+        }
+        finally
+        {
+            IsValidatingKey = false;
+        }
+    }
+
+    private async Task ShowStartPointsView()
+    {
+        if (!IsAdminKeyValid) return;
+
+        CurrentView = AdminView.StartPoints;
+        await RefreshStartPoints();
+    }
+
+    private async Task ShowLinksView()
+    {
+        if (!IsAdminKeyValid) return;
+
+        CurrentView = AdminView.Links;
+        await RefreshLinks();
+    }
+
+    private Task HideEditors()
+    {
+        CurrentView = AdminView.None;
+        return Task.CompletedTask;
+    }
+
+    private async Task RefreshStartPoints()
+    {
+        ErrorMessage = null;
+        try
+        {
+            var resp = await BotApi.Client.GetAsync("api/StartPoints");
+            if (resp.IsSuccessStatusCode)
+            {
+                var contentType = resp.Content.Headers.ContentType?.MediaType ?? string.Empty;
+                if (contentType.Contains("json", StringComparison.OrdinalIgnoreCase))
+                {
+                    StartPoints = await resp.Content.ReadFromJsonAsync<List<SFA_RazorClassLibrary.Models.StartPoint>>()
+                        ?? new List<SFA_RazorClassLibrary.Models.StartPoint>();
+                }
+                else
+                {
+                    var txt = await resp.Content.ReadAsStringAsync();
+                    ErrorMessage = $"Expected JSON but server returned {contentType}. Response snippet: {GetSnippet(txt)}";
+                    StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
+                }
+            }
+            else
+            {
+                var txt = await resp.Content.ReadAsStringAsync();
+                var fullUrl = BotApi.Client.BaseAddress + "api/StartPoints";
+                ErrorMessage = $"Request failed: {(int)resp.StatusCode} {resp.ReasonPhrase} at {fullUrl}. Response snippet: {GetSnippet(txt)}";
+                StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
+            }
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                var fb = new HttpClient { BaseAddress = new Uri(NavigationManager.BaseUri) };
+                var resp = await fb.GetAsync("api/StartPoints");
+                if (resp.IsSuccessStatusCode)
+                {
+                    var contentType = resp.Content.Headers.ContentType?.MediaType ?? string.Empty;
+                    if (contentType.Contains("json", StringComparison.OrdinalIgnoreCase))
+                    {
+                        StartPoints = await resp.Content.ReadFromJsonAsync<List<SFA_RazorClassLibrary.Models.StartPoint>>()
+                            ?? new List<SFA_RazorClassLibrary.Models.StartPoint>();
+                    }
+                    else
+                    {
+                        var txt = await resp.Content.ReadAsStringAsync();
+                        ErrorMessage = $"Fallback expected JSON but server returned {contentType}. Response snippet: {GetSnippet(txt)}";
+                        StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
+                    }
+                }
+                else
+                {
+                    var txt = await resp.Content.ReadAsStringAsync();
+                    var fallbackUrl = NavigationManager.BaseUri + "api/StartPoints";
+                    ErrorMessage = $"Fallback request failed: {(int)resp.StatusCode} {resp.ReasonPhrase} at {fallbackUrl}. Response snippet: {GetSnippet(txt)}";
+                    StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
+                }
+            }
+            catch (Exception ex2)
+            {
+                ErrorMessage = $"Error contacting API: {ex.Message}; fallback error: {ex2.Message}";
+                StartPoints = new List<SFA_RazorClassLibrary.Models.StartPoint>();
+            }
+        }
+    }
+
+    private async Task RefreshLinks()
+    {
+        ErrorMessage = null;
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, $"api/links?adminRefresh={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}");
+            request.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue
+            {
+                NoCache = true,
+                NoStore = true,
+                MustRevalidate = true
+            };
+            request.Headers.Pragma.ParseAdd("no-cache");
+
+            var response = await BotApi.Client.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                Links = await response.Content.ReadFromJsonAsync<List<LinkItem>>() ?? new List<LinkItem>();
+                LinksLastRefreshedAt = DateTimeOffset.Now;
+            }
+            else
+            {
+                var txt = await response.Content.ReadAsStringAsync();
+                ErrorMessage = $"Error loading links: {(int)response.StatusCode} {response.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+                Links = new List<LinkItem>();
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error loading links: {ex.Message}";
+            Links = new List<LinkItem>();
+        }
     }
 
     private void NewStartPoint()
     {
-        Log("NewStartPoint clicked");
-        try
-        {
-            Editing = new SFA_RazorClassLibrary.Models.StartPoint();
-            IsNew = true;
-            StateHasChanged(); // Ensure UI updates
-        }
-        catch (Exception ex)
-        {
-            Log($"Error in NewStartPoint: {ex.Message}");
-        }
+        Editing = new SFA_RazorClassLibrary.Models.StartPoint();
+        IsNew = true;
     }
 
     private void EditStartPoint(SFA_RazorClassLibrary.Models.StartPoint sp)
     {
-        Log($"EditStartPoint clicked for {sp.Id}");
-        try
+        Editing = new SFA_RazorClassLibrary.Models.StartPoint
         {
-            Editing = new SFA_RazorClassLibrary.Models.StartPoint
-            {
-                Id = sp.Id,
-                Name = sp.Name,
-                Location = sp.Location,
-                Postcode = sp.Postcode,
-                Notes = sp.Notes,
-                PlusCode = sp.PlusCode,
-                GoogleMaps = sp.GoogleMaps,
-                What3Words = sp.What3Words,
-                Coordinates = sp.Coordinates != null ? new SFA_RazorClassLibrary.Models.Coordinates
+            Id = sp.Id,
+            Name = sp.Name,
+            Location = sp.Location,
+            Postcode = sp.Postcode,
+            Notes = sp.Notes,
+            PlusCode = sp.PlusCode,
+            GoogleMaps = sp.GoogleMaps,
+            What3Words = sp.What3Words,
+            Coordinates = sp.Coordinates != null
+                ? new SFA_RazorClassLibrary.Models.Coordinates
                 {
                     Lat = sp.Coordinates.Lat,
-                    Lng =
-sp.Coordinates.Lng
-                } : null
-            };
-            IsNew = false;
-            StateHasChanged(); // Ensure UI updates
-        }
-        catch (Exception ex)
-        {
-            Log($"Error in EditStartPoint: {ex.Message}");
-        }
+                    Lng = sp.Coordinates.Lng
+                }
+                : null
+        };
+        IsNew = false;
     }
 
     private void Cancel()
     {
-        Log("Cancel clicked");
         Editing = null;
     }
 
     private async Task Save()
     {
-        Log("Save clicked");
         if (Editing == null) return;
-        IsProcessing = true;
-        StateHasChanged();
+
+        ErrorMessage = null;
+        IsProcessingStartPoints = true;
         try
         {
             if (IsNew)
@@ -325,8 +586,7 @@ sp.Coordinates.Lng
                 var res = await BotApi.Client.SendAsync(req);
                 if (res.IsSuccessStatusCode)
                 {
-                    Log("Create success");
-                    await Refresh();
+                    await RefreshStartPoints();
                     Editing = null;
                 }
                 else
@@ -334,7 +594,6 @@ sp.Coordinates.Lng
                     var txt = await res.Content.ReadAsStringAsync();
                     var saveUrl = BotApi.Client.BaseAddress + "api/StartPoints";
                     ErrorMessage = $"Save failed: {(int)res.StatusCode} {res.ReasonPhrase} at {saveUrl}. Response snippet: {GetSnippet(txt)}";
-                    Log($"Create failed: {res.StatusCode}");
                 }
             }
             else
@@ -347,8 +606,7 @@ sp.Coordinates.Lng
                 var res = await BotApi.Client.SendAsync(req);
                 if (res.IsSuccessStatusCode)
                 {
-                    Log("Update success");
-                    await Refresh();
+                    await RefreshStartPoints();
                     Editing = null;
                 }
                 else
@@ -356,40 +614,31 @@ sp.Coordinates.Lng
                     var txt = await res.Content.ReadAsStringAsync();
                     var updateUrl = BotApi.Client.BaseAddress + $"api/StartPoints/{Editing.Id}";
                     ErrorMessage = $"Update failed: {(int)res.StatusCode} {res.ReasonPhrase} at {updateUrl}. Response snippet: {GetSnippet(txt)}";
-                    Log($"Update failed: {res.StatusCode}");
                 }
             }
         }
         catch (Exception ex)
         {
-            Log($"Save exception: {ex.Message}");
             ErrorMessage = $"Error saving: {ex.Message}";
         }
         finally
         {
-            IsProcessing = false;
-            StateHasChanged();
+            IsProcessingStartPoints = false;
         }
     }
 
     private async Task DeleteStartPoint(string? id)
     {
-        Log($"DeleteStartPoint clicked for {id}");
-        if (string.IsNullOrEmpty(id))
-        {
-            Log("Delete aborted: ID is null or empty");
-            return;
-        }
-        
+        if (string.IsNullOrEmpty(id)) return;
+
         if (!await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this start point?"))
         {
-            Log("Delete cancelled by user");
             return;
         }
 
-        IsProcessing = true;
-        ProcessingId = id;
-        StateHasChanged();
+        ErrorMessage = null;
+        IsProcessingStartPoints = true;
+        StartPointProcessingId = id;
         try
         {
             var req = new HttpRequestMessage(HttpMethod.Delete, $"api/StartPoints/{id}");
@@ -397,47 +646,221 @@ sp.Coordinates.Lng
             var res = await BotApi.Client.SendAsync(req);
             if (res.IsSuccessStatusCode)
             {
-                Log("Delete success");
-                await Refresh();
+                await RefreshStartPoints();
             }
             else
             {
                 var txt = await res.Content.ReadAsStringAsync();
                 var deleteUrl = BotApi.Client.BaseAddress + $"api/StartPoints/{id}";
                 ErrorMessage = $"Delete failed: {(int)res.StatusCode} {res.ReasonPhrase} at {deleteUrl}. Response snippet: {GetSnippet(txt)}";
-                Log($"Delete failed: {res.StatusCode}");
             }
         }
         catch (Exception ex)
         {
-            Log($"Delete exception: {ex.Message}");
             ErrorMessage = $"Error deleting: {ex.Message}";
         }
         finally
         {
-            IsProcessing = false;
-            ProcessingId = null;
-            StateHasChanged();
+            IsProcessingStartPoints = false;
+            StartPointProcessingId = null;
         }
     }
 
-    [Inject]
-    private NavigationManager NavigationManager { get; set; } = default!;
+    private void NewLink()
+    {
+        EditingLink = new LinkItem();
+        EditingLinkIndex = null;
+        IsNewLink = true;
+        focusLinkDescriptionOnNextRender = true;
+    }
+
+    private void EditLink(int index)
+    {
+        if (Links == null || index < 0 || index >= Links.Count)
+        {
+            return;
+        }
+
+        var link = Links[index];
+        EditingLink = new LinkItem
+        {
+            Description = link.Description,
+            Url = link.Url,
+            Emoji = link.Emoji,
+            Category = link.Category
+        };
+        EditingLinkIndex = index;
+        IsNewLink = false;
+        focusLinkDescriptionOnNextRender = true;
+    }
+
+    private void CancelLinkEdit()
+    {
+        EditingLink = null;
+        EditingLinkIndex = null;
+    }
+
+    private async Task SaveLink()
+    {
+        if (EditingLink == null)
+        {
+            return;
+        }
+
+        ErrorMessage = null;
+        IsProcessingLinks = true;
+        try
+        {
+            HttpRequestMessage req;
+            if (IsNewLink)
+            {
+                req = new HttpRequestMessage(HttpMethod.Post, "api/links")
+                {
+                    Content = JsonContent.Create(EditingLink)
+                };
+            }
+            else
+            {
+                if (!EditingLinkIndex.HasValue)
+                {
+                    ErrorMessage = "Missing link index for update.";
+                    return;
+                }
+
+                req = new HttpRequestMessage(HttpMethod.Put, $"api/links/{EditingLinkIndex.Value}")
+                {
+                    Content = JsonContent.Create(EditingLink)
+                };
+            }
+
+            if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
+            var res = await BotApi.Client.SendAsync(req);
+            if (res.IsSuccessStatusCode)
+            {
+                await RefreshLinks();
+                EditingLink = null;
+                EditingLinkIndex = null;
+            }
+            else
+            {
+                var txt = await res.Content.ReadAsStringAsync();
+                ErrorMessage = $"Link save failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error saving link: {ex.Message}";
+        }
+        finally
+        {
+            IsProcessingLinks = false;
+        }
+    }
+
+    private async Task DeleteLink(int index)
+    {
+        if (!await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this link?"))
+        {
+            return;
+        }
+
+        ErrorMessage = null;
+        IsProcessingLinks = true;
+        LinkProcessingIndex = index;
+        try
+        {
+            var req = new HttpRequestMessage(HttpMethod.Delete, $"api/links/{index}");
+            if (!string.IsNullOrEmpty(ApiKey)) req.Headers.Add("X-API-KEY", ApiKey);
+            var res = await BotApi.Client.SendAsync(req);
+            if (res.IsSuccessStatusCode)
+            {
+                await RefreshLinks();
+            }
+            else
+            {
+                var txt = await res.Content.ReadAsStringAsync();
+                ErrorMessage = $"Delete link failed: {(int)res.StatusCode} {res.ReasonPhrase}. Response snippet: {GetSnippet(txt)}";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error deleting link: {ex.Message}";
+        }
+        finally
+        {
+            IsProcessingLinks = false;
+            LinkProcessingIndex = null;
+        }
+    }
+
+    private Task TestEditingLink()
+    {
+        return TestLink(EditingLink?.Url);
+    }
+
+    private async Task TestLink(string? url)
+    {
+        var normalized = NormalizeUrl(url);
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return;
+        }
+
+        await JS.InvokeVoidAsync("open", normalized, "_blank", "noopener,noreferrer");
+    }
 
     private IEnumerable<SFA_RazorClassLibrary.Models.StartPoint> FilteredStartPoints()
     {
         if (StartPoints == null) return Enumerable.Empty<SFA_RazorClassLibrary.Models.StartPoint>();
+
         var q = StartPoints.AsEnumerable();
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
             var term = searchTerm.Trim();
             q = q.Where(sp => (sp.Name ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
-                            || (sp.Location ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
-                            || (sp.Postcode ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
-                            || (sp.GoogleMaps ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
-                            || (sp.What3Words ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase));
+                           || (sp.Location ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+                           || (sp.Postcode ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+                           || (sp.GoogleMaps ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+                           || (sp.What3Words ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase));
         }
+
         return q;
+    }
+
+    private IEnumerable<IndexedLink> FilteredLinks()
+    {
+        if (Links == null)
+        {
+            return Enumerable.Empty<IndexedLink>();
+        }
+
+        IEnumerable<IndexedLink> query = Links.Select((link, index) => new IndexedLink(index, link));
+        if (!string.IsNullOrWhiteSpace(linkSearchTerm))
+        {
+            var term = linkSearchTerm.Trim();
+            query = query.Where(x => (x.Link.Description ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+                                  || (x.Link.Url ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+                                  || (x.Link.Category ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return query;
+    }
+
+    private static string NormalizeUrl(string? rawUrl)
+    {
+        if (string.IsNullOrWhiteSpace(rawUrl))
+        {
+            return string.Empty;
+        }
+
+        var trimmed = rawUrl.Trim();
+        if (trimmed.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return trimmed;
+        }
+
+        return $"https://{trimmed}";
     }
 
     private static string GetSnippet(string s, int len = 300)
@@ -445,4 +868,14 @@ sp.Coordinates.Lng
         if (string.IsNullOrEmpty(s)) return string.Empty;
         return s.Length <= len ? s : s.Substring(0, len) + "...";
     }
+
+    private sealed class LinkItem
+    {
+        public string? Description { get; set; }
+        public string? Url { get; set; }
+        public string? Emoji { get; set; }
+        public string? Category { get; set; }
+    }
+
+    private sealed record IndexedLink(int Index, LinkItem Link);
 }

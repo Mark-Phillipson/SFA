@@ -39,6 +39,13 @@ public class StartPointsController : ControllerBase
 		return Ok(sp);
 	}
 
+	[HttpGet("validate-admin")]
+	public IActionResult ValidateAdmin()
+	{
+		if (!IsAuthorized()) return Unauthorized();
+		return Ok(new { valid = true });
+	}
+
 	private bool IsAuthorized()
 	{
 		var key = _config["AdminApiKey"];

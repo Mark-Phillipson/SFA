@@ -8,6 +8,9 @@ namespace SFA_WebAPI.Services;
 public interface ILinksCatalogService
 {
     Task<LinksCatalogSnapshot> GetSnapshotAsync(CancellationToken cancellationToken = default);
+    Task<LinkItem> CreateAsync(LinkItem link, CancellationToken cancellationToken = default);
+    Task UpdateAsync(int index, LinkItem link, CancellationToken cancellationToken = default);
+    Task DeleteAsync(int index, CancellationToken cancellationToken = default);
 }
 
 public sealed record LinksCatalogSnapshot(
@@ -60,6 +63,62 @@ public sealed class LinksCatalogService : ILinksCatalogService
             _cachedSnapshot = new LinksCatalogSnapshot(links, eTag, fileTimestampUtc);
             _cachedFileTimestampUtc = fileTimestampUtc;
             return _cachedSnapshot;
+        }
+        finally
+        {
+            _syncLock.Release();
+        }
+    }
+
+    public async Task<LinkItem> CreateAsync(LinkItem link, CancellationToken cancellationToken = default)
+    {
+        await _syncLock.WaitAsync(cancellationToken);
+        try
+        {
+            var links = await ReadLinksUnsafeAsync(cancellationToken);
+            links.Add(Normalize(link));
+            await WriteLinksUnsafeAsync(links, cancellationToken);
+            return links[^1];
+        }
+        finally
+        {
+            _syncLock.Release();
+        }
+    }
+
+    public async Task UpdateAsync(int index, LinkItem link, CancellationToken cancellationToken = default)
+    {
+        await _syncLock.WaitAsync(cancellationToken);
+        try
+        {
+            var links = await ReadLinksUnsafeAsync(cancellationToken);
+            if (index < 0 || index >= links.Count)
+            {
+                throw new KeyNotFoundException($"Link index {index} was not found.");
+            }
+
+            links[index] = Normalize(link);
+            await WriteLinksUnsafeAsync(links, cancellationToken);
+        }
+        finally
+        {
+            _syncLock.Release();
+        }
+    }
+
+    public async Task DeleteAsync(int index, CancellationToken cancellationToken = default)
+    {
+        await _syncLock.WaitAsync(cancellationToken);
+        try
+        {
+            var links = await ReadLinksUnsafeAsync(cancellationToken);
+            if (index < 0 || index >= links.Count)
+            {
+                throw new KeyNotFoundException($"Link index {index} was not found.");
+            }
+
+            links.RemoveAt(index);
+            await WriteLinksUnsafeAsync(links, cancellationToken);
         }
         finally
         {
@@ -120,5 +179,42 @@ public sealed class LinksCatalogService : ILinksCatalogService
         var hash = SHA256.HashData(payload);
         var base64 = Convert.ToBase64String(hash);
         return $"\"{base64}\"";
+    }
+
+    private async Task<List<LinkItem>> ReadLinksUnsafeAsync(CancellationToken cancellationToken)
+    {
+        var fileBytes = await File.ReadAllBytesAsync(_dataFilePath, cancellationToken);
+        var links = JsonSerializer.Deserialize<List<LinkItem>>(fileBytes, JsonOptions);
+        if (links is null)
+        {
+            throw new InvalidDataException($"Links file '{_dataFilePath}' contains invalid JSON.");
+        }
+
+        return links;
+    }
+
+    private async Task WriteLinksUnsafeAsync(List<LinkItem> links, CancellationToken cancellationToken)
+    {
+        var payload = JsonSerializer.SerializeToUtf8Bytes(links, new JsonSerializerOptions(JsonOptions)
+        {
+            WriteIndented = true
+        });
+        await File.WriteAllBytesAsync(_dataFilePath, payload, cancellationToken);
+
+        var fileTimestampUtc = File.GetLastWriteTimeUtc(_dataFilePath);
+        var eTag = CreateStrongETag(payload);
+        _cachedSnapshot = new LinksCatalogSnapshot(links, eTag, fileTimestampUtc);
+        _cachedFileTimestampUtc = fileTimestampUtc;
+    }
+
+    private static LinkItem Normalize(LinkItem link)
+    {
+        return new LinkItem
+        {
+            Description = link.Description?.Trim(),
+            Url = link.Url?.Trim(),
+            Emoji = link.Emoji?.Trim(),
+            Category = link.Category?.Trim()
+        };
     }
 }
