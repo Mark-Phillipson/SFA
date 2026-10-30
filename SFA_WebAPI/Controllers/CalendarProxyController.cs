@@ -244,6 +244,10 @@ namespace SFA_WebAPI.Controllers
                             string summary = it.GetProperty("summary").GetString() ?? string.Empty;
                             string location = it.TryGetProperty("location", out var locEl) ? locEl.GetString() ?? string.Empty : string.Empty;
                             string description = it.TryGetProperty("description", out var dEl) ? dEl.GetString() ?? string.Empty : string.Empty;
+                            if (string.IsNullOrWhiteSpace(location))
+                            {
+                                location = TryExtractLocationFromTitle(summary);
+                            }
                             DateTime? startDt = null;
                             if (it.TryGetProperty("start", out var sEl))
                             {
@@ -292,6 +296,31 @@ namespace SFA_WebAPI.Controllers
                 _logger.LogError(ex, "GetGoogleEvents error for id={id}", id);
                 return StatusCode(500, ex.Message);
             }
+        }
+
+        private static string TryExtractLocationFromTitle(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title)) return string.Empty;
+            var trimmedTitle = title.Trim();
+
+            var markerMatch = Regex.Match(trimmedTitle, "(?:^|\\s)(?:@|at)\\s+(?<loc>.+)$", RegexOptions.IgnoreCase);
+            if (markerMatch.Success)
+            {
+                return markerMatch.Groups["loc"].Value.Trim().TrimEnd('.', ',', ';', ':');
+            }
+
+            var splitMatch = Regex.Match(trimmedTitle, "^(?<event>.+?)\\s[-–—|]\\s(?<loc>.+)$");
+            if (splitMatch.Success)
+            {
+                var eventPart = splitMatch.Groups["event"].Value;
+                var locationPart = splitMatch.Groups["loc"].Value.Trim().TrimEnd('.', ',', ';', ':');
+                if (Regex.IsMatch(eventPart, "\\b(ride|run|walk|training|session|meeting|social|event|club|group|route)\\b", RegexOptions.IgnoreCase))
+                {
+                    return locationPart;
+                }
+            }
+
+            return string.Empty;
         }
     }
 }

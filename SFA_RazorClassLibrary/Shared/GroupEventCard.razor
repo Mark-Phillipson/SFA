@@ -64,7 +64,7 @@
                 {
                     <div style="font-size:0.95em;color:#222;">
                         <div><strong>@FormatEventDate(ev.Start)</strong> @ev.Start.ToLocalTime().ToString("HH:mm")</div>
-                        <div style="color:#444;">@GetDisplayLocation(ev)</div>
+                        <div style="color:#444; white-space: pre-line;">@GetDisplayLocation(ev)</div>
                         @if (ev.RouteLinks?.Count > 0)
                         {
                             <div style="margin-top:0.2em;font-size:0.85em;color:#007bff;"><a href="@ev.RouteLinks[0]"
@@ -166,15 +166,29 @@
     {
         try
         {
-            if (!string.IsNullOrWhiteSpace(ev.Location)) return ev.Location;
+            var parts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(ev.Summary))
+            {
+                parts.Add(ev.Summary.Trim());
+            }
+            if (!string.IsNullOrWhiteSpace(ev.Location))
+            {
+                var location = ev.Location.Trim();
+                if (!parts.Any(p => p.Contains(location, StringComparison.OrdinalIgnoreCase)))
+                    parts.Add(location);
+            }
             if (!string.IsNullOrWhiteSpace(ev.OriginalDescription))
             {
-                var s = ev.OriginalDescription.Trim();
-                return s.Length > 200 ? s.Substring(0, 200) + "..." : s;
+                foreach (var line in ev.OriginalDescription.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    if (!parts.Any(p => p.Contains(line, StringComparison.OrdinalIgnoreCase)))
+                        parts.Add(line);
+                }
             }
-            if (!string.IsNullOrWhiteSpace(ev.Summary)) return ev.Summary;
+
+            if (parts.Count > 0) return string.Join(Environment.NewLine, parts);
         }
         catch { }
-        return "(location not specified)";
+        return "(details not specified)";
     }
 }

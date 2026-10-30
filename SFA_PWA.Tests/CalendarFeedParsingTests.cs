@@ -72,6 +72,36 @@ namespace SFA_PWA.Tests
         }
 
         [Fact]
+        public async Task Gcal_Response_Uses_Location_From_Title_When_Location_Field_Empty()
+        {
+            var nextWed = NextWeekday(DateTime.UtcNow, DayOfWeek.Wednesday).AddHours(10);
+            string json = $"[{{\"start\": \"{nextWed:yyyy-MM-ddTHH:mm:ssZ}\", \"summary\": \"Midweek Ride - The Cafe\", \"location\": \"\", \"description\": \"\"}}]";
+
+            var handler = new TestHttpMessageHandler(req =>
+            {
+                var uri = req.RequestUri?.AbsoluteUri ?? string.Empty;
+                if (uri.Contains("api/calendar/gcal"))
+                {
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(json, Encoding.UTF8, "application/json")
+                    };
+                }
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            });
+
+            var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+            var svc = new CalendarFeedService(client, new BotApiConfig { BotApiUrl = string.Empty });
+            var groups = new List<(string Name, string CalendarUrl)> { ("TestGroup", "https://calendar.google.com/calendar/embed?src=test@group.calendar.google.com&ctz=Europe%2FLondon") };
+
+            var events = await svc.GetUpcomingWedSatForGroupsAsync(groups);
+
+            Assert.NotNull(events);
+            Assert.NotEmpty(events);
+            Assert.Equal("The Cafe", events[0].Location);
+        }
+
+        [Fact]
         public async Task Ics_Response_Populates_OriginalDescription_When_Location_Empty()
         {
             // Arrange: return ICS text with DESCRIPTION containing meeting info
@@ -111,6 +141,71 @@ namespace SFA_PWA.Tests
             Assert.Equal("TestGroupIcs", ev.GroupName);
             Assert.False(string.IsNullOrWhiteSpace(ev.OriginalDescription));
             Assert.Contains("Meet at The Village Cafe", ev.OriginalDescription);
+        }
+
+        [Fact]
+        public async Task Ics_Response_Uses_Location_From_Title_When_Location_And_Description_Location_Missing()
+        {
+            var nextSat = NextWeekday(DateTime.UtcNow, DayOfWeek.Saturday).AddHours(9);
+            string dt = nextSat.ToString("yyyyMMdd'T'HHmmss'Z'");
+            string ics = $"BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nDTSTART:{dt}\r\nSUMMARY:Weekend Ride @ Village Square\r\nDESCRIPTION:Bring lights and pump\r\nEND:VEVENT\r\nEND:VCALENDAR";
+
+            var handler = new TestHttpMessageHandler(req =>
+            {
+                var uri = req.RequestUri?.AbsoluteUri ?? string.Empty;
+                if (uri.Contains("api/calendar/gcal"))
+                {
+                    return new HttpResponseMessage(HttpStatusCode.NotFound);
+                }
+                if (uri.Contains("api/calendar/ics"))
+                {
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(ics, Encoding.UTF8, "text/plain")
+                    };
+                }
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            });
+
+            var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+            var svc = new CalendarFeedService(client, new BotApiConfig { BotApiUrl = string.Empty });
+            var groups = new List<(string Name, string CalendarUrl)> { ("TestGroupIcs", "https://example.com/calendar.ics") };
+
+            var events = await svc.GetUpcomingWedSatForGroupsAsync(groups);
+
+            Assert.NotNull(events);
+            Assert.NotEmpty(events);
+            Assert.Equal("Village Square", events[0].Location);
+        }
+
+        [Fact]
+        public async Task B_Group_Uses_Default_Departure_Note_When_Location_Missing()
+        {
+            var nextSat = NextWeekday(DateTime.UtcNow, DayOfWeek.Saturday).AddHours(10);
+            string json = $"[{{\"start\": \"{nextSat:yyyy-MM-ddTHH:mm:ssZ}\", \"summary\": \"B Ride - Leader Jane Doe\", \"location\": \"\", \"description\": \"\"}}]";
+
+            var handler = new TestHttpMessageHandler(req =>
+            {
+                var uri = req.RequestUri?.AbsoluteUri ?? string.Empty;
+                if (uri.Contains("api/calendar/gcal"))
+                {
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(json, Encoding.UTF8, "application/json")
+                    };
+                }
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            });
+
+            var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+            var svc = new CalendarFeedService(client, new BotApiConfig { BotApiUrl = string.Empty });
+            var groups = new List<(string Name, string CalendarUrl)> { ("B Group", "https://calendar.google.com/calendar/embed?src=test@group.calendar.google.com&ctz=Europe%2FLondon") };
+
+            var events = await svc.GetUpcomingWedSatForGroupsAsync(groups);
+
+            Assert.NotNull(events);
+            Assert.NotEmpty(events);
+            Assert.Equal("(normally leaves from Marden Library Carpark)", events[0].Location);
         }
 
         [Fact]

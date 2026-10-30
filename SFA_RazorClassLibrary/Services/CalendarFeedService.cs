@@ -14,7 +14,7 @@ namespace SFA_RazorClassLibrary.Services
         public DateTime Start { get; set; }
         public string Summary { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
-        // OriginalDescription stores the event description (if present) so the UI can show useful text when Location is empty.
+        // OriginalDescription stores the full event description (if present) so the UI can show complete event details.
         public string OriginalDescription { get; set; } = string.Empty;
         public List<string> RouteLinks { get; set; } = new();
     }
@@ -165,6 +165,11 @@ namespace SFA_RazorClassLibrary.Services
                                                 var summary = el.TryGetProperty("summary", out var sEl) ? sEl.GetString() ?? string.Empty : string.Empty;
                                                 var location = el.TryGetProperty("location", out var lEl) ? lEl.GetString() ?? string.Empty : string.Empty;
                                                 var description = el.TryGetProperty("description", out var dEl) ? dEl.GetString() ?? string.Empty : string.Empty;
+                                                if (string.IsNullOrWhiteSpace(location))
+                                                {
+                                                    location = TryExtractLocationFromTitle(summary);
+                                                }
+                                                location = ApplyBGroupDefaultLocation(g.Name, location, summary, description);
                                                 var links = new List<string>();
                                                 if (el.TryGetProperty("links", out var linksEl) && linksEl.ValueKind == JsonValueKind.Array)
                                                 {
@@ -182,7 +187,7 @@ namespace SFA_RazorClassLibrary.Services
                                                     Start = start.ToUniversalTime(),
                                                     Summary = summary,
                                                     Location = location,
-                                                    OriginalDescription = !string.IsNullOrWhiteSpace(description) ? (description.Length > 500 ? description.Substring(0, 500) : description) : string.Empty,
+                                                    OriginalDescription = description,
                                                     RouteLinks = links
                                                 });
                                             }
@@ -311,13 +316,19 @@ namespace SFA_RazorClassLibrary.Services
                         if (mloc.Success) location = mloc.Groups[1].Value.Trim();
                     }
 
+                    if (string.IsNullOrWhiteSpace(location))
+                    {
+                        location = TryExtractLocationFromTitle(summary);
+                    }
+                    location = ApplyBGroupDefaultLocation(groupName, location, summary, desc);
+
                     events.Add(new CalendarEvent
                     {
                         GroupName = groupName,
                         Start = EnsureUtcAssumeEuropeLondon(start),
                         Summary = summary,
                         Location = location,
-                        OriginalDescription = !string.IsNullOrWhiteSpace(desc) ? (desc.Length > 500 ? desc.Substring(0, 500) : desc) : string.Empty,
+                        OriginalDescription = desc,
                         RouteLinks = links
                     });
                 }
@@ -416,6 +427,52 @@ namespace SFA_RazorClassLibrary.Services
             // unfold lines (ICS line folding: lines starting with space are continuation)
             val = Regex.Replace(val, "\\r?\\n[ \\t]", " ");
             return val.Trim();
+        }
+
+        private string TryExtractLocationFromTitle(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title)) return string.Empty;
+            var trimmedTitle = title.Trim();
+
+            var markerMatch = Regex.Match(trimmedTitle, "(?:^|\\s)(?:@|at)\\s+(?<loc>.+)$", RegexOptions.IgnoreCase);
+            if (markerMatch.Success)
+            {
+                return markerMatch.Groups["loc"].Value.Trim().TrimEnd('.', ',', ';', ':');
+            }
+
+            var splitMatch = Regex.Match(trimmedTitle, "^(?<event>.+?)\\s[-–—|]\\s(?<loc>.+)$");
+            if (splitMatch.Success)
+            {
+                var eventPart = splitMatch.Groups["event"].Value;
+                var locationPart = splitMatch.Groups["loc"].Value.Trim().TrimEnd('.', ',', ';', ':');
+                if (Regex.IsMatch(eventPart, "\\b(ride|run|walk|training|session|meeting|social|event|club|group|route)\\b", RegexOptions.IgnoreCase))
+                {
+                    return locationPart;
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private string ApplyBGroupDefaultLocation(string groupName, string location, string summary, string description)
+        {
+            if (!string.Equals(groupName?.Trim(), "B Group", StringComparison.OrdinalIgnoreCase))
+            {
+                return location;
+            }
+
+            if (!string.IsNullOrWhiteSpace(location) && !Regex.IsMatch(location, "^leader\\b", RegexOptions.IgnoreCase))
+            {
+                return location;
+            }
+
+            var combined = $"{summary}\n{description}\n{location}";
+            if (Regex.IsMatch(combined, "marden\\s+library\\s+car\\s*park", RegexOptions.IgnoreCase))
+            {
+                return location;
+            }
+
+            return "(normally leaves from Marden Library Carpark)";
         }
     }
 }
