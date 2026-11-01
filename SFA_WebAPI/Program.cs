@@ -30,6 +30,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 // Register HttpClient for OpenAI bot service with webpage fetching
 builder.Services.AddHttpClient<SFA_WebAPI.Services.OpenAIBotService>();
+builder.Services.AddSingleton<SFA_WebAPI.Services.IBotQuestionLogService, SFA_WebAPI.Services.TextFileBotQuestionLogService>();
 // Register StartPoint repository (JSON file backed)
 builder.Services.AddSingleton<SFA_WebAPI.Services.IStartPointRepository, SFA_WebAPI.Services.StartPointRepository>();
 builder.Services.AddSingleton<SFA_WebAPI.Services.ILinksCatalogService, SFA_WebAPI.Services.LinksCatalogService>();

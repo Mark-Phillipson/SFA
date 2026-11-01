@@ -26,6 +26,11 @@ curl -X POST "https://sfawebapi-c9bgawf9evfkg6dp.westeurope-01.azurewebsites.net
 ```
 adb logcat > cafes-log.txt
 
+### Bot question usage log
+
+`SFA_WebAPI` now appends each chat interaction to a tab-delimited text log at `data/bot-question-log.txt` (UTC timestamp, IP, user-agent, question, answer).  
+You can override the path with `BotQuestionLogPath` in `SFA_WebAPI/appsettings.json`.
+
 ## Running the .NET MAUI app (SFA_MauiApp)
 
 The MAUI project targets multiple frameworks, so specify which target when running with `dotnet watch run` using `--framework` (or `-f`). Example commands:

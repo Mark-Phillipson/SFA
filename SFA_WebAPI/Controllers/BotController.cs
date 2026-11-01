@@ -9,10 +9,14 @@ namespace SFA_WebAPI.Controllers
     public class BotController : ControllerBase
     {
         private readonly SFA_WebAPI.Services.OpenAIBotService _botService;
+        private readonly IBotQuestionLogService _questionLogService;
 
-        public BotController(SFA_WebAPI.Services.OpenAIBotService botService)
+        public BotController(
+            SFA_WebAPI.Services.OpenAIBotService botService,
+            IBotQuestionLogService questionLogService)
         {
             _botService = botService;
+            _questionLogService = questionLogService;
         }
 
         [HttpGet("sample-questions")]
@@ -31,11 +35,24 @@ namespace SFA_WebAPI.Controllers
         }
 
         [HttpPost("chat")]
-        public async Task<ActionResult<ChatResponse>> Chat([FromBody] ChatRequest request)
+        public async Task<ActionResult<ChatResponse>> Chat([FromBody] ChatRequest request, CancellationToken cancellationToken)
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(request.Message))
+                {
+                    return BadRequest(new ChatResponse { Reply = "Message must not be empty." });
+                }
+
+                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
                 var reply = await _botService.GetBotReplyAsync(request.Message, request.History);
+                await _questionLogService.LogQuestionAsync(
+                    request.Message,
+                    reply,
+                    ipAddress,
+                    userAgent,
+                    cancellationToken);
                 return Ok(new ChatResponse { Reply = reply });
             }
             catch (Exception ex)
