@@ -170,7 +170,7 @@ public sealed class LinksCatalogService : ILinksCatalogService
 
         if (!File.Exists(absolutePath))
         {
-            throw new FileNotFoundException($"Links file not found: {absolutePath}", absolutePath);
+            File.WriteAllText(absolutePath, "[]");
         }
     }
 
