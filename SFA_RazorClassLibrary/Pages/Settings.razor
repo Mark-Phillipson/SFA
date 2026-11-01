@@ -481,6 +481,10 @@ else
             {
                 foreach (var line in ev.OriginalDescription.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {
+                    if (IsUrlOnlyLine(line))
+                        continue;
+                    if (line.Equals("Route:", StringComparison.OrdinalIgnoreCase))
+                        continue;
                     if (!parts.Any(p => p.Contains(line, StringComparison.OrdinalIgnoreCase)))
                         parts.Add(line);
                 }
@@ -490,6 +494,14 @@ else
         }
         catch { }
         return "(details not specified)";
+    }
+
+    private static bool IsUrlOnlyLine(string line)
+    {
+        if (!Uri.TryCreate(line.Trim(), UriKind.Absolute, out var uri))
+            return false;
+
+        return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
     }
 
 }

@@ -102,6 +102,108 @@ namespace SFA_PWA.Tests
         }
 
         [Fact]
+        public async Task Gcal_Response_Cleans_Anchor_Tags_And_Keeps_Clickable_Links()
+        {
+            var nextWed = NextWeekday(DateTime.UtcNow, DayOfWeek.Wednesday).AddHours(10);
+            const string mapsLink = "https://maps.google.com/?q=51.272033,0.556830";
+            var encodedMapsLink = WebUtility.HtmlEncode(mapsLink);
+            var description = $"Route:\\n<a href=\"{encodedMapsLink}\" target=\"_blank\">{encodedMapsLink}</a>";
+            var descriptionJson = System.Text.Json.JsonSerializer.Serialize(description);
+            string json = $"[{{\"start\": \"{nextWed:yyyy-MM-ddTHH:mm:ssZ}\", \"summary\": \"Midweek Ride\", \"location\": \"\", \"description\": {descriptionJson}}}]";
+
+            var handler = new TestHttpMessageHandler(req =>
+            {
+                var uri = req.RequestUri?.AbsoluteUri ?? string.Empty;
+                if (uri.Contains("api/calendar/gcal"))
+                {
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(json, Encoding.UTF8, "application/json")
+                    };
+                }
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            });
+
+            var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+            var svc = new CalendarFeedService(client, new BotApiConfig { BotApiUrl = string.Empty });
+            var groups = new List<(string Name, string CalendarUrl)> { ("TestGroup", "https://calendar.google.com/calendar/embed?src=test@group.calendar.google.com&ctz=Europe%2FLondon") };
+
+            var events = await svc.GetUpcomingWedSatForGroupsAsync(groups);
+
+            Assert.NotEmpty(events);
+            Assert.DoesNotContain("<a", events[0].OriginalDescription, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(mapsLink, events[0].OriginalDescription);
+            Assert.Contains(events[0].RouteLinks, l => l.Equals(mapsLink, StringComparison.OrdinalIgnoreCase));
+        }
+
+        [Fact]
+        public async Task Gcal_Response_Normalizes_Google_Redirect_Link_To_Target_Url()
+        {
+            var nextWed = NextWeekday(DateTime.UtcNow, DayOfWeek.Wednesday).AddHours(10);
+            const string targetLink = "https://maps.google.com/?q=51.272033,0.556830";
+            var redirectLink = $"https://www.google.com/url?q={WebUtility.UrlEncode(targetLink)}&source=calendar&usd=2";
+            var description = $"Route:\\n{redirectLink}";
+            var descriptionJson = System.Text.Json.JsonSerializer.Serialize(description);
+            string json = $"[{{\"start\": \"{nextWed:yyyy-MM-ddTHH:mm:ssZ}\", \"summary\": \"Midweek Ride\", \"location\": \"\", \"description\": {descriptionJson}}}]";
+
+            var handler = new TestHttpMessageHandler(req =>
+            {
+                var uri = req.RequestUri?.AbsoluteUri ?? string.Empty;
+                if (uri.Contains("api/calendar/gcal"))
+                {
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(json, Encoding.UTF8, "application/json")
+                    };
+                }
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            });
+
+            var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+            var svc = new CalendarFeedService(client, new BotApiConfig { BotApiUrl = string.Empty });
+            var groups = new List<(string Name, string CalendarUrl)> { ("TestGroup", "https://calendar.google.com/calendar/embed?src=test@group.calendar.google.com&ctz=Europe%2FLondon") };
+
+            var events = await svc.GetUpcomingWedSatForGroupsAsync(groups);
+
+            Assert.NotEmpty(events);
+            Assert.Contains(events[0].RouteLinks, l => l.Equals(targetLink, StringComparison.OrdinalIgnoreCase));
+            Assert.DoesNotContain(events[0].RouteLinks, l => l.StartsWith("https://www.google.com/url", StringComparison.OrdinalIgnoreCase));
+        }
+
+        [Fact]
+        public async Task Gcal_Response_Preserves_Anchor_Text_As_Link_Title()
+        {
+            var nextWed = NextWeekday(DateTime.UtcNow, DayOfWeek.Wednesday).AddHours(10);
+            const string targetLink = "https://ridewithgps.com/routes/57740080";
+            var description = $"Route:\\n<a href=\"{targetLink}\">Ride with GPS route</a>";
+            var descriptionJson = System.Text.Json.JsonSerializer.Serialize(description);
+            string json = $"[{{\"start\": \"{nextWed:yyyy-MM-ddTHH:mm:ssZ}\", \"summary\": \"Midweek Ride\", \"location\": \"\", \"description\": {descriptionJson}}}]";
+
+            var handler = new TestHttpMessageHandler(req =>
+            {
+                var uri = req.RequestUri?.AbsoluteUri ?? string.Empty;
+                if (uri.Contains("api/calendar/gcal"))
+                {
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(json, Encoding.UTF8, "application/json")
+                    };
+                }
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            });
+
+            var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/") };
+            var svc = new CalendarFeedService(client, new BotApiConfig { BotApiUrl = string.Empty });
+            var groups = new List<(string Name, string CalendarUrl)> { ("TestGroup", "https://calendar.google.com/calendar/embed?src=test@group.calendar.google.com&ctz=Europe%2FLondon") };
+
+            var events = await svc.GetUpcomingWedSatForGroupsAsync(groups);
+
+            Assert.NotEmpty(events);
+            Assert.True(events[0].LinkTitles.TryGetValue(targetLink, out var title));
+            Assert.Equal("Ride with GPS route", title);
+        }
+
+        [Fact]
         public async Task Ics_Response_Populates_OriginalDescription_When_Location_Empty()
         {
             // Arrange: return ICS text with DESCRIPTION containing meeting info

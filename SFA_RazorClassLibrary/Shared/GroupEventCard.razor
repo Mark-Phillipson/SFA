@@ -62,13 +62,17 @@
             <div style="margin-top:0.4em;display:flex;flex-direction:column;gap:0.4em;">
                 @foreach (var ev in Events.Take(3))
                 {
+                    var displayLinks = GetDisplayLinks(ev);
                     <div style="font-size:0.95em;color:#222;">
                         <div><strong>@FormatEventDate(ev.Start)</strong> @ev.Start.ToLocalTime().ToString("HH:mm")</div>
                         <div style="color:#444; white-space: pre-line;">@GetDisplayLocation(ev)</div>
-                        @if (ev.RouteLinks?.Count > 0)
+                        @if (displayLinks.Count > 0)
                         {
-                            <div style="margin-top:0.2em;font-size:0.85em;color:#007bff;"><a href="@ev.RouteLinks[0]"
-                                                                                                 target="_blank" rel="noopener noreferrer">Route link</a></div>
+                            @foreach (var link in displayLinks)
+                            {
+                                <div style="margin-top:0.2em;font-size:0.85em;color:#007bff;"><a href="@link.Url"
+                                                                                                     target="_blank" rel="noopener noreferrer">@link.Text</a></div>
+                            }
                         }
                     </div>
                 }
@@ -181,6 +185,10 @@
             {
                 foreach (var line in ev.OriginalDescription.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {
+                    if (IsUrlOnlyLine(line))
+                        continue;
+                    if (line.Equals("Route:", StringComparison.OrdinalIgnoreCase))
+                        continue;
                     if (!parts.Any(p => p.Contains(line, StringComparison.OrdinalIgnoreCase)))
                         parts.Add(line);
                 }
@@ -190,5 +198,62 @@
         }
         catch { }
         return "(details not specified)";
+    }
+
+    private static bool IsUrlOnlyLine(string line)
+    {
+        if (!Uri.TryCreate(line.Trim(), UriKind.Absolute, out var uri))
+            return false;
+
+        return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
+    }
+
+    private sealed record DisplayLink(string Url, string Text);
+
+    private static List<DisplayLink> GetDisplayLinks(CalendarEvent ev)
+    {
+        var links = new List<string>();
+
+        foreach (var link in ev.RouteLinks ?? Enumerable.Empty<string>())
+        {
+            if (string.IsNullOrWhiteSpace(link))
+                continue;
+
+            var trimmed = link.Trim();
+            if (!Uri.TryCreate(trimmed, UriKind.Absolute, out var uri))
+                continue;
+
+            if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
+                continue;
+
+            if (!links.Contains(trimmed, StringComparer.OrdinalIgnoreCase))
+                links.Add(trimmed);
+        }
+
+        var display = new List<DisplayLink>();
+
+        foreach (var link in links)
+        {
+            var text = GetDisplayLinkText(ev, link);
+            display.Add(new DisplayLink(link, text));
+        }
+
+        return display;
+    }
+
+    private static string GetDisplayLinkText(CalendarEvent ev, string link)
+    {
+        if (ev.LinkTitles.TryGetValue(link, out var title) && !string.IsNullOrWhiteSpace(title))
+            return title.Trim();
+
+        return Truncate(link, 60);
+    }
+
+    private static string Truncate(string value, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length <= maxLength)
+            return value;
+
+        return $"{value[..(maxLength - 3)]}...";
     }
 }

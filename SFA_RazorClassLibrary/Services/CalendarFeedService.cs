@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -17,10 +18,15 @@ namespace SFA_RazorClassLibrary.Services
         // OriginalDescription stores the full event description (if present) so the UI can show complete event details.
         public string OriginalDescription { get; set; } = string.Empty;
         public List<string> RouteLinks { get; set; } = new();
+        public Dictionary<string, string> LinkTitles { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     }
 
     public class CalendarFeedService
     {
+        private static readonly Regex AnchorHrefRegex = new("<a\\b[^>]*?href\\s*=\\s*['\"](?<url>[^'\"]+)['\"][^>]*>(?<text>.*?)</a>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        private static readonly Regex HtmlTagRegex = new("<[^>]+>", RegexOptions.IgnoreCase);
+        private static readonly Regex UrlRegex = new("https?://\\S+", RegexOptions.IgnoreCase);
+
         private readonly HttpClient _http;
         private readonly string _apiBaseUrl;
 
@@ -165,19 +171,27 @@ namespace SFA_RazorClassLibrary.Services
                                                 var summary = el.TryGetProperty("summary", out var sEl) ? sEl.GetString() ?? string.Empty : string.Empty;
                                                 var location = el.TryGetProperty("location", out var lEl) ? lEl.GetString() ?? string.Empty : string.Empty;
                                                 var description = el.TryGetProperty("description", out var dEl) ? dEl.GetString() ?? string.Empty : string.Empty;
+                                                var normalizedDescription = NormalizeDescription(description);
+                                                description = normalizedDescription.Description;
                                                 if (string.IsNullOrWhiteSpace(location))
                                                 {
                                                     location = TryExtractLocationFromTitle(summary);
                                                 }
                                                 location = ApplyBGroupDefaultLocation(g.Name, location, summary, description);
-                                                var links = new List<string>();
+                                                var links = new HashSet<string>(normalizedDescription.Links, StringComparer.OrdinalIgnoreCase);
+                                                var linkTitles = new Dictionary<string, string>(normalizedDescription.LinkTitles, StringComparer.OrdinalIgnoreCase);
                                                 if (el.TryGetProperty("links", out var linksEl) && linksEl.ValueKind == JsonValueKind.Array)
                                                 {
                                                     foreach (var linkEl in linksEl.EnumerateArray())
                                                     {
                                                         if (linkEl.ValueKind == JsonValueKind.String)
                                                         {
-                                                            var u = linkEl.GetString(); if (!string.IsNullOrWhiteSpace(u) && !links.Contains(u)) links.Add(u);
+                                                            var u = linkEl.GetString();
+                                                            if (!string.IsNullOrWhiteSpace(u))
+                                                            {
+                                                                var normalizedLink = NormalizeLinkUrl(u);
+                                                                links.Add(normalizedLink);
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -188,7 +202,8 @@ namespace SFA_RazorClassLibrary.Services
                                                     Summary = summary,
                                                     Location = location,
                                                     OriginalDescription = description,
-                                                    RouteLinks = links
+                                                    RouteLinks = links.ToList(),
+                                                    LinkTitles = linkTitles
                                                 });
                                             }
                                             catch { }
@@ -300,14 +315,9 @@ namespace SFA_RazorClassLibrary.Services
                     var summary = ExtractField(block, "SUMMARY") ?? string.Empty;
                     var location = ExtractField(block, "LOCATION") ?? string.Empty;
                     var desc = ExtractField(block, "DESCRIPTION") ?? string.Empty;
-
-                    // extract links from description
-                    var links = new List<string>();
-                    foreach (Match m in Regex.Matches(desc, "https?://[\\w\\-./?%&=+#:@()~]+", RegexOptions.IgnoreCase))
-                    {
-                        var u = m.Value.Trim();
-                        if (!links.Contains(u)) links.Add(u);
-                    }
+                    var normalizedDescription = NormalizeDescription(desc);
+                    desc = normalizedDescription.Description;
+                    var links = normalizedDescription.Links;
 
                     // If location empty, try to find in description lines like 'Location:'
                     if (string.IsNullOrWhiteSpace(location))
@@ -329,7 +339,8 @@ namespace SFA_RazorClassLibrary.Services
                         Summary = summary,
                         Location = location,
                         OriginalDescription = desc,
-                        RouteLinks = links
+                        RouteLinks = links,
+                        LinkTitles = normalizedDescription.LinkTitles
                     });
                 }
                 catch
@@ -473,6 +484,154 @@ namespace SFA_RazorClassLibrary.Services
             }
 
             return "(normally leaves from Marden Library Carpark)";
+        }
+
+        private (string Description, List<string> Links, Dictionary<string, string> LinkTitles) NormalizeDescription(string? rawDescription)
+        {
+            if (string.IsNullOrWhiteSpace(rawDescription))
+            {
+                return (string.Empty, new List<string>(), new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+            }
+
+            var decoded = WebUtility.HtmlDecode(rawDescription)
+                .Replace("\\n", "\n", StringComparison.Ordinal)
+                .Replace("\\N", "\n", StringComparison.Ordinal)
+                .Replace("\r\n", "\n", StringComparison.Ordinal)
+                .Trim();
+
+            var links = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var linkTitles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            var anchorReplaced = AnchorHrefRegex.Replace(decoded, m =>
+            {
+                var rawUrl = m.Groups["url"].Value;
+                var cleanedUrl = NormalizeLinkUrl(rawUrl);
+                if (!string.IsNullOrWhiteSpace(cleanedUrl))
+                {
+                    links.Add(cleanedUrl);
+                    var anchorText = StripHtmlAndNormalizeWhitespace(WebUtility.HtmlDecode(m.Groups["text"].Value));
+                    if (!string.IsNullOrWhiteSpace(anchorText) && !anchorText.Equals(cleanedUrl, StringComparison.OrdinalIgnoreCase))
+                    {
+                        linkTitles[cleanedUrl] = anchorText;
+                    }
+                    return cleanedUrl;
+                }
+
+                var text = WebUtility.HtmlDecode(m.Groups["text"].Value).Trim();
+                return string.IsNullOrWhiteSpace(text) ? string.Empty : text;
+            });
+
+            var noHtml = HtmlTagRegex.Replace(anchorReplaced, " ").Trim();
+            var description = Regex.Replace(noHtml, "[ \\t]+", " ").Trim();
+            description = Regex.Replace(description, "\\n{3,}", "\n\n").Trim();
+
+            var lines = description.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            string? previousLabelLine = null;
+
+            foreach (var line in lines)
+            {
+                var matches = UrlRegex.Matches(line);
+                if (matches.Count == 0)
+                {
+                    if (!IsUrlOnlyLine(line))
+                    {
+                        previousLabelLine = line;
+                    }
+                    continue;
+                }
+
+                foreach (Match m in matches)
+                {
+                    var url = m.Value.Trim().TrimEnd('.', ',', ';', ')', ']');
+                    if (string.IsNullOrWhiteSpace(url))
+                        continue;
+
+                    var normalizedUrl = NormalizeLinkUrl(url);
+                    links.Add(normalizedUrl);
+
+                    if (linkTitles.ContainsKey(normalizedUrl))
+                        continue;
+
+                    var lineWithoutUrl = line.Replace(m.Value, string.Empty, StringComparison.Ordinal).Trim().Trim(':', '-', '–', '—');
+                    lineWithoutUrl = StripHtmlAndNormalizeWhitespace(lineWithoutUrl);
+                    if (!string.IsNullOrWhiteSpace(lineWithoutUrl))
+                    {
+                        linkTitles[normalizedUrl] = lineWithoutUrl;
+                        continue;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(previousLabelLine) && previousLabelLine.EndsWith(":", StringComparison.Ordinal))
+                    {
+                        var title = previousLabelLine.Trim().TrimEnd(':').Trim();
+                        if (!string.IsNullOrWhiteSpace(title))
+                        {
+                            linkTitles[normalizedUrl] = title;
+                        }
+                    }
+                }
+            }
+
+            foreach (Match m in UrlRegex.Matches(description))
+            {
+                var url = m.Value.Trim().TrimEnd('.', ',', ';', ')', ']');
+                if (!string.IsNullOrWhiteSpace(url))
+                {
+                    links.Add(NormalizeLinkUrl(url));
+                }
+            }
+
+            return (description, links.ToList(), linkTitles);
+        }
+
+        private static bool IsUrlOnlyLine(string line)
+        {
+            if (!Uri.TryCreate(line.Trim(), UriKind.Absolute, out var uri))
+                return false;
+
+            return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
+        }
+
+        private string StripHtmlAndNormalizeWhitespace(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            var noHtml = HtmlTagRegex.Replace(value, " ");
+            return Regex.Replace(noHtml, "\\s+", " ").Trim();
+        }
+
+        private string NormalizeLinkUrl(string rawUrl)
+        {
+            var decoded = WebUtility.HtmlDecode(rawUrl).Trim();
+            if (!Uri.TryCreate(decoded, UriKind.Absolute, out var uri))
+            {
+                return decoded;
+            }
+
+            if ((uri.Host.Contains("google.", StringComparison.OrdinalIgnoreCase) && uri.AbsolutePath.Equals("/url", StringComparison.OrdinalIgnoreCase))
+                || uri.Host.Equals("www.google.com", StringComparison.OrdinalIgnoreCase) && uri.AbsolutePath.Equals("/url", StringComparison.OrdinalIgnoreCase))
+            {
+                var query = uri.Query.TrimStart('?');
+                foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var kv = pair.Split('=', 2);
+                    if (kv.Length != 2)
+                        continue;
+
+                    var key = kv[0];
+                    if (!key.Equals("q", StringComparison.OrdinalIgnoreCase) && !key.Equals("url", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var target = WebUtility.UrlDecode(kv[1]);
+                    if (Uri.TryCreate(target, UriKind.Absolute, out var targetUri) &&
+                        (targetUri.Scheme == Uri.UriSchemeHttp || targetUri.Scheme == Uri.UriSchemeHttps))
+                    {
+                        return target;
+                    }
+                }
+            }
+
+            return decoded;
         }
     }
 }
