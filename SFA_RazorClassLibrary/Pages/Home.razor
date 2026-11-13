@@ -197,8 +197,8 @@
 
     private string FormatBuildDate(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value) || value == "Unknown")
-            return "Unknown";
+        if (string.IsNullOrWhiteSpace(value) || value == "Loading...")
+            return "Loading...";
 
         if (DateTimeOffset.TryParse(value, out var parsed))
             return parsed.ToLocalTime().ToString("dd MMM yyyy HH:mm");
