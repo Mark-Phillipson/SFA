@@ -35,6 +35,8 @@ dotnet publish .\SFA_WebAPI\SFA_WebAPI.csproj -c Release -o .\publish
 ## Deployment
 
 - You can deploy the contents of the `publish` folder using the Azure App Service extension in VS Code, the Azure Portal, or via GitHub Actions (see `.github/workflows/deploy-backend.yml`).
+- For the live Web API, do not publish a `data/links.json` file. The app will only use a persistent server-side catalog when `LinksDataPath` is set to a real file path outside the deployment output.
+- If you want the server to keep a persistent catalog, add an app setting / environment variable named `LinksDataPath` pointing to a writable file such as `C:\home\site\wwwroot\data\links.json` or another mounted storage path.
 
 ---
 

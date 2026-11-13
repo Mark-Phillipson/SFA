@@ -21,7 +21,7 @@ public sealed record LinksCatalogSnapshot(
 public sealed class LinksCatalogService : ILinksCatalogService
 {
     private readonly ILogger<LinksCatalogService> _logger;
-    private readonly string _dataFilePath;
+    private readonly string? _dataFilePath;
     private readonly SemaphoreSlim _syncLock = new(1, 1);
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -32,11 +32,22 @@ public sealed class LinksCatalogService : ILinksCatalogService
     {
         _logger = logger;
         _dataFilePath = ResolveDataFilePath(configuration["LinksDataPath"]);
+        if (_dataFilePath is null)
+        {
+            _logger.LogWarning("LinksCatalogService has no persisted links file configured for this environment. Writes are disabled until LinksDataPath points to a valid file.");
+            return;
+        }
+
         _logger.LogInformation("LinksCatalogService using file: {DataFilePath}", _dataFilePath);
     }
 
     public async Task<LinksCatalogSnapshot> GetSnapshotAsync(CancellationToken cancellationToken = default)
     {
+        if (_dataFilePath is null)
+        {
+            throw new InvalidOperationException("Links catalog file is not configured for this environment.");
+        }
+
         var fileTimestampUtc = File.GetLastWriteTimeUtc(_dataFilePath);
         if (_cachedSnapshot is not null && fileTimestampUtc == _cachedFileTimestampUtc)
         {
@@ -126,7 +137,7 @@ public sealed class LinksCatalogService : ILinksCatalogService
         }
     }
 
-    private string ResolveDataFilePath(string? configuredPath)
+    private string? ResolveDataFilePath(string? configuredPath)
     {
         if (!string.IsNullOrWhiteSpace(configuredPath))
         {
@@ -136,14 +147,12 @@ public sealed class LinksCatalogService : ILinksCatalogService
                 resolvedPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), resolvedPath));
             }
 
-            EnsureFileExists(resolvedPath);
+            ensureParentDirectoryExists(resolvedPath);
             return resolvedPath;
         }
 
         var candidatePaths = new[]
         {
-            Path.Combine(Directory.GetCurrentDirectory(), "data", "links.json"),
-            Path.Combine(AppContext.BaseDirectory, "data", "links.json"),
             Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "SFA_WebAPI", "data", "links.json"))
         };
 
@@ -155,9 +164,16 @@ public sealed class LinksCatalogService : ILinksCatalogService
             }
         }
 
-        var defaultPath = candidatePaths[0];
-        EnsureFileExists(defaultPath);
-        return defaultPath;
+        return null;
+    }
+
+    private static void ensureParentDirectoryExists(string absolutePath)
+    {
+        var directory = Path.GetDirectoryName(absolutePath);
+        if (!string.IsNullOrWhiteSpace(directory) && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
     }
 
     private static void EnsureFileExists(string absolutePath)
@@ -183,6 +199,11 @@ public sealed class LinksCatalogService : ILinksCatalogService
 
     private async Task<List<LinkItem>> ReadLinksUnsafeAsync(CancellationToken cancellationToken)
     {
+        if (_dataFilePath is null)
+        {
+            throw new InvalidOperationException("Links catalog file is not configured for this environment.");
+        }
+
         var fileBytes = await File.ReadAllBytesAsync(_dataFilePath, cancellationToken);
         var links = JsonSerializer.Deserialize<List<LinkItem>>(fileBytes, JsonOptions);
         if (links is null)
@@ -195,6 +216,16 @@ public sealed class LinksCatalogService : ILinksCatalogService
 
     private async Task WriteLinksUnsafeAsync(List<LinkItem> links, CancellationToken cancellationToken)
     {
+        if (_dataFilePath is null)
+        {
+            throw new InvalidOperationException("Links catalog file is not configured for this environment.");
+        }
+
+        if (!File.Exists(_dataFilePath))
+        {
+            throw new InvalidOperationException($"Links catalog file does not exist and writes are disabled: {_dataFilePath}");
+        }
+
         var payload = JsonSerializer.SerializeToUtf8Bytes(links, new JsonSerializerOptions(JsonOptions)
         {
             WriteIndented = true
